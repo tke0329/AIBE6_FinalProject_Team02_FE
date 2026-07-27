@@ -1,10 +1,12 @@
-'use client';
+"use client";
 
-import { motion } from 'framer-motion';
+import { motion } from "framer-motion";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
+// 환경변수 없으면 로컬 BE(8080)로 폴백
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
 
-type Provider = 'google' | 'kakao' | 'naver';
+type Provider = "google" | "kakao" | "naver";
 
 const PROVIDERS: {
   key: Provider;
@@ -13,29 +15,40 @@ const PROVIDERS: {
   icon: React.ReactNode;
 }[] = [
   {
-    key: 'kakao',
-    label: '카카오로 시작해요',
-    className: 'bg-[#FEE500] text-[#191919] hover:bg-[#FDD800] focus-visible:outline-[#FEE500]',
+    key: "kakao",
+    label: "카카오로 시작해요",
+    className:
+      "bg-[#FEE500] text-[#191919] hover:bg-[#FDD800] focus-visible:outline-[#FEE500]",
     icon: (
-      <svg className="w-5 h-5 mr-3 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+      <svg
+        className="w-5 h-5 mr-3 flex-shrink-0"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+      >
         <path d="M12 3c-4.97 0-9 3.185-9 7.115 0 2.558 1.707 4.8 4.27 6.054-.176.657-.638 2.383-.73 2.72-.112.416.14.41.295.306.12-.08 1.93-1.312 2.7-1.84a10.37 10.37 0 002.465.295c4.97 0 9-3.185 9-7.115C21 6.185 16.97 3 12 3z" />
       </svg>
     ),
   },
   {
-    key: 'naver',
-    label: '네이버로 시작해요',
-    className: 'bg-[#03C75A] text-white hover:bg-[#02b34f] focus-visible:outline-[#03C75A]',
+    key: "naver",
+    label: "네이버로 시작해요",
+    className:
+      "bg-[#03C75A] text-white hover:bg-[#02b34f] focus-visible:outline-[#03C75A]",
     icon: (
-      <svg className="w-4 h-4 mr-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+      <svg
+        className="w-4 h-4 mr-3.5 flex-shrink-0"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+      >
         <path d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727v12.845z" />
       </svg>
     ),
   },
   {
-    key: 'google',
-    label: 'Google로 시작해요',
-    className: 'bg-white text-brown-900 border border-cream-200 hover:bg-cream-50 focus-visible:outline-[#C9A87C]',
+    key: "google",
+    label: "Google로 시작해요",
+    className:
+      "bg-white text-brown-900 border border-cream-200 hover:bg-cream-50 focus-visible:outline-[#C9A87C]",
     icon: (
       <svg className="w-5 h-5 mr-3 flex-shrink-0" viewBox="0 0 24 24">
         <path
@@ -71,26 +84,74 @@ export function LoginPage() {
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
           className="relative flex items-center justify-center w-24 h-24 mb-4"
         >
           {/* 캐릭터 식판/로고 데코레이션 */}
-          <svg viewBox="0 0 100 100" className="w-full h-full text-orange-500 fill-current">
+          <svg
+            viewBox="0 0 100 100"
+            className="w-full h-full text-orange-500 fill-current"
+          >
             {/* 귀여운 고양이 귀 */}
             <path d="M 25 35 L 12 8 L 38 22 Z" fill="#D98E33" />
             <path d="M 75 35 L 88 8 L 62 22 Z" fill="#D98E33" />
             {/* 식판 / 동그란 얼굴 */}
-            <circle cx="50" cy="55" r="35" fill="#FFF" stroke="#D98E33" strokeWidth="6" />
+            <circle
+              cx="50"
+              cy="55"
+              r="35"
+              fill="#FFF"
+              stroke="#D98E33"
+              strokeWidth="6"
+            />
             {/* 얼굴 디테일 */}
             <circle cx="37" cy="52" r="4" fill="#3E2D18" />
             <circle cx="63" cy="52" r="4" fill="#3E2D18" />
             {/* 수염 */}
-            <line x1="12" y1="52" x2="22" y2="54" stroke="#3E2D18" strokeWidth="2.5" strokeLinecap="round" />
-            <line x1="13" y1="60" x2="23" y2="58" stroke="#3E2D18" strokeWidth="2.5" strokeLinecap="round" />
-            <line x1="88" y1="52" x2="78" y2="54" stroke="#3E2D18" strokeWidth="2.5" strokeLinecap="round" />
-            <line x1="87" y1="60" x2="77" y2="58" stroke="#3E2D18" strokeWidth="2.5" strokeLinecap="round" />
+            <line
+              x1="12"
+              y1="52"
+              x2="22"
+              y2="54"
+              stroke="#3E2D18"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+            <line
+              x1="13"
+              y1="60"
+              x2="23"
+              y2="58"
+              stroke="#3E2D18"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+            <line
+              x1="88"
+              y1="52"
+              x2="78"
+              y2="54"
+              stroke="#3E2D18"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+            <line
+              x1="87"
+              y1="60"
+              x2="77"
+              y2="58"
+              stroke="#3E2D18"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
             {/* 입/코 */}
-            <path d="M 47 62 Q 50 64 53 62" stroke="#3E2D18" strokeWidth="3" strokeLinecap="round" fill="none" />
+            <path
+              d="M 47 62 Q 50 64 53 62"
+              stroke="#3E2D18"
+              strokeWidth="3"
+              strokeLinecap="round"
+              fill="none"
+            />
             <polygon points="48,58 52,58 50,60" fill="#3E2D18" />
             {/* 볼터치 */}
             <circle cx="28" cy="58" r="4" fill="#D9534F" opacity="0.35" />
@@ -118,21 +179,48 @@ export function LoginPage() {
         <motion.div
           initial={{ opacity: 0, x: -50, rotate: -25, scale: 0.8 }}
           animate={{ opacity: 1, x: -70, rotate: -15, scale: 0.9 }}
-          transition={{ delay: 0.4, type: 'spring', stiffness: 100 }}
+          transition={{ delay: 0.4, type: "spring", stiffness: 100 }}
           className="absolute w-28 h-36 bg-white border border-cream-200 rounded-xl shadow-card p-2 flex flex-col justify-between items-center"
         >
           <div className="w-full h-20 bg-cream-50 rounded-lg flex items-center justify-center">
             {/* 초밥 SVG */}
             <svg viewBox="0 0 100 100" className="w-14 h-14">
               <path d="M 15 50 Q 50 12 85 50 Q 50 65 15 50 Z" fill="#FF7B54" />
-              <path d="M 30 36 Q 45 40 60 28" stroke="#FFF" strokeWidth="2.5" fill="none" opacity="0.6" />
-              <path d="M 40 44 Q 55 48 70 36" stroke="#FFF" strokeWidth="2.5" fill="none" opacity="0.6" />
-              <path d="M 25 50 Q 50 78 75 50" stroke="#EFE3CC" strokeWidth="12" strokeLinecap="round" fill="none" />
-              <rect x="44" y="40" width="12" height="24" rx="2" fill="#3E2D18" />
+              <path
+                d="M 30 36 Q 45 40 60 28"
+                stroke="#FFF"
+                strokeWidth="2.5"
+                fill="none"
+                opacity="0.6"
+              />
+              <path
+                d="M 40 44 Q 55 48 70 36"
+                stroke="#FFF"
+                strokeWidth="2.5"
+                fill="none"
+                opacity="0.6"
+              />
+              <path
+                d="M 25 50 Q 50 78 75 50"
+                stroke="#EFE3CC"
+                strokeWidth="12"
+                strokeLinecap="round"
+                fill="none"
+              />
+              <rect
+                x="44"
+                y="40"
+                width="12"
+                height="24"
+                rx="2"
+                fill="#3E2D18"
+              />
             </svg>
           </div>
           <div className="text-center w-full">
-            <p className="text-[12px] font-bold text-brown-900 leading-tight">연어초밥</p>
+            <p className="text-[12px] font-bold text-brown-900 leading-tight">
+              연어초밥
+            </p>
             <p className="text-[10px] text-orange-500 font-bold mt-0.5">★★★</p>
           </div>
         </motion.div>
@@ -141,14 +229,16 @@ export function LoginPage() {
         <motion.div
           initial={{ opacity: 0, x: 50, rotate: 25, scale: 0.8 }}
           animate={{ opacity: 1, x: 70, rotate: 15, scale: 0.9 }}
-          transition={{ delay: 0.5, type: 'spring', stiffness: 100 }}
+          transition={{ delay: 0.5, type: "spring", stiffness: 100 }}
           className="absolute w-28 h-36 bg-cream-200 border border-cream-300 rounded-xl shadow-card p-2 flex flex-col justify-between items-center"
         >
           <div className="w-full h-20 bg-cream-100 rounded-lg flex items-center justify-center">
             <span className="text-3xl font-display text-brown-300">?</span>
           </div>
           <div className="text-center w-full">
-            <p className="text-[12px] font-bold text-brown-300 leading-tight">미해금</p>
+            <p className="text-[12px] font-bold text-brown-300 leading-tight">
+              미해금
+            </p>
             <p className="text-[10px] text-brown-300 font-bold mt-0.5">☆☆☆</p>
           </div>
         </motion.div>
@@ -164,11 +254,11 @@ export function LoginPage() {
           }}
           transition={{
             opacity: { delay: 0.6, duration: 0.4 },
-            scale: { delay: 0.6, type: 'spring', stiffness: 100 },
+            scale: { delay: 0.6, type: "spring", stiffness: 100 },
             y: {
               repeat: Infinity,
               duration: 4,
-              ease: 'easeInOut',
+              ease: "easeInOut",
             },
           }}
           className="absolute z-10 w-32 h-40 bg-white border-2 border-orange-400 rounded-2xl shadow-modal p-2.5 flex flex-col justify-between items-center"
@@ -179,10 +269,38 @@ export function LoginPage() {
             </div>
             {/* 라멘 SVG */}
             <svg viewBox="0 0 100 100" className="w-16 h-16">
-              <line x1="25" y1="20" x2="85" y2="35" stroke="#9A6A32" strokeWidth="4" strokeLinecap="round" />
-              <line x1="25" y1="28" x2="85" y2="43" stroke="#9A6A32" strokeWidth="4" strokeLinecap="round" />
-              <path d="M 22 50 C 35 35, 65 35, 78 50" fill="none" stroke="#E8A24C" strokeWidth="6" strokeLinecap="round" />
-              <path d="M 26 53 C 38 42, 62 42, 74 53" fill="none" stroke="#E8A24C" strokeWidth="4" strokeLinecap="round" />
+              <line
+                x1="25"
+                y1="20"
+                x2="85"
+                y2="35"
+                stroke="#9A6A32"
+                strokeWidth="4"
+                strokeLinecap="round"
+              />
+              <line
+                x1="25"
+                y1="28"
+                x2="85"
+                y2="43"
+                stroke="#9A6A32"
+                strokeWidth="4"
+                strokeLinecap="round"
+              />
+              <path
+                d="M 22 50 C 35 35, 65 35, 78 50"
+                fill="none"
+                stroke="#E8A24C"
+                strokeWidth="6"
+                strokeLinecap="round"
+              />
+              <path
+                d="M 26 53 C 38 42, 62 42, 74 53"
+                fill="none"
+                stroke="#E8A24C"
+                strokeWidth="4"
+                strokeLinecap="round"
+              />
               <path d="M 20 50 Q 20 85 50 85 Q 80 85 80 50 Z" fill="#D9534F" />
               <rect x="16" y="47" width="68" height="6" rx="3" fill="#EFE3CC" />
               <circle cx="50" cy="55" r="10" fill="#FFF" />
@@ -190,7 +308,9 @@ export function LoginPage() {
             </svg>
           </div>
           <div className="text-center w-full">
-            <p className="text-sm font-bold text-brown-900 leading-tight">돈코츠라멘</p>
+            <p className="text-sm font-bold text-brown-900 leading-tight">
+              돈코츠라멘
+            </p>
             <p className="text-[11px] text-orange-500 font-bold mt-0.5">★★☆</p>
           </div>
         </motion.div>
@@ -220,11 +340,11 @@ export function LoginPage() {
         </div>
 
         <p className="text-[10px] text-brown-300 text-center leading-normal max-w-xs px-4">
-          로그인 시 캣칫의{' '}
+          로그인 시 캣칫의{" "}
           <a href="#" className="underline hover:text-brown-800">
             이용약관
-          </a>{' '}
-          및{' '}
+          </a>{" "}
+          및{" "}
           <a href="#" className="underline hover:text-brown-800">
             개인정보처리방침
           </a>

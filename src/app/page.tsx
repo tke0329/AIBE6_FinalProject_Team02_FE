@@ -4,17 +4,11 @@ import { DexGrid } from '@/features/dex/DexGrid';
 import { ROUTES, TAB_HREF } from '@/shared/lib/routes';
 import { useAppState } from '@/shared/store/AppStateProvider';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
 
-/** `/` 기본 도감 */
+/** `/` 기본 도감 (인증/온보딩 진입 분기는 AuthGate가 전담) */
 export default function DexHomePage() {
   const router = useRouter();
-  const { collectedIds, newlyUnlockedId, onboardingSeen, startRegistration } = useAppState();
-  
-  // 첫 방문이면 온보딩부터
-  useEffect(() => {
-    if (!onboardingSeen) router.replace(ROUTES.onboarding);
-  }, [onboardingSeen, router]);
+  const { collectedIds, newlyUnlockedId, startRegistration } = useAppState();
 
   return (
     <DexGrid

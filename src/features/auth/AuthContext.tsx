@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const data = await apiFetch<Me>('/api/v1/auth/me');
       setMe(data);
-    } catch (e) {
+    } catch {
       // 401(UnauthorizedError) 등 → 비로그인으로 처리
       setMe(null);
     } finally {

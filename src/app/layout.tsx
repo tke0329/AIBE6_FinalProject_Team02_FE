@@ -1,4 +1,5 @@
 import { AuthProvider } from '@/features/auth/AuthContext';
+import { AuthGate } from '@/features/auth/AuthGate';
 import { AppStateProvider } from '@/shared/store/AppStateProvider';
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
@@ -22,7 +23,9 @@ export default function RootLayout({
       <body className="h-full">
         <AuthProvider>
           <AppStateProvider>
-            <div className="app-shell">{children}</div>
+            <AuthGate>
+              <div className="app-shell">{children}</div>
+            </AuthGate>
           </AppStateProvider>
         </AuthProvider>
       </body>

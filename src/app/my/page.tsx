@@ -16,7 +16,7 @@ export default function MyPageRoute() {
       profilePhoto={profilePhoto}
       equippedBadge={equippedBadge}
       onChangePhoto={() => router.push(ROUTES.myPhoto)}
-      onReplayOnboarding={() => router.push(ROUTES.onboarding)}
+      onReplayOnboarding={() => router.push(`${ROUTES.onboarding}?from=my`)}
       onOpenProfile={() => router.push(ROUTES.myProfile)}
       onOpenBadges={() => router.push(ROUTES.myBadges)}
       onTab={(tab) => router.push(TAB_HREF[tab])} />);
