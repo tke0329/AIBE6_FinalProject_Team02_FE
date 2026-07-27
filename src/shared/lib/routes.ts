@@ -1,5 +1,5 @@
-import type { NavTab } from '@/shared/ui/molecules/BottomNav';
 import type { MadeDexId } from '@/features/made/types';
+import type { NavTab } from '@/shared/ui/molecules/BottomNav';
 
 /**
  * 앱의 모든 URL을 한곳에서 관리.
@@ -8,6 +8,9 @@ import type { MadeDexId } from '@/features/made/types';
 export const ROUTES = {
   home: '/',
   onboarding: '/onboarding',
+  //로그인 경로
+  login: '/login',
+  oauthCallback: '/oauth/callback',
 
   dexDetail: (id: number) => `/dex/${id}`,
 
