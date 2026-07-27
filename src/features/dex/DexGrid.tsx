@@ -3,13 +3,16 @@ import { PlusIcon } from 'lucide-react';
 import { ProgressBar } from '@/shared/ui/atoms/ProgressBar';
 import { StarRank } from '@/shared/ui/atoms/StarRank';
 import { HelpIcon } from '@/shared/ui/atoms/HelpIcon';
+import { SearchBar } from '@/shared/ui/atoms/SearchBar';
 import { BottomNav, NavTab } from '@/shared/ui/molecules/BottomNav';
 import { DexHelpSheet } from '@/shared/ui/molecules/DexHelpSheet';
 import { FoodCard } from '@/shared/ui/molecules/FoodCard';
 import { TabBar } from '@/shared/ui/molecules/TabBar';
+import { DexEntry } from '@/shared/data/dex';
 import { useDexFilter } from './useDexFilter';
 
 interface DexGridProps {
+  entries: DexEntry[];
   collectedIds: number[];
   newlyUnlockedId?: number | null;
   onOpenEntry: (id: number) => void;
@@ -22,6 +25,7 @@ interface DexGridProps {
  * 그리드는 모바일 3열 기준(§2)이며 넓은 뷰포트에서만 열을 늘림.
  */
 export function DexGrid({
+  entries,
   collectedIds,
   newlyUnlockedId,
   onOpenEntry,
@@ -32,6 +36,8 @@ export function DexGrid({
   const {
     activeCategory,
     setActiveCategory,
+    query,
+    setQuery,
     categoryTabs,
     collected,
     visibleEntries,
@@ -40,7 +46,7 @@ export function DexGrid({
     progress,
     percentage,
     sectionTotal
-  } = useDexFilter(collectedIds);
+  } = useDexFilter(entries, collectedIds);
 
   return (
     <div className="relative flex h-full flex-col bg-cream-100">
@@ -68,6 +74,13 @@ export function DexGrid({
           <ProgressBar value={progress} label="기본 도감 수집률" />
           <p className="mt-2 text-xs text-content-secondary">카테고리를 골라 원하는 음식만 찾아보세요</p>
         </div>
+
+        <SearchBar
+          label="음식 이름 검색"
+          placeholder="음식 이름으로 검색해보세요"
+          value={query}
+          onChange={setQuery}
+          className="mt-3" />
 
         <TabBar
           label="음식 카테고리"
@@ -102,6 +115,7 @@ export function DexGrid({
                     key={entry.id}
                     name={entry.name}
                     emoji={entry.emoji}
+                    illustrationUrl={entry.illustrationUrl}
                     state={!unlocked ? 'locked' : isNew ? 'recent' : 'unlocked'}
                     accessibleName={
                       unlocked ?

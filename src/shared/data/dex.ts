@@ -25,6 +25,7 @@ export interface DexEntry {
   name: string;
   emoji: string;
   category: FoodCategory;
+  illustrationUrl?: string;
   collected: boolean;
   stars?: number;
   firstDate?: string;

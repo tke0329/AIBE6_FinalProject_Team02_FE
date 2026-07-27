@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 /**
  * §3.2 도감 그리드 카드.
  * - `unlocked` 사진(이모지) + 이름 + 하단 슬롯(별점/태그)
- * - `locked`   `?` 실루엣 + "미해금" 라벨 (§5 색에만 의존하지 않기 위해 텍스트 병기)
+ * - `locked`   일러스트를 흑백 처리 + "미해금" 라벨 (§5 색에만 의존하지 않기 위해 텍스트 병기)
  * - `recent`   최근 해금 강조 테두리
  */
 export type FoodCardState = 'unlocked' | 'locked' | 'recent';
@@ -12,6 +12,7 @@ export type FoodCardState = 'unlocked' | 'locked' | 'recent';
 interface FoodCardProps {
   name: string;
   emoji: string;
+  illustrationUrl?: string;
   state: FoodCardState;
   /** 스크린리더용 전체 설명. 예: "김치찌개, 해금됨, 별 1개" */
   accessibleName: string;
@@ -29,6 +30,7 @@ interface FoodCardProps {
 export function FoodCard({
   name,
   emoji,
+  illustrationUrl,
   state,
   accessibleName,
   onClick,
@@ -53,10 +55,16 @@ export function FoodCard({
       {corner}
       <div
         aria-hidden
-        className={`mb-2 flex h-14 w-14 items-center justify-center rounded-xl text-3xl ${
-          locked ? 'bg-cream-300 text-content-muted' : 'bg-orange-50'
-        }`}>
-        {locked ? '?' : emoji}
+        className="mb-2 flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl text-3xl">
+        {illustrationUrl ? (
+          <img
+            src={illustrationUrl}
+            alt=""
+            className={`h-14 w-14 object-cover ${locked ? 'grayscale' : ''}`}
+          />
+        ) : locked ? (
+          <div className="h-14 w-14 rounded-xl bg-black" />
+        ) : emoji}
       </div>
       <span
         aria-hidden

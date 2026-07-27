@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { CATEGORY_META, DEX_ENTRIES, FoodCategory } from '@/shared/data/dex';
+import { CATEGORY_META, DexEntry, FoodCategory } from '@/shared/data/dex';
 import type { TabItem } from '@/shared/ui/molecules/TabBar';
 
 export type CategoryFilter = '전체' | FoodCategory;
@@ -11,21 +11,23 @@ export const DEX_TOTAL = 200;
  * 기본 도감 그리드의 필터·정렬·집계 로직.
  * §3.1 로직은 훅으로, 컴포넌트는 props만 받아 렌더.
  */
-export function useDexFilter(collectedIds: number[]) {
+export function useDexFilter(entries: DexEntry[], collectedIds: number[]) {
   const [activeCategory, setActiveCategory] = useState<CategoryFilter>('전체');
+  const [query, setQuery] = useState('');
 
   const collected = useMemo(() => new Set(collectedIds), [collectedIds]);
 
   // 해금된 카드를 앞으로, 같은 상태면 도감 번호 순
-  const visibleEntries = useMemo(
-    () =>
-      [...(activeCategory === '전체' ?
-        DEX_ENTRIES :
-        DEX_ENTRIES.filter((entry) => entry.category === activeCategory))].sort(
-        (a, b) => Number(collected.has(b.id)) - Number(collected.has(a.id)) || a.id - b.id
-      ),
-    [activeCategory, collected]
-  );
+  const visibleEntries = useMemo(() => {
+    const term = query.trim().toLowerCase();
+    return [...(activeCategory === '전체' ?
+      entries :
+      entries.filter((entry) => entry.category === activeCategory))].filter((entry) =>
+      term ? entry.name.toLowerCase().includes(term) : true
+    ).sort(
+      (a, b) => Number(collected.has(b.id)) - Number(collected.has(a.id)) || a.id - b.id
+    );
+  }, [activeCategory, collected, entries, query]);
 
   const categoryTabs = useMemo<Array<TabItem<CategoryFilter>>>(
     () => [
@@ -46,6 +48,8 @@ export function useDexFilter(collectedIds: number[]) {
   return {
     activeCategory,
     setActiveCategory,
+    query,
+    setQuery,
     categoryTabs,
     collected,
     visibleEntries,

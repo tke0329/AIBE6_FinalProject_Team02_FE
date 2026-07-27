@@ -2,6 +2,7 @@
 
 import { INITIAL_CHALLENGES } from "@/features/challenge/data";
 import { ChallengeData, RewardBadge } from "@/features/challenge/types";
+import { fetchBasicDexEntries } from "@/features/dex/api";
 import { MadeCard, MadeDexId, MadeParticipant } from "@/features/made/types";
 import {
   fetchOnboardingStatus,
@@ -110,6 +111,16 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     fetchOnboardingStatus()
       .then((status) => setOnboardingSeen(status.onboardingCompleted))
       .catch(() => setOnboardingSeen(false));
+  }, []);
+
+  useEffect(() => {
+    fetchBasicDexEntries()
+      .then((basicEntries) => {
+        if (basicEntries.length > 0) setEntries(basicEntries);
+      })
+      .catch(() => {
+        // 로컬 목업 도감으로 폴백한다.
+      });
   }, []);
 
   const [madeParticipants, setMadeParticipants] = useState<
@@ -272,7 +283,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         firstDate: "2026.07.22",
         cards: [
           {
-            photos: [selectedFood.emoji],
+            photos: [selectedFood.illustrationUrl ?? selectedFood.emoji],
             memo,
             location,
             date: "2026.07.22",
