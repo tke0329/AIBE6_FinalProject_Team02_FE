@@ -11,6 +11,7 @@ export const ROUTES = {
   //로그인 경로
   login: '/login',
   oauthCallback: '/oauth/callback',
+  nicknameSetup: '/nickname-setup',
 
   dexDetail: (id: number) => `/dex/${id}`,
 
@@ -26,6 +27,7 @@ export const ROUTES = {
 
   my: '/my',
   myProfile: '/my/profile',
+  myNickname: '/my/nickname',
   myBadges: '/my/badges',
   myPhoto: '/my/photo',
 

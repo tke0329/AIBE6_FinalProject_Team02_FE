@@ -72,7 +72,7 @@ const PROVIDERS: {
   },
 ];
 
-export function LoginPage() {
+export function LoginPage({ errorMessage }: { errorMessage?: string }) {
   const startLogin = (provider: Provider) => {
     window.location.href = `${API_BASE}/oauth2/authorization/${provider}`;
   };
@@ -319,6 +319,14 @@ export function LoginPage() {
       {/* 하단 소셜 로그인 가입 섹션 */}
       <footer className="w-full flex flex-col items-center gap-6 mt-4">
         <div className="w-full max-w-xs flex flex-col gap-3">
+          {errorMessage && (
+            <p
+              role="alert"
+              className="mb-1 rounded-xl bg-red-50 px-4 py-2.5 text-center text-xs font-medium text-red-600"
+            >
+              {errorMessage}
+            </p>
+          )}
           <p className="text-xs text-brown-800 text-center font-medium opacity-85 mb-1">
             소셜 계정으로 간편하게 시작해요
           </p>
