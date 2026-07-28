@@ -1,43 +1,49 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { RegisterRecord } from '@/features/register/RegisterRecord';
-import { useAppState } from '@/shared/store/AppStateProvider';
+import { useRegisterFlow } from '@/features/register/RegisterFlowContext';
+import { CardInput, LocationInput, confirmRegistration } from '@/features/register/confirmApi';
 import { ROUTES } from '@/shared/lib/routes';
 
-/**
- * `/register/record` 등록 3단계 — 메모·위치 기록.
- * 챌린지에서 시작한 등록이면 지정 식당 목록을 함께 보여주고 매칭 검증한다 (§6).
- */
+/** `/register/record` 등록 3단계 — 음식별 기록 후 도감 해금 */
 export default function RegisterRecordPage() {
   const router = useRouter();
-  const {
-    selectedFood,
-    registrationSource,
-    registrationChallengeId,
-    findChallenge,
-    setRecordDraft,
-    finishRegistration
-  } = useAppState();
+  const { registrationId, recordSlots, setUnlockResult } = useRegisterFlow();
 
-  const challenge = registrationChallengeId ? findChallenge(registrationChallengeId) : undefined;
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // 검증을 통과한 칸이 없으면 기록할 것도 없다
+  const ready = registrationId !== null && recordSlots.length > 0;
+
+  useEffect(() => {
+    if (!ready) router.replace(ROUTES.register);
+  }, [ready, router]);
+
+  if (!ready) return null;
+
+  const submit = (cards: CardInput[], location: LocationInput | null) => {
+    setSubmitting(true);
+    setError(null);
+
+    confirmRegistration(registrationId, cards, location)
+      .then((result) => {
+        setUnlockResult(result);
+        router.push(ROUTES.registerUnlock);
+      })
+      .catch((cause: unknown) => {
+        setError(cause instanceof Error ? cause.message : '등록에 실패했어요');
+        setSubmitting(false);
+      });
+  };
 
   return (
     <RegisterRecord
-      foodName={selectedFood.name}
-      foodEmoji={selectedFood.emoji}
-      targetRestaurants={registrationSource === 'challenge' ? challenge?.targetRestaurants : undefined}
+      submitting={submitting}
+      error={error}
       onBack={() => router.push(ROUTES.registerAnalyze)}
-      onNext={(memo, location) => {
-        const draft = { memo, location };
-        setRecordDraft(draft);
-        // 제작 도감만 태그 입력 단계를 한 번 더 거침
-        if (registrationSource === 'made') {
-          router.push(ROUTES.registerTags);
-          return;
-        }
-        finishRegistration([], draft);
-        router.push(ROUTES.registerUnlock);
-      }} />);
+      onSubmit={submit} />);
 
 }

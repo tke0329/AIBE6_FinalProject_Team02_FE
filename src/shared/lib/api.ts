@@ -22,6 +22,22 @@ export class UnauthorizedError extends Error {
   }
 }
 
+/**
+ * 서버가 준 에러. message는 사용자 노출용, code는 분기용이다.
+ *
+ * Error를 상속하므로 `catch (e) { e.message }`로 쓰던 기존 호출부는 그대로 동작한다.
+ * 코드로 갈라야 할 때만(예: RETRY_LIMIT_EXCEEDED → 수동 폴백 안내) code를 본다.
+ */
+export class ApiError extends Error {
+  readonly code: string;
+
+  constructor(code: string, message: string) {
+    super(message);
+    this.name = "ApiError";
+    this.code = code;
+  }
+}
+
 /** refresh 재발급 요청. 성공하면 새 쿠키가 자동으로 세팅된다. */
 async function reissue(): Promise<boolean> {
   const res = await fetch(`${API_BASE}/api/v1/auth/reissue`, {
@@ -64,7 +80,10 @@ export async function apiFetch<T>(
 
   if (!res.ok || !body.success) {
     // 서버가 준 message를 그대로 에러로 전달 (호출부에서 사용자 노출 처리)
-    throw new Error(body.error?.message ?? `요청 실패 (${res.status})`);
+    throw new ApiError(
+      body.error?.code ?? "UNKNOWN",
+      body.error?.message ?? `요청 실패 (${res.status})`,
+    );
   }
 
   return body.data as T;
