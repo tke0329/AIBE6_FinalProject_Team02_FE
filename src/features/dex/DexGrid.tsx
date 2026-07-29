@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
-import { PlusIcon } from 'lucide-react';
-import { ProgressBar } from '@/shared/ui/atoms/ProgressBar';
-import { StarRank } from '@/shared/ui/atoms/StarRank';
+import { createReport } from '@/features/report/api';
+import { DexEntry } from '@/shared/data/dex';
 import { HelpIcon } from '@/shared/ui/atoms/HelpIcon';
+import { ProgressBar } from '@/shared/ui/atoms/ProgressBar';
 import { SearchBar } from '@/shared/ui/atoms/SearchBar';
+import { StarRank } from '@/shared/ui/atoms/StarRank';
 import { BottomNav, NavTab } from '@/shared/ui/molecules/BottomNav';
 import { DexHelpSheet } from '@/shared/ui/molecules/DexHelpSheet';
 import { FoodCard } from '@/shared/ui/molecules/FoodCard';
 import { TabBar } from '@/shared/ui/molecules/TabBar';
-import { DexEntry } from '@/shared/data/dex';
+import { PlusIcon } from 'lucide-react';
+import { useState } from 'react';
 import { useDexFilter } from './useDexFilter';
-
 interface DexGridProps {
   entries: DexEntry[];
   collectedIds: number[];
@@ -33,6 +33,25 @@ export function DexGrid({
   onTab
 }: DexGridProps) {
   const [helpOpen, setHelpOpen] = useState(false);
+  const [reporting, setReporting] = useState(false);             
+  const [reportedName, setReportedName] = useState<string | null>(null); 
+  
+  
+  // 검색어를 그대로 제보 이름으로 보낸다.
+  async function handleReport() {
+    const name = query.trim();
+    if (!name || reporting) return;
+    setReporting(true);
+    try {
+      await createReport(name);
+      setReportedName(name);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : '제보에 실패했어요');
+    } finally {
+      setReporting(false);
+    }
+  }
+  
   const {
     activeCategory,
     setActiveCategory,
@@ -103,9 +122,26 @@ export function DexGrid({
           </div>
 
           {visibleEntries.length === 0 ?
-            <p className="rounded-2xl bg-surface-card p-6 text-center text-sm text-content-secondary">
-              조건에 맞는 카드가 없어요
-            </p> :
+            <div className="rounded-2xl bg-surface-card p-6 text-center shadow-card">
+              <p className="text-sm text-content-secondary">
+                {query.trim() ? `'${query.trim()}' 검색 결과가 없어요` : '조건에 맞는 카드가 없어요'}
+              </p>
+              {query.trim() && (
+                reportedName === query.trim() ? (
+                  <p className="mt-3 text-xs font-medium text-content-link">
+                    제보 접수됐어요 · 검토 후 도감에 추가돼요
+                  </p>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={reporting}
+                    onClick={handleReport}
+                    className="mt-3 min-h-touch rounded-full bg-action-primary px-4 text-xs font-bold text-content-on-action shadow-card disabled:opacity-60">
+                    {reporting ? '제보 중…' : '이 음식 제보하기'}
+                  </button>
+                )
+              )}
+            </div> :
             <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10">
               {visibleEntries.map((entry) => {
                 const unlocked = collected.has(entry.id);

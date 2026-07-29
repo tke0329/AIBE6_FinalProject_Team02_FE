@@ -1,10 +1,14 @@
 import { apiFetch } from '@/shared/lib/api';
-import type { FoodRegistrationRequest, FoodReport } from './types';
+import type { FoodRegistrationRequest, FoodReport, ReportStatus } from './types';
 
 // ===== 제보 큐 =====
 
 export function fetchPendingReports() {
   return apiFetch<FoodReport[]>('/api/v1/admin/reports');
+}
+// 제보 목록 (상태별). 기본은 대기.
+export function fetchReports(status: ReportStatus = 'PENDING') {
+  return apiFetch<FoodReport[]>(`/api/v1/admin/reports?status=${status}`);
 }
 
 export function acceptReport(reportId: number) {

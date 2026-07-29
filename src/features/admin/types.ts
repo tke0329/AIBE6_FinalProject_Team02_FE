@@ -10,6 +10,8 @@ export interface FoodReport {
   description: string;
   status: ReportStatus;
   createdAt: string; // ISO 문자열
+  reporterId : number | null;
+  reporterName : string | null;
 }
 
 /** 음식 등록 요청 = AI가 못 끝낸 등록 (BE FoodRegistrationRequestResponseDTO) */
