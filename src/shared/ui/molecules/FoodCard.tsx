@@ -1,5 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import image from 'next/image'
+
 
 /**
  * §3.2 도감 그리드 카드.
@@ -60,6 +62,8 @@ export function FoodCard({
           <img
             src={illustrationUrl}
             alt=""
+            loading="lazy"
+            decoding="async"
             className={`h-14 w-14 object-cover ${locked ? 'grayscale' : ''}`}
           />
         ) : locked ? (

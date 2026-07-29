@@ -6,11 +6,13 @@ import { RegisterRecord } from '@/features/register/RegisterRecord';
 import { useRegisterFlow } from '@/features/register/RegisterFlowContext';
 import { CardInput, LocationInput, confirmRegistration } from '@/features/register/confirmApi';
 import { ROUTES } from '@/shared/lib/routes';
+import { useDexState } from '@/shared/store/AppStateProvider';
 
 /** `/register/record` 등록 3단계 — 음식별 기록 후 도감 해금 */
 export default function RegisterRecordPage() {
   const router = useRouter();
   const { registrationId, recordSlots, setUnlockResult } = useRegisterFlow();
+  const { refreshEntries } = useDexState();
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,6 +33,8 @@ export default function RegisterRecordPage() {
     confirmRegistration(registrationId, cards, location)
       .then((result) => {
         setUnlockResult(result);
+        // 홈으로 돌아갔을 때 새로고침 없이 바로 해금 결과가 보이도록 도감을 다시 불러온다.
+        refreshEntries();
         router.push(ROUTES.registerUnlock);
       })
       .catch((cause: unknown) => {

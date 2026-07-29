@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useDeferredValue, useMemo, useState } from 'react';
 import { CATEGORY_META, DexEntry, FoodCategory } from '@/shared/data/dex';
 import type { TabItem } from '@/shared/ui/molecules/TabBar';
 
@@ -17,9 +17,12 @@ export function useDexFilter(entries: DexEntry[], collectedIds: number[]) {
 
   const collected = useMemo(() => new Set(collectedIds), [collectedIds]);
 
+  // 입력창은 즉시 반영하되, 무거운 filter+sort는 지연 처리해 타이핑마다의 재계산을 줄인다.
+  const deferredQuery = useDeferredValue(query);
+
   // 해금된 카드를 앞으로, 같은 상태면 도감 번호 순
   const visibleEntries = useMemo(() => {
-    const term = query.trim().toLowerCase();
+    const term = deferredQuery.trim().toLowerCase();
     return [...(activeCategory === '전체' ?
       entries :
       entries.filter((entry) => entry.category === activeCategory))].filter((entry) =>
@@ -27,7 +30,7 @@ export function useDexFilter(entries: DexEntry[], collectedIds: number[]) {
     ).sort(
       (a, b) => Number(collected.has(b.id)) - Number(collected.has(a.id)) || a.id - b.id
     );
-  }, [activeCategory, collected, entries, query]);
+  }, [activeCategory, collected, entries, deferredQuery]);
 
   const categoryTabs = useMemo<Array<TabItem<CategoryFilter>>>(
     () => [

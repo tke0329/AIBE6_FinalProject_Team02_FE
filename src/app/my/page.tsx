@@ -5,7 +5,7 @@ import { getMyBadges, getMyProfile, withdrawAccount } from '@/features/my/api';
 import { MyPage } from '@/features/my/MyPage';
 import { WithdrawConfirmSheet } from '@/features/my/WithdrawConfirmSheet';
 import { ROUTES, TAB_HREF } from '@/shared/lib/routes';
-import { useAppState } from '@/shared/store/AppStateProvider';
+import { useDexState } from '@/shared/store/AppStateProvider';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -13,7 +13,7 @@ import { useEffect, useState } from 'react';
 export default function MyPageRoute() {
   const router = useRouter();
   const { me, logout } = useAuth();
-  const { collectedIds } = useAppState();
+  const { collectedIds } = useDexState();
 
   // 프로필 사진(표시용 URL) — 없으면 MyPage가 닉네임 첫 글자로 대체
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);

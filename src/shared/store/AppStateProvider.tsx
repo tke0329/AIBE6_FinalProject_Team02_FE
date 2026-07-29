@@ -2,7 +2,8 @@
 
 import { INITIAL_CHALLENGES } from "@/features/challenge/data";
 import { ChallengeData, RewardBadge } from "@/features/challenge/types";
-import { fetchBasicDexEntries } from "@/features/dex/api";
+import { fetchBasicDexEntries, fetchMyBasicDexEntries } from "@/features/dex/api";
+import { useAuth } from "@/features/auth/AuthContext";
 import { MadeCard, MadeDexId, MadeParticipant } from "@/features/made/types";
 import {
   fetchOnboardingStatus,
@@ -42,14 +43,22 @@ const MADE_DEX_CODE: Record<MadeDexId, string> = {
  * 목업 단계라 메모리에만 두며, 새로고침하면 초기화된다.
  * 실제 API 연동 시 이 파일의 액션 본문만 교체하면 화면 코드는 손댈 필요 없다.
  */
-interface AppStore {
-  // 도감
+/**
+ * 도감 슬라이스만 담은 좁은 컨텍스트.
+ * 챌린지/제작 도감/등록 플로우 등 무관한 상태가 바뀔 때 도감 화면이 함께
+ * 리렌더되지 않도록 `AppStore`와 분리해서 제공한다 (useDexState 참고).
+ */
+export interface DexStore {
   entries: DexEntry[];
+  entriesLoading: boolean;
+  refreshEntries: () => Promise<void>;
   collectedIds: number[];
   collectedEntries: DexEntry[];
   newlyUnlockedId: number | null;
   findEntry: (id: number) => DexEntry | undefined;
+}
 
+interface AppStore {
   // 프로필
   equippedBadge: BadgeId;
   setEquippedBadge: (badge: BadgeId) => void;
@@ -96,10 +105,12 @@ interface AppStore {
 }
 
 const AppStateContext = createContext<AppStore | null>(null);
+const DexContext = createContext<DexStore | null>(null);
 
 export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [entries, setEntries] = useState<DexEntry[]>(DEX_ENTRIES);
-  const [collectedIds, setCollectedIds] = useState<number[]>([1, 2, 3]);
+  // 실제 도감 데이터가 도착하기 전까지는 목업이 화면에 잠깐 노출되지 않도록 로딩 상태로 가린다.
+  const [entriesLoading, setEntriesLoading] = useState(true);
   const [newlyUnlockedId, setNewlyUnlockedId] = useState<number | null>(null);
   const [equippedBadge, setEquippedBadge] = useState<BadgeId>("silver-spoon");
   const [profilePhoto, setProfilePhoto] = useState("신");
@@ -113,15 +124,29 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       .catch(() => setOnboardingSeen(false));
   }, []);
 
+  const { me, loading: authLoading } = useAuth();
+  const userId = me?.id;
+
+  // 비로그인 → 전체 목록(/basic), 로그인 → 내가 실제로 등록(해금)한 항목만
+  // collected=true인 목록(/me/basic). 등록 직후처럼 서버 상태가 바뀐 뒤에도
+  // 다시 불러 최신화할 수 있도록 콜백으로 분리해 둔다.
+  const refreshEntries = useCallback(async () => {
+    const fetchEntries = userId ? fetchMyBasicDexEntries : fetchBasicDexEntries;
+    try {
+      const basicEntries = await fetchEntries();
+      if (basicEntries.length > 0) setEntries(basicEntries);
+    } catch {
+      // 실패하면 이전 목록(초기 진입 시엔 로컬 목업)을 그대로 유지한다.
+    }
+  }, [userId]);
+
+  // 로그인 여부가 확정된 뒤에만 최초 요청한다: 확정 전에 먼저 쐈다가 로그인
+  // 상태가 뒤늦게 밝혀져 다시 쏘면 화면이 한 번 더 바뀌므로 그냥 기다린다.
   useEffect(() => {
-    fetchBasicDexEntries()
-      .then((basicEntries) => {
-        if (basicEntries.length > 0) setEntries(basicEntries);
-      })
-      .catch(() => {
-        // 로컬 목업 도감으로 폴백한다.
-      });
-  }, []);
+    if (authLoading) return;
+    setEntriesLoading(true);
+    refreshEntries().finally(() => setEntriesLoading(false));
+  }, [authLoading, refreshEntries]);
 
   const [madeParticipants, setMadeParticipants] = useState<
     Record<MadeDexId, MadeParticipant[]>
@@ -161,8 +186,12 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   const collectedEntries = useMemo(
-    () => entries.filter((entry) => collectedIds.includes(entry.id)),
-    [entries, collectedIds],
+    () => entries.filter((entry) => entry.collected),
+    [entries],
+  );
+  const collectedIds = useMemo(
+    () => collectedEntries.map((entry) => entry.id),
+    [collectedEntries],
   );
 
   // AI 후보로만 존재하고 아직 도감에 없는 음식도 등록 대상이 될 수 있음
@@ -309,9 +338,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
             )
           : [...current, savedEntry],
       );
-      setCollectedIds((current) =>
-        current.includes(savedEntry.id) ? current : [...current, savedEntry.id],
-      );
       setNewlyUnlockedId(savedEntry.id);
     },
     [
@@ -323,13 +349,29 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     ],
   );
 
-  const value = useMemo<AppStore>(
+  const dexValue = useMemo<DexStore>(
     () => ({
       entries,
+      entriesLoading,
+      refreshEntries,
       collectedIds,
       collectedEntries,
       newlyUnlockedId,
       findEntry,
+    }),
+    [
+      entries,
+      entriesLoading,
+      refreshEntries,
+      collectedIds,
+      collectedEntries,
+      newlyUnlockedId,
+      findEntry,
+    ],
+  );
+
+  const value = useMemo<AppStore>(
+    () => ({
       equippedBadge,
       setEquippedBadge,
       profilePhoto,
@@ -370,11 +412,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       finishRegistration,
     }),
     [
-      entries,
-      collectedIds,
-      collectedEntries,
-      newlyUnlockedId,
-      findEntry,
       equippedBadge,
       profilePhoto,
       onboardingSeen,
@@ -400,9 +437,11 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <AppStateContext.Provider value={value}>
-      {children}
-    </AppStateContext.Provider>
+    <DexContext.Provider value={dexValue}>
+      <AppStateContext.Provider value={value}>
+        {children}
+      </AppStateContext.Provider>
+    </DexContext.Provider>
   );
 }
 
@@ -410,5 +449,16 @@ export function useAppState() {
   const store = useContext(AppStateContext);
   if (!store)
     throw new Error("useAppState는 AppStateProvider 안에서만 쓸 수 있어요.");
+  return store;
+}
+
+/**
+ * 도감 슬라이스 전용 훅. 챌린지/제작 도감/등록 플로우 등 다른 상태 변경으로는
+ * 리렌더되지 않아 도감 화면(그리드/상세)에서 사용하기 적합하다.
+ */
+export function useDexState() {
+  const store = useContext(DexContext);
+  if (!store)
+    throw new Error("useDexState는 AppStateProvider 안에서만 쓸 수 있어요.");
   return store;
 }

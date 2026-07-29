@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { RevealCard, UnlockReveal } from '@/features/register/UnlockReveal';
 import { useRegisterFlow } from '@/features/register/RegisterFlowContext';
 import { useRegistrationExitHref } from '@/features/register/useRegistrationExit';
-import { useAppState } from '@/shared/store/AppStateProvider';
+import { useDexState } from '@/shared/store/AppStateProvider';
 import { ROUTES } from '@/shared/lib/routes';
 
 /** `/register/unlock` 등록 완료 — 시그니처 해금 연출 (§7) */
@@ -13,7 +13,7 @@ export default function RegisterUnlockPage() {
   const router = useRouter();
   const exitHref = useRegistrationExitHref();
   const { unlockResult } = useRegisterFlow();
-  const { findEntry } = useAppState();
+  const { findEntry } = useDexState();
 
   useEffect(() => {
     if (!unlockResult) router.replace(ROUTES.register);
