@@ -31,6 +31,8 @@ export const ROUTES = {
   myBadges: '/my/badges',
   myPhoto: '/my/photo',
 
+  admin: '/admin',
+
   register: '/register',
   registerAnalyze: '/register/analyze',
   registerRecord: '/register/record',
