@@ -103,7 +103,9 @@ export function PhotoUploader() {
         </button>
       ) : (
         <div className="mt-5">
-          <div className="grid grid-cols-3 gap-2.5">
+          {/* 화면 끝까지 흘리지 않는다 — 첫 사진의 왼쪽이 제목·본문과 같은 선에 맞아야 한다.
+              오른쪽에서 다음 사진이 잘려 보이는 것만으로 넘길 수 있다는 건 충분히 전달된다 */}
+          <div className="no-scrollbar flex snap-x gap-2.5 overflow-x-auto">
             {photos.map((photo) => (
               <PhotoThumb
                 key={photo.id}
@@ -121,7 +123,7 @@ export function PhotoUploader() {
             <p className="mt-2 text-xs text-content-secondary">
               AI에게는{" "}
               <strong className="text-content-link">분석 사진 1장</strong>만
-              보내요. 탭해서 바꿀 수 있어요.
+              보내요. 탭해서 분석 사진을 바꿀 수 있어요.
             </p>
           )}
         </div>
@@ -191,7 +193,8 @@ function PhotoThumb({
 
   return (
     <div
-      className={`relative aspect-square overflow-hidden rounded-2xl border-2 ${
+      // 그리드가 아니라 가로 스크롤이라 폭을 직접 준다
+      className={`relative aspect-square w-28 shrink-0 snap-start overflow-hidden rounded-2xl border-2 ${
         isAnalysis ? "border-edge-active" : "border-transparent"
       }`}
     >

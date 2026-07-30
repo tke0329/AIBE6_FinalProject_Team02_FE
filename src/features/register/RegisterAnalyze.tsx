@@ -92,7 +92,7 @@ export function RegisterAnalyze({ onBack, onProceed }: Props) {
 
   const passed = result?.verdicts.filter((verdict) => verdict.matched) ?? [];
   const failed = result?.verdicts.filter((verdict) => !verdict.matched) ?? [];
-  // 재시도가 남아 있으면 미통과 칸은 아직 등록할 수 없다 — 먼저 다시 확인해야 한다 (§5.2)
+  // 재시도가 남아 있으면 미통과 칸은 아직 등록할 수 없다 — 먼저 다시 확인해야 한다
   const exhausted = result?.retriesLeft === 0;
 
   /** 기록 화면으로 넘길 칸을 정한다. 상한을 다 썼으면 미통과 칸도 함께 간다(검토 요청) */
@@ -102,7 +102,8 @@ export function RegisterAnalyze({ onBack, onProceed }: Props) {
   };
 
   return (
-    <div className="flex h-full flex-col bg-cream-100">
+    // break-keep은 상속된다 — 이 화면 전체에서 한글이 단어 중간에 끊기지 않는다
+    <div className="flex h-full flex-col break-keep bg-cream-100">
       <header className="flex shrink-0 items-center gap-3 px-5 py-4">
         <button type="button" onClick={onBack} aria-label="뒤로가기">
           <ArrowLeftIcon size={22} aria-hidden className="text-brown" />
@@ -175,8 +176,8 @@ export function RegisterAnalyze({ onBack, onProceed }: Props) {
             {failed.length > 0 && !exhausted && (
               <p className="mt-4 rounded-2xl bg-surface-accent p-3 text-xs leading-5 text-content-secondary">
                 사진을 바꾸거나 음식을 다시 고르면 한 번 더 확인할 수 있어요.
+                재분석 기회가{" "}
                 <strong className="text-content-link">
-                  {" "}
                   {result.retriesLeft}번
                 </strong>{" "}
                 남았어요.
@@ -195,17 +196,14 @@ export function RegisterAnalyze({ onBack, onProceed }: Props) {
           </main>
 
           <div className="shrink-0 space-y-2 px-5 pb-8 pt-4">
-            {/*
-              상한을 다 썼으면 미통과 칸도 함께 넘긴다 — 서버가 그것들만 검토 대기로 만든다.
-              재시도가 남아 있으면 미통과 칸은 아직 등록할 수 없어 통과분만 넘긴다 (§5.2).
-            */}
+            {/* 상한을 다 썼으면 미통과 칸도 함께 넘긴다 — 서버가 그것들만 검토 대기로 만든다 */}
             {(passed.length > 0 || exhausted) && (
               <button
                 type="button"
                 onClick={() =>
                   proceedWith(exhausted ? result.verdicts : passed)
                 }
-                className="w-full rounded-2xl bg-action-primary py-4 font-display text-lg text-content-on-action shadow-card"
+                className="w-full rounded-2xl bg-action-primary px-4 py-4 text-center font-display text-lg text-content-on-action shadow-card"
               >
                 {result.allMatched
                   ? "기록하러 가기"
@@ -219,7 +217,7 @@ export function RegisterAnalyze({ onBack, onProceed }: Props) {
               <button
                 type="button"
                 onClick={() => proceedWith(passed)}
-                className="min-h-touch w-full rounded-2xl border-2 border-orange-400 font-medium text-orange-600"
+                className="min-h-touch w-full rounded-2xl border-2 border-orange-400 px-4 py-2.5 text-center font-medium text-orange-600"
               >
                 확인된 {passed.length}개만 등록하기
               </button>
@@ -229,10 +227,10 @@ export function RegisterAnalyze({ onBack, onProceed }: Props) {
               <button
                 type="button"
                 onClick={onBack}
-                className="flex min-h-touch w-full items-center justify-center gap-1.5 rounded-2xl border-2 border-orange-400 font-medium text-orange-600"
+                className="flex min-h-touch w-full items-center justify-center gap-1.5 rounded-2xl border-2 border-orange-400 px-4 py-2.5 text-center font-medium text-orange-600"
               >
-                <RotateCwIcon size={16} aria-hidden />
-                사진·음식 고쳐서 다시 확인 ({result.retriesLeft}번 남음)
+                <RotateCwIcon size={16} aria-hidden className="shrink-0" />
+                재분석 요청하기 ({result.retriesLeft}번 남음)
               </button>
             )}
           </div>
@@ -255,7 +253,7 @@ function Verifying({ slow }: { slow: boolean }) {
         사진을 확인하고 있어요
       </p>
       <p className="mt-1 text-sm text-content-secondary">
-        {slow ? "조금만 기다려 주세요…" : "금방 끝나요"}
+        {slow ? "조금만 기다려 주세요…" : "금방 끝나요!"}
       </p>
     </div>
   );
@@ -290,7 +288,7 @@ function Centered({
         <button
           type="button"
           onClick={primary.onClick}
-          className="w-full rounded-2xl bg-action-primary py-4 font-display text-lg text-content-on-action shadow-card"
+          className="w-full rounded-2xl bg-action-primary px-4 py-4 font-display text-lg text-content-on-action shadow-card"
         >
           {primary.label}
         </button>
@@ -330,7 +328,8 @@ function VerdictRow({ verdict }: { verdict: SlotVerdict }) {
       )}
 
       <div className="min-w-0 flex-1">
-        <div className="flex items-baseline gap-2">
+        {/* 이름이 길면 카테고리가 아랫줄로 내려간다 — 좁은 폭에서 찌그러지지 않게 */}
+        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
           <strong className="text-content-primary">{verdict.slotName}</strong>
           <span className="text-xs text-content-secondary">
             {verdict.category}

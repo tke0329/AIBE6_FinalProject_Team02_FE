@@ -3,11 +3,13 @@
 import {
   AlertCircleIcon,
   ArrowLeftIcon,
+  BookmarkIcon,
   CheckIcon,
   ClockIcon,
-  MapPinIcon,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import { MemoTemplatePanel } from "./MemoTemplatePanel";
+import { PlacePicker } from "./PlacePicker";
 import { RegisterPhoto, useRegisterFlow } from "./RegisterFlowContext";
 import { CardInput, LocationInput } from "./confirmApi";
 
@@ -38,7 +40,10 @@ export function RegisterRecord({ submitting, error, onBack, onSubmit }: Props) {
 
   const [step, setStep] = useState(0);
   const [drafts, setDrafts] = useState<Record<number, Draft>>({});
-  const [location, setLocation] = useState("");
+  // 검색해서 고른 식당이면 좌표까지, 직접 입력이면 이름만 담긴다
+  const [location, setLocation] = useState<LocationInput | null>(null);
+  const [templateOpen, setTemplateOpen] = useState(false);
+  const templateTriggerRef = useRef<HTMLButtonElement>(null);
 
   const uploaded = useMemo(
     () =>
@@ -91,16 +96,14 @@ export function RegisterRecord({ submitting, error, onBack, onSubmit }: Props) {
         memo: saved.memo.trim() || null,
       };
     });
-    onSubmit(
-      cards,
-      location.trim() ? { name: location.trim(), lat: null, lng: null } : null,
-    );
+    onSubmit(cards, location);
   };
 
   if (!slot) return null;
 
   return (
-    <div className="flex h-full flex-col bg-cream-100">
+    // break-keep은 상속된다 — 이 화면 전체에서 한글이 단어 중간에 끊기지 않는다
+    <div className="flex h-full flex-col break-keep bg-cream-100">
       <header className="flex shrink-0 items-center gap-3 px-5 py-4">
         <button
           type="button"
@@ -184,12 +187,12 @@ export function RegisterRecord({ submitting, error, onBack, onSubmit }: Props) {
                           : "bg-white/90 text-content-secondary"
                       }`}
                     >
-                      {isThumbnail ? "대표" : "대표로"}
+                      {isThumbnail ? "대표" : "선택됨"}
                     </button>
                   )}
 
                   {photo.id === analysisPhoto?.id && (
-                    <span className="absolute right-1 top-1 rounded-full bg-white/90 px-1.5 text-xs text-content-secondary">
+                    <span className="absolute right-1 top-1 rounded-full bg-white/90 px-2 py-0.5 text-xs font-bold text-content-secondary">
                       분석
                     </span>
                   )}
@@ -200,52 +203,57 @@ export function RegisterRecord({ submitting, error, onBack, onSubmit }: Props) {
         </section>
 
         <section className="mt-6" aria-label="메모">
-          <label
-            htmlFor="memo"
-            className="text-sm font-medium text-content-secondary"
-          >
-            메모 <span className="text-xs">(선택)</span>
-          </label>
+          <div className="flex items-center justify-between">
+            <label
+              htmlFor="memo"
+              className="text-sm font-medium text-content-secondary"
+            >
+              메모 <span className="text-xs">(선택)</span>
+            </label>
+            <button
+              ref={templateTriggerRef}
+              type="button"
+              onClick={() => setTemplateOpen((open) => !open)}
+              aria-expanded={templateOpen}
+              aria-label="저장한 메모 템플릿 열기"
+              className="flex min-h-touch items-center gap-1 px-1 text-xs text-content-link"
+            >
+              <BookmarkIcon size={14} aria-hidden />
+              메모 불러오기
+            </button>
+          </div>
           <textarea
             id="memo"
             value={draft.memo}
             maxLength={MEMO_MAX}
             onChange={(event) => patch({ memo: event.target.value })}
             placeholder={`${slot.slotName} 어땠나요?`}
-            className="mt-1.5 h-24 w-full resize-none rounded-2xl border border-edge-default bg-surface-card px-4 py-3 text-sm outline-none focus:border-edge-active"
+            // break-words가 없으면 띄어쓰기 없는 긴 문자열이 break-keep 탓에 줄바꿈되지 못해
+            // 가로로 흘러 스크롤바가 생긴다. 일반 문장은 그대로 단어 단위로 끊긴다
+            className="mt-1.5 h-24 w-full resize-none break-words rounded-2xl border border-edge-default bg-surface-card px-4 py-3 text-sm outline-none focus:border-edge-active"
           />
           <p className="mt-1 text-right text-xs text-content-secondary">
             {draft.memo.length} / {MEMO_MAX}
           </p>
+
+          {templateOpen && (
+            <MemoTemplatePanel
+              currentMemo={draft.memo}
+              triggerRef={templateTriggerRef}
+              // 불러오기는 작성의 시작점이다 — 넣은 뒤 그대로 고칠 수 있다
+              onPick={(content) => patch({ memo: content })}
+              onClose={() => setTemplateOpen(false)}
+            />
+          )}
         </section>
 
         <section className="mt-4" aria-label="수집 위치">
-          <label
-            htmlFor="location"
-            className="text-sm font-medium text-content-secondary"
-          >
-            수집 위치{" "}
-            <span className="text-xs">(선택 · 모든 음식에 함께 적용돼요)</span>
-          </label>
-          <div className="mt-1.5 flex items-center gap-2 rounded-2xl border border-edge-default bg-surface-card px-4 py-3">
-            <MapPinIcon size={18} aria-hidden className="text-content-muted" />
-            <input
-              id="location"
-              value={location}
-              onChange={(event) => setLocation(event.target.value)}
-              placeholder="식당 이름을 적어 주세요"
-              className="min-w-0 flex-1 bg-transparent text-sm outline-none"
-            />
-            {location && (
-              <button
-                type="button"
-                onClick={() => setLocation("")}
-                className="shrink-0 text-xs text-content-secondary"
-              >
-                지우기
-              </button>
-            )}
-          </div>
+          {/* 고르고 나면 입력창이 사라져 label의 대상이 없어진다 — 설명 문구로 두고
+              PlacePicker 내부에서 aria-label을 단다 */}
+          <p className="text-sm font-medium text-content-secondary">
+            수집 위치 <span className="text-xs">(선택)</span>
+          </p>
+          <PlacePicker value={location} onChange={setLocation} />
         </section>
 
         {error && (

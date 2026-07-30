@@ -1,8 +1,8 @@
-import { apiFetch } from '@/shared/lib/api';
+import { apiFetch } from "@/shared/lib/api";
 
 export interface CardInput {
   slotId: number;
-  /** 비우면 서버가 분석 사진을 자동 첨부한다 (§5.2 등록 이탈 방지) */
+  /** 비우면 서버가 분석 사진을 자동 첨부한다 */
   cardPhotoKeys: string[];
   /** 미지정이면 첫 번째 카드 사진 */
   thumbnailKey: string | null;
@@ -22,7 +22,7 @@ export interface UnlockedSlot {
   cardId: number;
   /** 별 랭크 1~3 */
   rank: number;
-  /** true면 첫 해금 연출, false면 가벼운 "+1 수집" 차등 연출 (§5.1) */
+  /** true면 첫 해금 연출, false면 가벼운 "+1 수집" 차등 연출 */
   firstUnlock: boolean;
 }
 
@@ -45,15 +45,18 @@ export interface ConfirmResult {
 /**
  * 음식별 기록을 마치고 도감을 연다.
  *
- * 위치는 등록 건 공통이라 카드마다 보내지 않는다 (§5.2 — 같은 등록 건에 일괄 적용).
+ * 위치는 등록 건 공통이라 카드마다 보내지 않는다
  */
 export async function confirmRegistration(
   registrationId: number,
   cards: CardInput[],
   location: LocationInput | null,
 ): Promise<ConfirmResult> {
-  return apiFetch<ConfirmResult>(`/api/v1/register/registrations/${registrationId}/cards`, {
-    method: 'POST',
-    body: JSON.stringify({ cards, location }),
-  });
+  return apiFetch<ConfirmResult>(
+    `/api/v1/register/registrations/${registrationId}/cards`,
+    {
+      method: "POST",
+      body: JSON.stringify({ cards, location }),
+    },
+  );
 }

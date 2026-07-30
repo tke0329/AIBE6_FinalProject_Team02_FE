@@ -35,7 +35,7 @@ export function RegisterUpload({ entries, canProceed, onBack, onNext }: Props) {
           음식 사진을 올려 주세요
         </h1>
         <p className="mt-1 text-sm text-brown-soft">
-          한 상 사진도 OK · 최소 1장 ~ 최대 5장
+          최대 5장까지 올릴 수 있어요
         </p>
 
         <PhotoUploader />
