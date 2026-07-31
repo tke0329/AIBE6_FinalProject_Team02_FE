@@ -26,7 +26,9 @@ export const BADGE_ASSETS: Record<string, string> = {
   CHALLENGE_PRESET_EXPLORER: "/badge/challenge_default_badge/Food_Explorer.png", // 맛집 탐험가
   CHALLENGE_PRESET_FINISHER: "/badge/challenge_default_badge/Challenge_Finisher.png", // 챌린지 완주자
   CHALLENGE_PRESET_PIONEER: "/badge/challenge_default_badge/Neighborhood_Adventurer.png", // 동네 개척자
-  // NOTE: FIRST_MADE_DEX("첫 만남은 너무 어려워")는 아직 이미지 없음 → 추가되면 여기 매핑
+
+  // 제작 도감
+  FIRST_MADE_DEX: "/badge/custom_dex/custom_firstmade_badge.png", // 첫 만남은 너무 어려워
 };
 
 /**
@@ -41,3 +43,34 @@ export function resolveBadgeImage(
   if (code && BADGE_ASSETS[code]) return BADGE_ASSETS[code];
   return null;
 }
+
+/** 뱃지 그룹(결). code 규칙으로 판정 — BE badge.code(V24 시드)와 짝을 맞춘다. */
+export type BadgeGroup = "CHALLENGE" | "MADE_DEX" | "SPOON" | "CATEGORY" | "ETC";
+
+/** code로 그룹을 판정. 챌린지 커스텀은 code가 없으므로(S3 이미지) 챌린지로. */
+export function badgeGroupOf(code: string | null | undefined): BadgeGroup {
+  if (!code) return "CHALLENGE"; // 챌린지 커스텀(개설자 제작, imageUrl로 렌더)
+  if (code.startsWith("CHALLENGE_PRESET")) return "CHALLENGE";
+  if (code === "FIRST_MADE_DEX") return "MADE_DEX";
+  if (code.startsWith("SPOON_")) return "SPOON"; // 쇠·동·은·금·다이아
+  if (code.startsWith("CATEGORY_")) return "CATEGORY";
+  return "ETC";
+}
+
+/** 보관함 섹션 표시 순서 */
+export const BADGE_GROUP_ORDER: BadgeGroup[] = [
+  "CHALLENGE",
+  "MADE_DEX",
+  "SPOON",
+  "CATEGORY",
+  "ETC",
+];
+
+/** 섹션 제목 */
+export const BADGE_GROUP_LABEL: Record<BadgeGroup, string> = {
+  CHALLENGE: "챌린지",
+  MADE_DEX: "제작 도감",
+  SPOON: "기본 도감 수집률",
+  CATEGORY: "기본 도감 카테고리",
+  ETC: "기타",
+};

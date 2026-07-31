@@ -14,7 +14,11 @@ interface Props {
   nickname: string;
   collectedCount: number;
   profileImageUrl: string | null;
-  equippedBadge: { name: string; code: string | null; imageUrl: string | null } | null;
+  equippedBadge: {
+    name: string;
+    code: string | null;
+    imageUrl: string | null;
+  } | null;
   onChangePhoto: () => void;
   onEditNickname: () => void;
   onReplayOnboarding: () => void;
@@ -65,7 +69,7 @@ export function MyPage({
                 className="h-full w-full object-cover"
               />
             ) : (
-              <span>{nickname.charAt(0) || '?'}</span>
+              <span>{nickname.charAt(0) || "?"}</span>
             )}
             <span className="absolute inset-0 flex items-center justify-center bg-black/35 text-white opacity-0 transition group-active:opacity-100">
               <CameraIcon size={19} />
@@ -78,9 +82,10 @@ export function MyPage({
                   code={equippedBadge.code}
                   imageUrl={equippedBadge.imageUrl}
                   name={equippedBadge.name}
+                  size={50}
                 />
               )}
-              <span className="font-display text-lg text-brown">
+              <span className="font-display text-2xl text-brown">
                 {nickname}
               </span>
             </span>
@@ -120,7 +125,7 @@ export function MyPage({
                   code={equippedBadge.code}
                   imageUrl={equippedBadge.imageUrl}
                   name={equippedBadge.name}
-                  size={24}
+                  size={50}
                 />
               ) : (
                 <AwardIcon size={20} className="text-brown-muted" />

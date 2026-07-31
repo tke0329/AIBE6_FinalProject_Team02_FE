@@ -1,6 +1,11 @@
 "use client";
 
 import type { MyBadge } from "@/features/my/api";
+import {
+  BADGE_GROUP_LABEL,
+  BADGE_GROUP_ORDER,
+  badgeGroupOf,
+} from "@/shared/data/badgeAssets";
 import { ServerBadge } from "@/shared/ui/atoms/ServerBadge";
 import { ArrowLeftIcon, CheckIcon } from "lucide-react";
 import { useState } from "react";
@@ -31,6 +36,7 @@ export function BadgeCollection({ badges, pending, onEquip, onBack }: Props) {
       </header>
 
       <main className="no-scrollbar flex-1 overflow-y-auto px-5 pb-6">
+        <div className="mx-auto w-full max-w-2xl">
         {isEmpty ? (
           <div className="flex h-full flex-col items-center justify-center py-20 text-center">
             <p className="text-sm text-brown-soft">
@@ -45,41 +51,57 @@ export function BadgeCollection({ badges, pending, onEquip, onBack }: Props) {
             <p className="text-sm text-brown-muted">
               획득한 뱃지를 탭해 대표 뱃지로 설정하세요.
             </p>
-            <div className="mt-5 grid grid-cols-2 gap-3">
-              {badges.map((badge) => {
-                const active = selected === badge.id;
-                return (
-                  <button
-                    key={badge.id}
-                    onClick={() => setSelected(active ? null : badge.id)}
-                    className={`relative overflow-hidden rounded-2xl border-2 p-3 text-left ${
-                      active
-                        ? "border-orange-500 bg-orange-50"
-                        : "border-transparent bg-white shadow-soft"
-                    }`}
-                  >
-                    <div className="flex h-20 items-center justify-center rounded-xl bg-cream-50">
-                      <ServerBadge
-                        code={badge.code}
-                        imageUrl={badge.imageUrl}
-                        name={badge.name}
-                        size={48}
-                      />
-                    </div>
-                    <p className="mt-2 text-sm font-bold text-brown">
-                      {badge.name}
-                    </p>
-                    {active && (
-                      <span className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-orange-500 text-white">
-                        <CheckIcon size={13} />
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+            {BADGE_GROUP_ORDER.map((group) => {
+              // 같은 결끼리 섹션 분리 — 획득한 것만 있으므로 빈 그룹은 숨긴다
+              const items = badges.filter((b) => badgeGroupOf(b.code) === group);
+              if (items.length === 0) return null;
+              return (
+                <section key={group} className="mt-6">
+                  <h3 className="mb-2 flex items-baseline gap-2 font-display text-base text-brown">
+                    {BADGE_GROUP_LABEL[group]}
+                    <span className="text-xs font-normal text-brown-muted">
+                      {items.length}
+                    </span>
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    {items.map((badge) => {
+                      const active = selected === badge.id;
+                      return (
+                        <button
+                          key={badge.id}
+                          onClick={() => setSelected(active ? null : badge.id)}
+                          className={`relative overflow-hidden rounded-2xl border-2 p-3 text-left ${
+                            active
+                              ? "border-orange-500 bg-orange-50"
+                              : "border-transparent bg-white shadow-soft"
+                          }`}
+                        >
+                          <div className="flex h-24 items-center justify-center rounded-xl bg-cream-50">
+                            <ServerBadge
+                              code={badge.code}
+                              imageUrl={badge.imageUrl}
+                              name={badge.name}
+                              size={72}
+                            />
+                          </div>
+                          <p className="mt-2 text-sm font-bold text-brown">
+                            {badge.name}
+                          </p>
+                          {active && (
+                            <span className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-orange-500 text-white">
+                              <CheckIcon size={13} />
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </section>
+              );
+            })}
           </>
         )}
+        </div>
       </main>
 
       {!isEmpty && (
