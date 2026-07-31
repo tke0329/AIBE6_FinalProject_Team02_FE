@@ -14,7 +14,7 @@ interface Props {
   nickname: string;
   collectedCount: number;
   profileImageUrl: string | null;
-  equippedBadge: { name: string; imageUrl: string | null } | null;
+  equippedBadge: { name: string; code: string | null; imageUrl: string | null } | null;
   onChangePhoto: () => void;
   onEditNickname: () => void;
   onReplayOnboarding: () => void;
@@ -75,6 +75,7 @@ export function MyPage({
             <span className="flex items-center gap-2">
               {equippedBadge && (
                 <ServerBadge
+                  code={equippedBadge.code}
                   imageUrl={equippedBadge.imageUrl}
                   name={equippedBadge.name}
                 />
@@ -116,6 +117,7 @@ export function MyPage({
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50">
               {equippedBadge ? (
                 <ServerBadge
+                  code={equippedBadge.code}
                   imageUrl={equippedBadge.imageUrl}
                   name={equippedBadge.name}
                   size={24}

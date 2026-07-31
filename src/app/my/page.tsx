@@ -20,6 +20,7 @@ export default function MyPageRoute() {
   // 대표(장착) 뱃지 — 서버 획득 목록에서 equipped 항목을 찾아 표시
   const [equippedBadge, setEquippedBadge] = useState<{
     name: string;
+    code: string | null;
     imageUrl: string | null;
   } | null>(null);
 
@@ -34,7 +35,9 @@ export default function MyPageRoute() {
     getMyBadges()
       .then((list) => {
         const eq = list.find((b) => b.equipped);
-        setEquippedBadge(eq ? { name: eq.name, imageUrl: eq.imageUrl } : null);
+        setEquippedBadge(
+          eq ? { name: eq.name, code: eq.code, imageUrl: eq.imageUrl } : null,
+        );
       })
       .catch(() => setEquippedBadge(null));
   }, []);

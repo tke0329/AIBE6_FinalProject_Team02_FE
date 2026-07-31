@@ -60,6 +60,7 @@ export function BadgeCollection({ badges, pending, onEquip, onBack }: Props) {
                   >
                     <div className="flex h-20 items-center justify-center rounded-xl bg-cream-50">
                       <ServerBadge
+                        code={badge.code}
                         imageUrl={badge.imageUrl}
                         name={badge.name}
                         size={48}
