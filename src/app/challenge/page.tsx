@@ -25,8 +25,9 @@ function toChallengeData(c: ChallengeSummary): ChallengeData {
 
 function ddayLabel(endsAt: string): string {
   const days = Math.ceil((new Date(endsAt).getTime() - Date.now()) / 86_400_000);
-  return days >= 0 ? \D-\\ : '종료';
+  return days >= 0 ? `D-${days}` : '종료';
 }
+
 
 /** \/challenge\ 챌린지 도감 홈 */
 export default function ChallengeHomePage() {
