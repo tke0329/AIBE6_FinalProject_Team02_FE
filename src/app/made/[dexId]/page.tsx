@@ -19,11 +19,11 @@ export default function MadeDexHomePage() {
     <MadeDexHome
       dexId={dexId}
       recentCard={recentMadeCard}
-      participants={madeParticipants[dexId]}
+      participants={madeParticipants[dexId] ?? []}
       onBack={() => router.push(ROUTES.made)}
       onSwitchDex={(nextId) => router.replace(ROUTES.madeDex(nextId))}
       onRegister={() => {
-        startRegistration('made', dexId);
+        startRegistration('made', String(dexId));
         router.push(ROUTES.register);
       }}
       onManageParticipants={() => router.push(ROUTES.madeParticipants(dexId))}

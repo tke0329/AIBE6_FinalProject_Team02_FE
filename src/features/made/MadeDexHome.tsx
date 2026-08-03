@@ -15,7 +15,9 @@ interface Props {dexId: MadeDexId;recentCard?: MadeCard | null;participants: Mad
 
 const CARDS: MadeCard[] = [{ name: '연남동 파스타집', emoji: '🍝', by: '신', location: '연남동', tags: ['데이트', '기념일'] }, { name: '을지로 노포', emoji: '🍲', by: '윤', location: '을지로', tags: ['점심', '혼밥'] }, { name: '성수 브런치', emoji: '🥞', by: '신', location: '성수동', tags: ['데이트', '주말'] }, { name: '망원 타코', emoji: '🌮', by: '윤', location: '망원동', tags: ['저녁'] }, { name: '한남 스시', emoji: '🍣', by: '신', location: '한남동', tags: ['기념일', '재방문'] }, { name: '연희 베이커리', emoji: '🥐', by: '윤', location: '연희동', tags: ['브런치'] }, { name: '홍대 라멘', emoji: '🍜', by: '신', location: '홍대', tags: ['혼밥', '점심'] }, { name: '이태원 커리', emoji: '🍛', by: '윤', location: '이태원', tags: ['저녁'] }];
 
-const DEX_INFO: Record<MadeDexId, {title: string;count: string;}> = { date: { title: '우리의 데이트 도감', count: '함께 등록한 카드 8개' }, lunch: { title: '회사 점심 도감', count: '함께 등록한 카드 13개' } };
+// TODO(CATCHEAT-29): 도감 자유 기록 이슈에서 API 응답으로 교체
+const DEX_INFO: Record<MadeDexId, {title: string;count: string;emoji: string;}> = { 1: { title: '우리의 데이트 도감', count: '함께 등록한 카드 8개', emoji: '💑' }, 2: { title: '회사 점심 도감', count: '함께 등록한 카드 13개', emoji: '🍱' } };
+const UNKNOWN_DEX = { title: '제작 도감', count: '', emoji: '📔' };
 
 /**
  * 제작 도감 (§6) — 전체 목록·빈칸·진행률 바 없음.
@@ -33,7 +35,7 @@ export function MadeDexHome({
 }: Props) {
   const [switchOpen, setSwitchOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
-  const info = DEX_INFO[dexId];
+  const info = DEX_INFO[dexId] ?? UNKNOWN_DEX;
   const allCards = recentCard ? [recentCard, ...CARDS] : CARDS;
   const { query, setQuery, results } = useMadeDexSearch(allCards);
 
@@ -128,7 +130,7 @@ export function MadeDexHome({
             onClick={() => setSwitchOpen(false)} />
 
           <div className="absolute left-4 right-4 top-14 z-20 overflow-hidden rounded-2xl bg-surface-raised shadow-modal">
-            {(Object.keys(DEX_INFO) as MadeDexId[]).map((id) =>
+            {Object.keys(DEX_INFO).map(Number).map((id) =>
               <button
                 key={id}
                 type="button"
@@ -136,7 +138,7 @@ export function MadeDexHome({
                 className={`flex min-h-touch w-full items-center gap-3 px-4 text-left ${
                   id === dexId ? 'bg-orange-50 text-content-link' : 'text-content-primary'
                 }`}>
-                <span aria-hidden className="text-xl">{id === 'date' ? '💑' : '🍱'}</span>
+                <span aria-hidden className="text-xl">{DEX_INFO[id].emoji}</span>
                 <span className="flex-1 text-sm font-medium">{DEX_INFO[id].title}</span>
                 {id === dexId && <CheckIcon size={16} aria-hidden />}
               </button>

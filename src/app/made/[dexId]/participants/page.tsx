@@ -21,7 +21,7 @@ export default function MadeDexParticipantsPage() {
     <MadeDexInvite
       dexTitle={madeDexTitle(dexId)}
       code={code}
-      participants={madeParticipants[dexId]}
+      participants={madeParticipants[dexId] ?? []}
       onBack={() => router.push(ROUTES.madeDex(dexId))}
       onCopy={() => {
         if (navigator.clipboard) void navigator.clipboard.writeText(code);

@@ -1,10 +1,18 @@
 "use client";
 
+import { useAuth } from "@/features/auth/AuthContext";
 import { INITIAL_CHALLENGES } from "@/features/challenge/data";
 import { ChallengeData, RewardBadge } from "@/features/challenge/types";
-import { fetchBasicDexEntries, fetchMyBasicDexEntries } from "@/features/dex/api";
-import { useAuth } from "@/features/auth/AuthContext";
-import { MadeCard, MadeDexId, MadeParticipant } from "@/features/made/types";
+import {
+  fetchBasicDexEntries,
+  fetchMyBasicDexEntries,
+} from "@/features/dex/api";
+import {
+  MadeCard,
+  MadeDexId,
+  MadeParticipant,
+  parseMadeDexId,
+} from "@/features/made/types";
 import {
   fetchOnboardingStatus,
   postOnboardingComplete,
@@ -27,13 +35,14 @@ export type JoinResult = "success" | "invalid" | "expired" | "already";
 
 const WEEK = 7 * 24 * 60 * 60 * 1000;
 
+// TODO(CATCHEAT-29): 초대/멤버 이슈에서 API로 교체. 그때까지 목업 도감 id 1, 2로 버틴다
 const MADE_DEX_TITLE: Record<MadeDexId, string> = {
-  date: "우리의 데이트 도감",
-  lunch: "회사 점심 도감",
+  1: "우리의 데이트 도감",
+  2: "회사 점심 도감",
 };
 const MADE_DEX_CODE: Record<MadeDexId, string> = {
-  date: "DATE26",
-  lunch: "LUNCH7",
+  1: "DATE26",
+  2: "LUNCH7",
 };
 
 /**
@@ -151,11 +160,11 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [madeParticipants, setMadeParticipants] = useState<
     Record<MadeDexId, MadeParticipant[]>
   >({
-    date: [
+    1: [
       { id: "me", name: "신" },
       { id: "yoon", name: "윤" },
     ],
-    lunch: [
+    2: [
       { id: "me", name: "신" },
       { id: "yoon", name: "윤" },
       { id: "min", name: "민" },
@@ -163,9 +172,9 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     ],
   });
   const [inviteCodes] = useState<Record<string, InviteCode>>({
-    DATE26: { dexId: "date", expiresAt: Date.now() + WEEK },
-    LUNCH7: { dexId: "lunch", expiresAt: Date.now() + WEEK },
-    OLD999: { dexId: "date", expiresAt: Date.now() - 1 },
+    DATE26: { dexId: 1, expiresAt: Date.now() + WEEK },
+    LUNCH7: { dexId: 2, expiresAt: Date.now() + WEEK },
+    OLD999: { dexId: 1, expiresAt: Date.now() - 1 },
   });
   const [recentMadeCard, setRecentMadeCard] = useState<MadeCard | null>(null);
 
@@ -228,7 +237,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         source === "challenge" ? (contextId ?? null) : null,
       );
       setRegistrationMadeDexId(
-        source === "made" ? ((contextId as MadeDexId) ?? null) : null,
+        source === "made" ? parseMadeDexId(contextId) : null,
       );
       setSelectedTags([]);
       setRecordDraft({ memo: "", location: "" });
@@ -241,7 +250,9 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     (dexId: MadeDexId, participantId: string) => {
       setMadeParticipants((current) => ({
         ...current,
-        [dexId]: current[dexId].filter((person) => person.id !== participantId),
+        [dexId]: (current[dexId] ?? []).filter(
+          (person) => person.id !== participantId,
+        ),
       }));
     },
     [],
@@ -253,7 +264,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       if (!invite) return { result: "invalid" };
       if (invite.expiresAt < Date.now()) return { result: "expired" };
       if (
-        madeParticipants[invite.dexId].some(
+        (madeParticipants[invite.dexId] ?? []).some(
           (participant) => participant.id === "guest",
         )
       ) {
@@ -261,7 +272,10 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       }
       setMadeParticipants((current) => ({
         ...current,
-        [invite.dexId]: [...current[invite.dexId], { id: "guest", name: "현" }],
+        [invite.dexId]: [
+          ...(current[invite.dexId] ?? []),
+          { id: "guest", name: "현" },
+        ],
       }));
       return { result: "success", dexId: invite.dexId };
     },
@@ -278,7 +292,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       const location = draft.location || "현재 위치 근처";
       const memo = draft.memo || "AI로 찾은 오늘의 음식";
 
-      // 챌린지 등록이면 지정 식당과 대조해 목표 하나를 해금 (§6)
+      // 챌린지 등록이면 지정 식당과 대조해 목표 하나를 해금
       if (registrationSource === "challenge" && registrationChallengeId) {
         setChallenges((current) =>
           current.map((challenge) => {
@@ -386,8 +400,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         }
       },
       madeParticipants,
-      madeDexTitle: (dexId) => MADE_DEX_TITLE[dexId],
-      madeDexCode: (dexId) => MADE_DEX_CODE[dexId],
+      madeDexTitle: (dexId) => MADE_DEX_TITLE[dexId] ?? "제작 도감",
+      madeDexCode: (dexId) => MADE_DEX_CODE[dexId] ?? "------",
       removeParticipant,
       joinWithCode,
       recentMadeCard,

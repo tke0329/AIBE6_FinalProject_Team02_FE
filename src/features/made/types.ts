@@ -1,12 +1,23 @@
-/** 제작 도감 (§6) — 목표·빈칸 없이 등록된 카드만 쌓이는 공동 도감 */
+/** 서버가 발급한 made_dex.id */
+export type MadeDexId = number;
 
-export type MadeDexId = 'date' | 'lunch';
+export type MadeDexVisibility = 'PUBLIC' | 'PRIVATE';
+export type MadeDexRole = 'OWNER' | 'MEMBER';
 
-const MADE_DEX_IDS: MadeDexId[] = ['date', 'lunch'];
+export interface MadeDexSummary {
+  id: MadeDexId;
+  name: string;
+  description: string | null;
+  visibility: MadeDexVisibility;
+  memberCount: number;
+  myRole: MadeDexRole;
+}
 
-/** URL 세그먼트를 MadeDexId로 좁힘. 모르는 값이면 null */
+/** URL 세그먼트를 MadeDexId로 좁힘. 숫자가 아니면 null */
 export function parseMadeDexId(value: string | undefined): MadeDexId | null {
-  return MADE_DEX_IDS.includes(value as MadeDexId) ? (value as MadeDexId) : null;
+  if (!value) return null;
+  const id = Number(value);
+  return Number.isSafeInteger(id) && id > 0 ? id : null;
 }
 
 export interface MadeParticipant {
