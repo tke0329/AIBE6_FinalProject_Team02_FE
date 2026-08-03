@@ -44,7 +44,7 @@ export const CATEGORY_META: Array<{category: FoodCategory;shortLabel: string;dot
 { category: '디저트·음료', shortLabel: '디저트', dotClass: 'bg-purple-500', total: 15 }];
 
 
-/** Representative menu slots from the 200-food CatchEat dex. */
+/** Representative menu slots from the CatchEat dex. */
 export const DEX_ENTRIES: DexEntry[] = [
 { id: 1, name: '파스타', emoji: '🍝', category: '면', collected: true, stars: 2, firstDate: '2026.05.14', cards: [{ photos: ['🍝', '🥖', '🍷'], memo: '트러플 크림이 최고였다', location: '성수동 A식당', date: '2026.05.14' }, { photos: ['🍝', '🦪', '🍋', '🥗', '🍰'], memo: '봉골레도 괜찮음', location: '연남동 파스타집', date: '2026.06.21' }] },
 { id: 2, name: '김치찌개', emoji: '🍲', category: '국·탕·찌개', collected: true, stars: 1, firstDate: '2026.05.20', cards: [{ photos: ['🍲', '🍚'], memo: '든든한 백반', location: '을지로 노포', date: '2026.05.20' }] },

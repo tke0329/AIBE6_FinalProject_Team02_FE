@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { UserProfile } from '@/features/my/UserProfile';
-import { ROUTES, TAB_HREF } from '@/shared/lib/routes';
+import { getTabHref, ROUTES } from '@/shared/lib/routes';
 
 /** `/my/profile` 다른 유저 프로필 */
 export default function UserProfilePage() {
@@ -11,6 +11,6 @@ export default function UserProfilePage() {
   return (
     <UserProfile
       onBack={() => router.push(ROUTES.my)}
-      onTab={(tab) => router.push(TAB_HREF[tab])} />);
+      onTab={(tab) => router.push(getTabHref(tab))} />);
 
 }

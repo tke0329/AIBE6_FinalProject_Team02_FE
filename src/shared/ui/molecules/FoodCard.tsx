@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import image from 'next/image'
+import Image from 'next/image';
+import { useEffect, useState } from 'react';
 
 
 /**
@@ -42,6 +43,11 @@ export function FoodCard({
   lockedName = name
 }: FoodCardProps) {
   const locked = state === 'locked';
+  const [imageFailed, setImageFailed] = useState(false);
+
+  useEffect(() => {
+    setImageFailed(false);
+  }, [illustrationUrl]);
 
   return (
     <motion.button
@@ -58,12 +64,14 @@ export function FoodCard({
       <div
         aria-hidden
         className="mb-2 flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl text-3xl">
-        {illustrationUrl ? (
-          <img
+        {illustrationUrl && !imageFailed ? (
+          <Image
             src={illustrationUrl}
             alt=""
-            loading="lazy"
-            decoding="async"
+            width={56}
+            height={56}
+            sizes="56px"
+            onError={() => setImageFailed(true)}
             className={`h-14 w-14 object-cover ${locked ? 'grayscale' : ''}`}
           />
         ) : locked ? (

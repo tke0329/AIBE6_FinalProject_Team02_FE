@@ -3,7 +3,7 @@
 import { notFound, useParams, useRouter } from 'next/navigation';
 import { MadeDexHome } from '@/features/made/MadeDexHome';
 import { useAppState } from '@/shared/store/AppStateProvider';
-import { ROUTES, TAB_HREF } from '@/shared/lib/routes';
+import { getTabHref, ROUTES } from '@/shared/lib/routes';
 import { parseMadeDexId } from '@/features/made/types';
 
 /** `/made/[dexId]` 제작 도감 홈 */
@@ -27,6 +27,6 @@ export default function MadeDexHomePage() {
         router.push(ROUTES.register);
       }}
       onManageParticipants={() => router.push(ROUTES.madeParticipants(dexId))}
-      onTab={(tab) => router.push(TAB_HREF[tab])} />);
+      onTab={(tab) => router.push(getTabHref(tab))} />);
 
 }

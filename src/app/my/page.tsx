@@ -4,7 +4,7 @@ import { useAuth } from '@/features/auth/AuthContext';
 import { getMyBadges, getMyProfile, withdrawAccount } from '@/features/my/api';
 import { MyPage } from '@/features/my/MyPage';
 import { WithdrawConfirmSheet } from '@/features/my/WithdrawConfirmSheet';
-import { ROUTES, TAB_HREF } from '@/shared/lib/routes';
+import { getTabHref, ROUTES } from '@/shared/lib/routes';
 import { useDexState } from '@/shared/store/AppStateProvider';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -76,7 +76,7 @@ export default function MyPageRoute() {
         onOpenBadges={() => router.push(ROUTES.myBadges)}
         onLogout={handleLogout}
         onWithdraw={() => setConfirmOpen(true)}
-        onTab={(tab) => router.push(TAB_HREF[tab])}
+        onTab={(tab) => router.push(getTabHref(tab))}
       />
       {confirmOpen && (
         <WithdrawConfirmSheet

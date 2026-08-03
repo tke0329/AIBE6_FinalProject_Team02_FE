@@ -1,5 +1,6 @@
 import { ROUTES } from '@/shared/lib/routes';
 import { useAppState } from '@/shared/store/AppStateProvider';
+import { useSearchParams } from 'next/navigation';
 
 /**
  * 등록 플로우를 빠져나갈 때 돌아갈 곳.
@@ -7,6 +8,8 @@ import { useAppState } from '@/shared/store/AppStateProvider';
  */
 export function useRegistrationExitHref() {
   const { registrationSource, registrationMadeDexId, registrationChallengeId } = useAppState();
+  const searchParams = useSearchParams();
+  const from = searchParams.get('from');
 
   if (registrationSource === 'made' && registrationMadeDexId) {
     return ROUTES.madeDex(registrationMadeDexId);
@@ -14,5 +17,6 @@ export function useRegistrationExitHref() {
   if (registrationSource === 'challenge' && registrationChallengeId) {
     return ROUTES.challengeDetail(registrationChallengeId);
   }
+  if (from) return from;
   return ROUTES.home;
 }

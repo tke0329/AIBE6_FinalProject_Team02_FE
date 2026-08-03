@@ -1,36 +1,47 @@
 import React, { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import Image from "next/image";
 import {
   ArrowLeftIcon,
   ChevronDownIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
   ChevronUpIcon,
   MapPinIcon,
+  PlusIcon,
 } from "lucide-react";
 import { DexEntry } from "@/shared/data/dex";
+import { getLocalDexIllustrationUrl } from "@/shared/lib/dexIllustrations";
 import { BottomNav, NavTab } from "@/shared/ui/molecules/BottomNav";
 import { StarRank } from "@/shared/ui/atoms/StarRank";
+import type { CategoryFilter } from "./useDexFilter";
 
 interface Props {
   entry: DexEntry;
-  /** 전체 200칸 (스와이프 시 사이에 낀 미해금 칸 수를 계산하는 데 씀) */
+  /** 현재 상세 이동 범위의 기준이 되는 기본 도감 슬롯 */
   entries: DexEntry[];
   collectedEntries: DexEntry[];
+  activeCategory: CategoryFilter;
   onBack: () => void;
+  onRegister: () => void;
   onOpenEntry: (id: number) => void;
   onTab: (tab: NavTab) => void;
 }
 
 /** 위/아래로 스와이프해 다음·이전 "해금된" 도감으로 건너뛸 때 보여줄 안내 */
 interface SkipTeaser {
+  kind: "skipped" | "complete";
   direction: "next" | "prev";
-  skipped: number;
+  skipped?: number;
 }
 
 export function DexDetail({
   entry,
   entries,
   collectedEntries,
+  activeCategory,
   onBack,
+  onRegister,
   onOpenEntry,
   onTab,
 }: Props) {
@@ -41,7 +52,8 @@ export function DexDetail({
   const [touchStartY, setTouchStartY] = useState<number | null>(null);
   const [photoTouchStartX, setPhotoTouchStartX] = useState<number | null>(null);
   const [cardTouchStartX, setCardTouchStartX] = useState<number | null>(null);
-  const fallbackImage = entry.illustrationUrl ?? entry.emoji;
+  const fallbackImage =
+    entry.illustrationUrl ?? getLocalDexIllustrationUrl(entry);
   const currentCard = cards[cardIndex] ?? {
     photos: [fallbackImage],
     date: entry.firstDate ?? "",
@@ -51,21 +63,35 @@ export function DexDetail({
   const photos = currentCard.photos.length
     ? currentCard.photos
     : [fallbackImage];
+  const currentPhoto = photos[photoIndex];
 
-  // 해금된 도감끼리만 순환 이동한다. 사이에 낀 미해금 칸 수는 전체 200칸 순서
-  // 기준으로 계산해 "몇 칸 건너뛰었는지"를 정확히 안내한다.
-  const orderedIds = entries.map((item) => item.id);
+  // 해금된 도감끼리만 이동하되, 기본 도감에서 들어온 카테고리 안으로 범위를 제한한다.
+  const scopedEntries =
+    activeCategory === "전체"
+      ? entries
+      : entries.filter((item) => item.category === activeCategory);
+  const scopedCollectedEntries =
+    activeCategory === "전체"
+      ? collectedEntries
+      : collectedEntries.filter((item) => item.category === activeCategory);
+  const orderedIds = scopedEntries.map((item) => item.id);
   const total = orderedIds.length;
   const positionOf = (id: number) => orderedIds.indexOf(id);
-  const currentIndex = collectedEntries.findIndex(
+  const currentIndex = scopedCollectedEntries.findIndex(
     (item) => item.id === entry.id,
   );
+  const hasMoveTarget = scopedCollectedEntries.length > 1 && currentIndex >= 0;
   const nextEntry =
-    collectedEntries[(currentIndex + 1) % collectedEntries.length];
+    hasMoveTarget
+      ? scopedCollectedEntries[(currentIndex + 1) % scopedCollectedEntries.length]
+      : undefined;
   const prevEntry =
-    collectedEntries[
-      (currentIndex - 1 + collectedEntries.length) % collectedEntries.length
-    ];
+    hasMoveTarget
+      ? scopedCollectedEntries[
+          (currentIndex - 1 + scopedCollectedEntries.length) %
+            scopedCollectedEntries.length
+        ]
+      : undefined;
   const skippedBetween = (fromId: number, toId: number) => {
     const from = positionOf(fromId);
     const to = positionOf(toId);
@@ -96,15 +122,27 @@ export function DexDetail({
     direction: "next" | "prev",
   ) => {
     if (!target || target.id === entry.id) return;
+    const isWrapped =
+      direction === "next"
+        ? currentIndex === scopedCollectedEntries.length - 1
+        : currentIndex === 0;
     const skipped = skippedBetween(
       direction === "next" ? entry.id : target.id,
       direction === "next" ? target.id : entry.id,
     );
+    if (isWrapped) {
+      setTeaser({ kind: "complete", direction });
+      window.setTimeout(() => {
+        setTeaser(null);
+        onOpenEntry(target.id);
+      }, 700);
+      return;
+    }
     if (skipped <= 0) {
       onOpenEntry(target.id);
       return;
     }
-    setTeaser({ direction, skipped });
+    setTeaser({ kind: "skipped", direction, skipped });
     window.setTimeout(() => {
       setTeaser(null);
       onOpenEntry(target.id);
@@ -127,184 +165,299 @@ export function DexDetail({
         setTouchStartY(null);
       }}
     >
-      <header className="flex items-center gap-3 px-5 py-3">
-        <button onClick={onBack} aria-label="뒤로가기">
-          <ArrowLeftIcon size={22} />
+      <header className="grid grid-cols-[96px_minmax(0,1fr)_96px] items-center gap-2 px-5 py-3">
+        <button
+          type="button"
+          onClick={onBack}
+          aria-label="뒤로가기"
+          className="flex h-11 w-11 items-center justify-center rounded-full text-brown transition-colors hover:bg-cream-200 active:scale-[0.98]">
+          <ArrowLeftIcon size={22} aria-hidden />
         </button>
-        <h1 className="flex-1 truncate text-center font-display text-xl text-brown">
+        <h1 className="min-w-0 truncate text-center font-display text-xl text-brown">
           {entry.name}
         </h1>
-        <span className="rounded-full bg-cream-200 px-2.5 py-1 text-xs font-medium text-brown-soft">
-          일반 · {entry.category}
-        </span>
+        <button
+          type="button"
+          onClick={onRegister}
+          className="flex h-10 min-w-0 items-center justify-center gap-1.5 rounded-full bg-orange-500 px-3 text-sm font-bold text-white shadow-soft transition-colors hover:bg-orange-600 active:scale-[0.98]">
+          <PlusIcon size={15} strokeWidth={2.75} aria-hidden />
+          <span className="whitespace-nowrap">등록하기</span>
+        </button>
       </header>
       <button
         onClick={movePrev}
-        className="flex min-h-touch w-full items-center justify-center gap-1 pt-1 text-xs text-brown-soft"
+        className="flex min-h-touch w-full items-center justify-center gap-1 pt-1 text-xs text-brown-soft md:hidden"
       >
         <ChevronDownIcon size={16} aria-hidden />
         아래로 스와이프하면 이전 도감으로
       </button>
       {cards.length > 1 && (
         <div className="border-y border-cream-200 bg-cream-50 px-5 py-2.5">
-          <p className="mb-2 text-xs font-medium text-brown-soft">등록 카드</p>
-          <div className="flex gap-2" aria-label="등록 카드 선택">
-            {cards.map((card, index) => (
-              <button
-                key={`${card.date}-${index}`}
-                onClick={() => selectCard(index)}
-                className={`min-h-touch flex-1 rounded-full border px-2 text-center transition ${cardIndex === index ? "border-orange-500 bg-orange-500 text-white" : "border-cream-300 bg-white text-brown-soft"}`}
-              >
-                <span className="text-xs font-bold">
-                  {index + 1} · {formatCardDate(card.date)}
-                </span>
-              </button>
-            ))}
+          <div className="mx-auto max-w-3xl">
+            <p className="mb-2 text-xs font-medium text-brown-soft">등록 카드</p>
+            <div className="flex gap-2" aria-label="등록 카드 선택">
+              {cards.map((card, index) => (
+                <button
+                  key={`${card.date}-${index}`}
+                  onClick={() => selectCard(index)}
+                  className={`min-h-touch flex-1 rounded-full border px-2 text-center transition ${cardIndex === index ? "border-orange-500 bg-orange-500 text-white" : "border-cream-300 bg-white text-brown-soft"}`}
+                >
+                  <span className="text-xs font-bold">
+                    {index + 1} · {formatCardDate(card.date)}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}
-      <main className="no-scrollbar flex-1 overflow-y-auto">
-        <div
-          className="relative aspect-[4/3] w-full bg-orange-50"
-          onTouchStart={(event) =>
-            setPhotoTouchStartX(event.touches[0].clientX)
-          }
-          onTouchEnd={(event) => {
-            if (photoTouchStartX === null) return;
-            const distance = photoTouchStartX - event.changedTouches[0].clientX;
-            // 사진 영역 스와이프는 현재 카드의 사진만 넘긴다(카드로 넘어가지 않음).
-            if (Math.abs(distance) > 45 && photos.length > 1) {
-              movePhoto(distance > 0 ? 1 : -1);
-            }
-            setPhotoTouchStartX(null);
-          }}
-        >
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={`${cardIndex}-${photoIndex}`}
-              initial={{ opacity: 0, x: 18 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -18 }}
-              className="flex h-full items-center justify-center text-8xl"
+      <main className="no-scrollbar flex-1 overflow-y-auto md:px-6 md:pb-6">
+        <div className="md:mx-auto md:grid md:max-w-6xl md:grid-cols-[144px_minmax(0,768px)_144px] md:items-center md:gap-6">
+          <div className="hidden md:flex md:justify-end">
+            <button
+              type="button"
+              disabled={!prevEntry}
+              onClick={movePrev}
+              className="flex min-h-[76px] w-36 items-center gap-2 rounded-2xl border border-cream-300 bg-white px-3 text-left shadow-soft transition-colors hover:bg-cream-50 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {photos[photoIndex].startsWith("http") ? (
-                <img
-                  src={photos[photoIndex]}
-                  alt=""
-                  className="h-full w-full object-contain p-6"
-                />
-              ) : (
-                photos[photoIndex]
-              )}
-            </motion.div>
-          </AnimatePresence>
-          <span className="absolute right-3 top-3 rounded-full bg-black/50 px-2 py-0.5 text-xs font-medium text-white">
-            {photoIndex + 1}/{photos.length}
-          </span>
-          
-          <div className="absolute inset-x-0 bottom-0 flex justify-center">
-            {photos.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setPhotoIndex(index)}
-                aria-label={`${index + 1}번째 사진`}
-                className="no-touch-expand flex h-11 w-11 items-end justify-center pb-3"
-              >
-                <span
-                  aria-hidden
-                  className={`h-2 w-2 rounded-full ${index === photoIndex ? "bg-orange-500" : "bg-white/70"}`}
-                />
-              </button>
-            ))}
+              <ChevronLeftIcon size={18} aria-hidden className="shrink-0 text-brown-muted" />
+              <span className="min-w-0">
+                <span className="block text-[11px] font-bold text-brown-muted">
+                  이전
+                </span>
+                <span className="block truncate text-sm font-bold text-brown">
+                  {prevEntry?.name ?? "이전 도감"}
+                </span>
+                <span className="block truncate text-[11px] text-brown-muted">
+                  {prevEntry?.firstDate ?? "수집일 없음"}
+                </span>
+              </span>
+            </button>
           </div>
-        </div>
-        <div
-          onTouchStart={
-            cards.length > 1
-              ? (event) => setCardTouchStartX(event.touches[0].clientX)
-              : undefined
-          }
-          onTouchEnd={
-            cards.length > 1
-              ? (event) => {
-                  if (cardTouchStartX === null) return;
-                  const distance =
-                    cardTouchStartX - event.changedTouches[0].clientX;
-                  // 왼쪽으로 쓸어넘김: 다음 카드, 오른쪽: 이전 카드
-                  if (Math.abs(distance) > 45) cycleCard(distance > 0 ? 1 : -1);
-                  setCardTouchStartX(null);
+          <div>
+            <div
+              className="relative aspect-[4/3] w-full bg-orange-50 md:mt-1 md:overflow-hidden md:rounded-3xl md:shadow-card lg:aspect-[16/10]"
+              onTouchStart={(event) =>
+                setPhotoTouchStartX(event.touches[0].clientX)
+              }
+              onTouchEnd={(event) => {
+                if (photoTouchStartX === null) return;
+                const distance =
+                  photoTouchStartX - event.changedTouches[0].clientX;
+                // 사진 영역 스와이프는 현재 카드의 사진만 넘긴다(카드로 넘어가지 않음).
+                if (Math.abs(distance) > 45 && photos.length > 1) {
+                  movePhoto(distance > 0 ? 1 : -1);
                 }
-              : undefined
-          }
-        >
-          <div className="px-5 py-3">
-            <span className="text-xs text-brown-soft">
-              카드 {cardIndex + 1}의 사진 {photos.length}장
-              {cards.length > 1 && " · 좌우로 스와이프해 카드 넘기기"}
-            </span>
-          </div>
-          <div className="mx-5 rounded-2xl bg-white p-4 shadow-soft">
-            <p className="flex items-center gap-1.5 text-sm text-brown-soft">
-              <MapPinIcon size={15} className="text-orange-500" />
-              {currentCard.location || "위치 없음"} · {currentCard.date} 수집
+                setPhotoTouchStartX(null);
+              }}
+            >
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`${cardIndex}-${photoIndex}`}
+                  initial={{ opacity: 0, x: 18 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -18 }}
+                  className="flex h-full items-center justify-center text-8xl"
+                >
+                  {currentPhoto.startsWith("http") ||
+                  currentPhoto.startsWith("/") ? (
+                    <Image
+                      src={currentPhoto}
+                      alt=""
+                      fill
+                      sizes="(min-width: 768px) 768px, 100vw"
+                      className="h-full w-full object-contain p-6"
+                    />
+                  ) : (
+                    currentPhoto
+                  )}
+                </motion.div>
+              </AnimatePresence>
+              <span className="absolute right-3 top-3 rounded-full bg-black/50 px-2 py-0.5 text-xs font-medium text-white">
+                {photoIndex + 1}/{photos.length}
+              </span>
+
+              <div className="absolute inset-x-0 bottom-0 flex justify-center">
+                {photos.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setPhotoIndex(index)}
+                    aria-label={`${index + 1}번째 사진`}
+                    className="no-touch-expand flex h-11 w-11 items-end justify-center pb-3"
+                  >
+                    <span
+                      aria-hidden
+                      className={`h-2 w-2 rounded-full ${index === photoIndex ? "bg-orange-500" : "bg-white/70"}`}
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+            <p className="mt-3 hidden text-center text-xs font-medium text-brown-muted md:block">
+              {activeCategory === "전체" ? "전체" : activeCategory} ·{" "}
+              {currentIndex >= 0 ? currentIndex + 1 : 0}/
+              {scopedCollectedEntries.length}
             </p>
-            {currentCard.memo && (
-              <p className="mt-2 text-sm text-brown">메모: {currentCard.memo}</p>
+            {photos.length > 1 && (
+              <div className="mt-2 hidden justify-end gap-2 px-5 md:flex md:px-0">
+                <button
+                  type="button"
+                  onClick={() => movePhoto(-1)}
+                  className="flex h-8 items-center gap-1 rounded-full border border-cream-300 bg-white px-3 text-xs font-bold text-brown-soft shadow-soft transition-colors hover:bg-cream-50 active:scale-[0.98]"
+                >
+                  <ChevronLeftIcon size={14} aria-hidden />
+                  이전 사진
+                </button>
+                <button
+                  type="button"
+                  onClick={() => movePhoto(1)}
+                  className="flex h-8 items-center gap-1 rounded-full bg-orange-500 px-3 text-xs font-bold text-white shadow-soft transition-colors hover:bg-orange-600 active:scale-[0.98]"
+                >
+                  다음 사진
+                  <ChevronRightIcon size={14} aria-hidden />
+                </button>
+              </div>
             )}
           </div>
-        </div>
-        <AnimatePresence>
-          {teaser && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="mx-5 mt-4 flex items-center gap-3 rounded-2xl border-2 border-dashed border-cream-300 bg-cream-50 p-3"
+          <div className="hidden md:flex md:justify-start">
+            <button
+              type="button"
+              disabled={!nextEntry}
+              onClick={moveNext}
+              className="flex min-h-[76px] w-36 items-center gap-2 rounded-2xl bg-orange-500 px-3 text-left text-white shadow-soft transition-colors hover:bg-orange-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
             >
-              <div className="flex">
-                {Array.from({ length: Math.min(teaser.skipped, 3) }).map(
-                  (_, value) => (
-                    <span
-                      key={value}
-                      className="-ml-2 flex h-9 w-9 items-center justify-center rounded-xl border-2 border-cream-50 bg-cream-200 text-brown-muted first:ml-0"
-                    >
-                      ?
-                    </span>
-                  ),
-                )}
-                {teaser.skipped > 3 && (
-                  <span className="-ml-2 flex h-9 w-9 items-center justify-center rounded-xl border-2 border-cream-50 bg-cream-200 text-xs font-bold text-brown-muted">
-                    +{teaser.skipped - 3}
-                  </span>
-                )}
-              </div>
-              <div>
-                <p className="text-sm font-bold text-brown">
-                  미해금 도감 {teaser.skipped}칸을 건너뛰었어요
-                </p>
-                <p className="text-xs text-brown-soft">
-                  {teaser.direction === "next" ?
-                    "다음 수집 카드로 이동해요" :
-                    "이전 수집 카드로 이동해요"}
-                </p>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-        <div className="mt-4 border-t border-cream-300 px-5 py-4">
-          <div className="flex items-center justify-between">
-            <span className="font-display text-lg text-brown">
-              {entry.name}
-            </span>
-            <StarRank value={entry.stars ?? 1} size={16} />
+              <span className="min-w-0 flex-1">
+                <span className="block text-[11px] font-bold text-orange-100">
+                  다음
+                </span>
+                <span className="block truncate text-sm font-bold">
+                  {nextEntry?.name ?? "다음 도감"}
+                </span>
+                <span className="block truncate text-[11px] text-orange-100">
+                  {nextEntry?.firstDate ?? "수집일 없음"}
+                </span>
+              </span>
+              <ChevronRightIcon size={18} aria-hidden className="shrink-0 text-orange-100" />
+            </button>
           </div>
-          <p className="mt-1 text-xs text-brown-soft">
-            첫 수집일 {entry.firstDate}
-          </p>
+        </div>
+        <div className="md:mx-auto md:grid md:max-w-6xl md:grid-cols-[144px_minmax(0,768px)_144px] md:gap-6">
+          <div
+            className="md:col-start-2"
+            onTouchStart={
+              cards.length > 1
+                ? (event) => setCardTouchStartX(event.touches[0].clientX)
+                : undefined
+            }
+            onTouchEnd={
+              cards.length > 1
+                ? (event) => {
+                    if (cardTouchStartX === null) return;
+                    const distance =
+                      cardTouchStartX - event.changedTouches[0].clientX;
+                    // 왼쪽으로 쓸어넘김: 다음 카드, 오른쪽: 이전 카드
+                    if (Math.abs(distance) > 45)
+                      cycleCard(distance > 0 ? 1 : -1);
+                    setCardTouchStartX(null);
+                  }
+                : undefined
+            }
+          >
+            <div className="px-5 py-3 md:px-0">
+              <span className="text-xs text-brown-soft">
+                카드 {cardIndex + 1}의 사진 {photos.length}장
+                {cards.length > 1 && (
+                  <>
+                    <span className="md:hidden"> · 좌우로 스와이프해 카드 넘기기</span>
+                    <span className="hidden md:inline"> · 위 카드 버튼으로 기록 선택</span>
+                  </>
+                )}
+              </span>
+            </div>
+            <div className="mx-5 rounded-2xl bg-white p-4 shadow-soft md:mx-0">
+              <p className="flex items-center gap-1.5 text-sm text-brown-soft">
+                <MapPinIcon size={15} className="text-orange-500" />
+                {currentCard.location || "위치 없음"} · {currentCard.date} 수집
+              </p>
+              {currentCard.memo && (
+                <p className="mt-2 text-sm text-brown">
+                  메모: {currentCard.memo}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="md:mx-auto md:grid md:max-w-6xl md:grid-cols-[144px_minmax(0,768px)_144px] md:gap-6">
+          <AnimatePresence>
+            {teaser && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="mx-5 mt-4 flex items-center gap-3 rounded-2xl border-2 border-dashed border-cream-300 bg-cream-50 p-3 md:col-start-2 md:mx-0"
+              >
+                <div className="flex">
+                  {Array.from({
+                    length:
+                      teaser.kind === "skipped"
+                        ? Math.min(teaser.skipped ?? 0, 3)
+                        : 3,
+                  }).map(
+                    (_, value) => (
+                      <span
+                        key={value}
+                        className="-ml-2 flex h-9 w-9 items-center justify-center rounded-xl border-2 border-cream-50 bg-cream-200 text-brown-muted first:ml-0"
+                      >
+                        ?
+                      </span>
+                    ),
+                  )}
+                  {teaser.kind === "skipped" && (teaser.skipped ?? 0) > 3 && (
+                    <span className="-ml-2 flex h-9 w-9 items-center justify-center rounded-xl border-2 border-cream-50 bg-cream-200 text-xs font-bold text-brown-muted">
+                      +{(teaser.skipped ?? 0) - 3}
+                    </span>
+                  )}
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-brown">
+                    {teaser.kind === "complete"
+                      ? "카테고리를 모두 확인했습니다"
+                      : `미해금 도감 ${teaser.skipped}칸을 건너뛰었어요`}
+                  </p>
+                  <p className="text-xs text-brown-soft">
+                    {teaser.kind === "complete"
+                      ? teaser.direction === "next"
+                        ? activeCategory === "전체"
+                          ? "전체 도감의 처음 수집 카드로 돌아가요"
+                          : `${activeCategory} 도감의 처음 수집 카드로 돌아가요`
+                        : activeCategory === "전체"
+                          ? "전체 도감의 마지막 수집 카드로 돌아가요"
+                          : `${activeCategory} 도감의 마지막 수집 카드로 돌아가요`
+                      : teaser.direction === "next"
+                        ? "다음 수집 카드로 이동해요"
+                        : "이전 수집 카드로 이동해요"}
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+        <div className="md:mx-auto md:grid md:max-w-6xl md:grid-cols-[144px_minmax(0,768px)_144px] md:gap-6">
+          <div className="mt-4 border-t border-cream-300 px-5 py-4 md:col-start-2 md:rounded-2xl md:border md:bg-white md:shadow-soft">
+            <div className="flex items-center justify-between">
+              <span className="font-display text-lg text-brown">
+                {entry.name}
+              </span>
+              <StarRank value={entry.stars ?? 1} size={16} />
+            </div>
+            <p className="mt-1 text-xs text-brown-soft">
+              첫 수집일 {entry.firstDate}
+            </p>
+          </div>
         </div>
         <button
           onClick={moveNext}
-          className="flex min-h-touch w-full items-center justify-center gap-1 pb-6 text-xs text-brown-soft"
+          className="flex min-h-touch w-full items-center justify-center gap-1 pb-6 text-xs text-brown-soft md:hidden"
         >
           <ChevronUpIcon size={16} aria-hidden />
           위로 스와이프하면 다음 도감으로

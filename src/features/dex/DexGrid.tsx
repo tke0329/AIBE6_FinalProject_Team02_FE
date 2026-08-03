@@ -1,5 +1,6 @@
 import { createReport } from '@/features/report/api';
 import { DexEntry } from '@/shared/data/dex';
+import { getLocalDexIllustrationUrl } from '@/shared/lib/dexIllustrations';
 import { HelpIcon } from '@/shared/ui/atoms/HelpIcon';
 import { ProgressBar } from '@/shared/ui/atoms/ProgressBar';
 import { SearchBar } from '@/shared/ui/atoms/SearchBar';
@@ -8,14 +9,18 @@ import { BottomNav, NavTab } from '@/shared/ui/molecules/BottomNav';
 import { DexHelpSheet } from '@/shared/ui/molecules/DexHelpSheet';
 import { FoodCard } from '@/shared/ui/molecules/FoodCard';
 import { TabBar } from '@/shared/ui/molecules/TabBar';
-import { PlusIcon } from 'lucide-react';
+import { ArrowLeftIcon, ChevronDownIcon, PlusIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useDexFilter } from './useDexFilter';
+import type { CategoryFilter } from './useDexFilter';
 interface DexGridProps {
   entries: DexEntry[];
   collectedIds: number[];
   newlyUnlockedId?: number | null;
-  onOpenEntry: (id: number) => void;
+  initialCategory?: CategoryFilter;
+  onBackToList: () => void;
+  onCategoryChange?: (category: CategoryFilter) => void;
+  onOpenEntry: (id: number, category: CategoryFilter) => void;
   onRegister: () => void;
   onTab: (tab: NavTab) => void;
 }
@@ -28,6 +33,9 @@ export function DexGrid({
   entries,
   collectedIds,
   newlyUnlockedId,
+  initialCategory,
+  onBackToList,
+  onCategoryChange,
   onOpenEntry,
   onRegister,
   onTab
@@ -35,6 +43,7 @@ export function DexGrid({
   const [helpOpen, setHelpOpen] = useState(false);
   const [reporting, setReporting] = useState(false);             
   const [reportedName, setReportedName] = useState<string | null>(null); 
+  const [unlockMenuOpen, setUnlockMenuOpen] = useState(false);
   
   
   // 검색어를 그대로 제보 이름으로 보낸다.
@@ -55,23 +64,40 @@ export function DexGrid({
   const {
     activeCategory,
     setActiveCategory,
+    unlockFilter,
+    setUnlockFilter,
     query,
     setQuery,
     categoryTabs,
+    unlockTabs,
     collected,
     visibleEntries,
     activeMeta,
     visibleCollected,
+    sectionCollected,
     progress,
     percentage,
+    sectionProgress,
+    sectionPercentage,
     sectionTotal
-  } = useDexFilter(entries, collectedIds);
+  } = useDexFilter(entries, collectedIds, initialCategory);
+  const displayProgress = activeCategory === '전체' ? progress : sectionProgress;
+  const displayPercentage = activeCategory === '전체' ? percentage : sectionPercentage;
+  const displayCollected = activeCategory === '전체' ? collectedIds.length : sectionCollected;
+  const displayTotal = activeCategory === '전체' ? entries.length : sectionTotal;
 
   return (
     <div className="relative flex h-full flex-col bg-cream-100">
       <header className="shrink-0 px-4 pt-4">
         <div className="flex items-center justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-1">
+          <div className="flex min-w-0 items-center gap-2">
+            <button
+              type="button"
+              onClick={onBackToList}
+              aria-label="도감 목록으로 돌아가기"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-card text-content-primary shadow-card transition-colors hover:bg-cream-50 active:scale-[0.98]">
+              <ArrowLeftIcon size={19} aria-hidden />
+            </button>
             <h1 className="truncate font-display text-xl text-content-primary">나의 음식 도감</h1>
             <HelpIcon label="기본 도감" onClick={() => setHelpOpen(true)} />
           </div>
@@ -87,10 +113,10 @@ export function DexGrid({
           <div className="mb-2 flex items-center justify-between">
             <span className="text-sm font-medium text-content-secondary">수집률</span>
             <span className="rounded-full bg-orange-50 px-3 py-1 text-xs font-bold text-content-link">
-              {collectedIds.length} / 200 · {percentage}%
+              {displayCollected} / {displayTotal} · {displayPercentage}%
             </span>
           </div>
-          <ProgressBar value={progress} label="기본 도감 수집률" />
+          <ProgressBar value={displayProgress} label="기본 도감 수집률" />
           <p className="mt-2 text-xs text-content-secondary">카테고리를 골라 원하는 음식만 찾아보세요</p>
         </div>
 
@@ -106,8 +132,52 @@ export function DexGrid({
           variant="scroll"
           items={categoryTabs}
           value={activeCategory}
-          onChange={setActiveCategory}
+          onChange={(category) => {
+            setActiveCategory(category);
+            onCategoryChange?.(category);
+          }}
           className="mt-4" />
+
+        <div className="relative mt-3 flex justify-end">
+          <button
+            type="button"
+            aria-haspopup="listbox"
+            aria-expanded={unlockMenuOpen}
+            onClick={() => setUnlockMenuOpen((open) => !open)}
+            className="flex min-h-touch items-center gap-2 rounded-full border border-edge-default bg-surface-card px-4 text-sm font-bold text-content-primary shadow-card transition-colors hover:bg-cream-50 active:scale-[0.98]">
+            {unlockFilter}
+            <ChevronDownIcon
+              size={16}
+              aria-hidden
+              className={`transition-transform ${unlockMenuOpen ? 'rotate-180' : ''}`}
+            />
+          </button>
+          {unlockMenuOpen && (
+            <div
+              role="listbox"
+              aria-label="해금 상태"
+              className="absolute right-0 top-12 z-20 w-32 overflow-hidden rounded-2xl border border-edge-default bg-surface-card py-1 shadow-card">
+              {unlockTabs.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  role="option"
+                  aria-selected={unlockFilter === item.id}
+                  onClick={() => {
+                    setUnlockFilter(item.id);
+                    setUnlockMenuOpen(false);
+                  }}
+                  className={`min-h-touch w-full px-4 text-left text-sm ${
+                    unlockFilter === item.id
+                      ? 'bg-orange-50 font-bold text-content-link'
+                      : 'text-content-secondary hover:bg-cream-50'
+                  }`}>
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
       </header>
 
@@ -118,13 +188,21 @@ export function DexGrid({
             <h2 className="text-base font-bold text-content-primary">
               {activeCategory === '전체' ? '전체 음식' : activeCategory}
             </h2>
-            <span className="text-xs text-content-secondary">· {visibleCollected}/{sectionTotal}</span>
+            <span className="text-xs text-content-secondary">
+              · {unlockFilter === '전체' ? `${visibleCollected}/${sectionTotal}` : `${visibleEntries.length}개`}
+            </span>
           </div>
 
           {visibleEntries.length === 0 ?
             <div className="rounded-2xl bg-surface-card p-6 text-center shadow-card">
               <p className="text-sm text-content-secondary">
-                {query.trim() ? `'${query.trim()}' 검색 결과가 없어요` : '조건에 맞는 카드가 없어요'}
+                {query.trim()
+                  ? `'${query.trim()}' 검색 결과가 없어요`
+                  : unlockFilter === '해금'
+                    ? '아직 해금된 카드가 없어요'
+                    : unlockFilter === '미해금'
+                      ? '미해금 카드가 없어요'
+                      : '조건에 맞는 카드가 없어요'}
               </p>
               {query.trim() && (
                 reportedName === query.trim() ? (
@@ -151,14 +229,14 @@ export function DexGrid({
                     key={entry.id}
                     name={entry.name}
                     emoji={entry.emoji}
-                    illustrationUrl={entry.illustrationUrl}
+                    illustrationUrl={entry.illustrationUrl ?? getLocalDexIllustrationUrl(entry)}
                     state={!unlocked ? 'locked' : isNew ? 'recent' : 'unlocked'}
                     accessibleName={
                       unlocked ?
                         `${entry.name}, 해금됨, 별 ${entry.stars ?? 1}개` :
                         `${entry.name}, 미해금 카드`
                     }
-                    onClick={() => onOpenEntry(entry.id)}
+                    onClick={() => onOpenEntry(entry.id, activeCategory)}
                     corner={
                       isNew ?
                         <span className="absolute -right-2 -top-2 rounded-full bg-blue-500 px-2 py-1 text-xs font-bold leading-none text-white">

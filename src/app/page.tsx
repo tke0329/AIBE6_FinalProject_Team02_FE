@@ -1,15 +1,20 @@
 'use client';
 
-import { DexGrid } from '@/features/dex/DexGrid';
-import { ROUTES, TAB_HREF } from '@/shared/lib/routes';
+import { DexCategoryList } from '@/features/dex/DexCategoryList';
+import { getTabHref, rememberBasicDexRoute, ROUTES } from '@/shared/lib/routes';
 import { useAppState, useDexState } from '@/shared/store/AppStateProvider';
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
-/** `/` 기본 도감 (인증/온보딩 진입 분기는 AuthGate가 전담) */
+/** `/` 기본 도감 카테고리 목록 (인증/온보딩 진입 분기는 AuthGate가 전담) */
 export default function DexHomePage() {
   const router = useRouter();
-  const { entries, entriesLoading, collectedIds, newlyUnlockedId } = useDexState();
+  const { entries, entriesLoading, collectedIds } = useDexState();
   const { startRegistration } = useAppState();
+
+  useEffect(() => {
+    rememberBasicDexRoute(ROUTES.home);
+  }, []);
 
   if (entriesLoading) {
     return (
@@ -20,15 +25,14 @@ export default function DexHomePage() {
   }
 
   return (
-    <DexGrid
+    <DexCategoryList
       entries={entries}
       collectedIds={collectedIds}
-      newlyUnlockedId={newlyUnlockedId}
-      onOpenEntry={(id) => router.push(ROUTES.dexDetail(id))}
+      onOpenCategory={(category) => router.push(ROUTES.basicDex(category))}
       onRegister={() => {
         startRegistration('basic');
         router.push(ROUTES.register);
       }}
-      onTab={(tab) => router.push(TAB_HREF[tab])} />);
+      onTab={(tab) => router.push(getTabHref(tab))} />);
 
 }

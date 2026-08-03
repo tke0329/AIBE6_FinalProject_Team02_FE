@@ -13,7 +13,10 @@ export const ROUTES = {
   oauthCallback: '/oauth/callback',
   nicknameSetup: '/nickname-setup',
 
-  dexDetail: (id: number) => `/dex/${id}`,
+  basicDex: (category?: string) =>
+    category ? `/basicDex?category=${encodeURIComponent(category)}` : '/basicDex',
+  dexDetail: (id: number, category?: string) =>
+    category ? `/dex/${id}?category=${encodeURIComponent(category)}` : `/dex/${id}`,
 
   made: '/made',
   madeJoin: '/made/join',
@@ -34,6 +37,10 @@ export const ROUTES = {
   admin: '/admin',
 
   register: '/register',
+  registerWithFood: (foodId: number, from?: string) =>
+    from
+      ? `/register?foodId=${foodId}&from=${encodeURIComponent(from)}`
+      : `/register?foodId=${foodId}`,
   registerAnalyze: '/register/analyze',
   registerRecord: '/register/record',
   registerTags: '/register/tags',
@@ -47,3 +54,16 @@ export const TAB_HREF: Record<NavTab, string> = {
   챌린지: ROUTES.challenge,
   마이: ROUTES.my,
 };
+
+const LAST_BASIC_DEX_ROUTE_KEY = 'catcheat:last-basic-dex-route';
+
+export function rememberBasicDexRoute(path: string) {
+  if (typeof window === 'undefined') return;
+  window.sessionStorage.setItem(LAST_BASIC_DEX_ROUTE_KEY, path);
+}
+
+export function getTabHref(tab: NavTab) {
+  if (tab !== '기본') return TAB_HREF[tab];
+  if (typeof window === 'undefined') return TAB_HREF[tab];
+  return window.sessionStorage.getItem(LAST_BASIC_DEX_ROUTE_KEY) ?? TAB_HREF[tab];
+}

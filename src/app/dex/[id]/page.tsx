@@ -1,20 +1,33 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { notFound, useParams, useRouter } from 'next/navigation';
+import { notFound, useParams, useRouter, useSearchParams } from 'next/navigation';
 import { DexDetail } from '@/features/dex/DexDetail';
+import type { CategoryFilter } from '@/features/dex/useDexFilter';
 import { fetchMyBasicDexDetail } from '@/features/dex/api';
 import { useDexState } from '@/shared/store/AppStateProvider';
-import { ROUTES, TAB_HREF } from '@/shared/lib/routes';
-import { DexEntry } from '@/shared/data/dex';
+import { getTabHref, ROUTES } from '@/shared/lib/routes';
+import { useAppState } from '@/shared/store/AppStateProvider';
+import { CATEGORY_META, DexEntry } from '@/shared/data/dex';
+
+function isCategoryFilter(value: string | null): value is CategoryFilter {
+  return (
+    value === '전체' ||
+    CATEGORY_META.some((meta) => meta.category === value)
+  );
+}
 
 /** `/dex/[id]` 도감 카드 상세 */
 export default function DexDetailPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { id } = useParams<{id: string;}>();
   const { entries, findEntry, collectedEntries } = useDexState();
+  const { startRegistration, setSelectedFoodId } = useAppState();
   const [detailEntry, setDetailEntry] = useState<DexEntry | null>(null);
   const [detailLoading, setDetailLoading] = useState(true);
+  const category = searchParams.get('category');
+  const activeCategory = isCategoryFilter(category) ? category : '전체';
 
   const listEntry = findEntry(Number(id));
 
@@ -54,8 +67,19 @@ export default function DexDetailPage() {
       entry={entry}
       entries={entries}
       collectedEntries={collectedEntries}
-      onBack={() => router.push(ROUTES.home)}
-      onOpenEntry={(nextId) => router.replace(ROUTES.dexDetail(nextId))}
-      onTab={(tab) => router.push(TAB_HREF[tab])} />);
+      activeCategory={activeCategory}
+      onBack={() => router.push(ROUTES.basicDex(activeCategory))}
+      onRegister={() => {
+        startRegistration('basic');
+        setSelectedFoodId(entry.id);
+        router.push(
+          ROUTES.registerWithFood(
+            entry.id,
+            ROUTES.dexDetail(entry.id, activeCategory),
+          ),
+        );
+      }}
+      onOpenEntry={(nextId) => router.replace(ROUTES.dexDetail(nextId, activeCategory))}
+      onTab={(tab) => router.push(getTabHref(tab))} />);
 
 }

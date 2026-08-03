@@ -1,5 +1,6 @@
 import { DexEntry, DEX_ENTRIES, FoodCategory } from "@/shared/data/dex";
 import { apiFetch } from "@/shared/lib/api";
+import { getLocalDexIllustrationUrl } from "@/shared/lib/dexIllustrations";
 
 interface BasicDexResponse {
   id: number;
@@ -49,14 +50,18 @@ export async function fetchBasicDexEntries(): Promise<DexEntry[]> {
             (entry) => entry.id === item.id || entry.name === item.name,
           );
 
-          return {
+          const entry = {
             ...local,
             id: item.id,
             name: item.name,
             emoji: local?.emoji ?? DEFAULT_FOOD_ICON,
             category: CATEGORY_LABELS[item.category] ?? "밥·죽·한 그릇",
-            illustrationUrl: item.illustrationUrl ?? undefined,
             collected: local?.collected ?? false,
+          };
+          return {
+            ...entry,
+            illustrationUrl:
+              item.illustrationUrl ?? local?.illustrationUrl ?? getLocalDexIllustrationUrl(entry),
           };
         }),
       )
@@ -106,17 +111,21 @@ export async function fetchMyBasicDexEntries(): Promise<DexEntry[]> {
       (entry) => entry.id === item.id || entry.name === item.name,
     );
 
-    return {
+    const entry = {
       id: item.id,
       name: item.name,
       emoji: local?.emoji ?? DEFAULT_FOOD_ICON,
       category: CATEGORY_LABELS[item.category] ?? "밥·죽·한 그릇",
-      illustrationUrl: item.illustrationUrl ?? undefined,
       collected: item.unlocked,
       stars: item.unlocked ? item.rank : undefined,
       firstDate: item.firstCollectedAt
         ? formatServerDate(item.firstCollectedAt)
         : undefined,
+    };
+    return {
+      ...entry,
+      illustrationUrl:
+        item.illustrationUrl ?? local?.illustrationUrl ?? getLocalDexIllustrationUrl(entry),
     };
   });
 }
@@ -133,12 +142,11 @@ export async function fetchMyBasicDexDetail(slotId: number): Promise<DexEntry> {
     (entry) => entry.id === item.id || entry.name === item.name,
   );
 
-  return {
+  const entry = {
     id: item.id,
     name: item.name,
     emoji: local?.emoji ?? DEFAULT_FOOD_ICON,
     category: CATEGORY_LABELS[item.category] ?? "밥·죽·한 그릇",
-    illustrationUrl: item.illustrationUrl ?? undefined,
     collected: item.unlocked,
     stars: item.unlocked ? item.rank : undefined,
     firstDate: item.firstCollectedAt
@@ -150,5 +158,10 @@ export async function fetchMyBasicDexDetail(slotId: number): Promise<DexEntry> {
       location: card.locationName ?? undefined,
       date: formatServerDate(card.collectedAt),
     })),
+  };
+  return {
+    ...entry,
+    illustrationUrl:
+      item.illustrationUrl ?? local?.illustrationUrl ?? getLocalDexIllustrationUrl(entry),
   };
 }
