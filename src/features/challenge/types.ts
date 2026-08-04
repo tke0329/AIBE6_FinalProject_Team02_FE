@@ -6,6 +6,8 @@ export interface RewardBadge {
   /** 뱃지 배경 톤 (Tailwind 클래스) */
   tone: string;
   customImage?: string;
+  /** 프리셋 code */
+  code?: string;
 }
 
 export interface ChallengeTarget {
