@@ -20,6 +20,9 @@ export const ROUTES = {
 
   made: '/made',
   madeJoin: '/made/join',
+  /** 초대 링크. 코드가 채워진 채로 참여 화면이 열린다 */
+  madeJoinWithCode: (code: string) =>
+    `/made/join?code=${encodeURIComponent(code)}`,
   madeDex: (dexId: MadeDexId) => `/made/${dexId}`,
   madeParticipants: (dexId: MadeDexId) => `/made/${dexId}/participants`,
 
