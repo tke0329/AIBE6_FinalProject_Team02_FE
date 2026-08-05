@@ -19,11 +19,15 @@ export const ROUTES = {
     category ? `/dex/${id}?category=${encodeURIComponent(category)}` : `/dex/${id}`,
 
   made: '/made',
+  madeNew: '/made/new',
   madeJoin: '/made/join',
   /** 초대 링크. 코드가 채워진 채로 참여 화면이 열린다 */
   madeJoinWithCode: (code: string) =>
     `/made/join?code=${encodeURIComponent(code)}`,
   madeDex: (dexId: MadeDexId) => `/made/${dexId}`,
+  madeInfo: (dexId: MadeDexId) => `/made/${dexId}/info`,
+  madeManage: (dexId: MadeDexId) => `/made/${dexId}/manage`,
+  madeEdit: (dexId: MadeDexId) => `/made/${dexId}/edit`,
   madeParticipants: (dexId: MadeDexId) => `/made/${dexId}/participants`,
 
   challenge: '/challenge',

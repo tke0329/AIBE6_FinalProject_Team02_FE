@@ -8,49 +8,46 @@ import {
   UsersIcon,
 } from 'lucide-react';
 import { BottomNav, NavTab } from '@/shared/ui/molecules/BottomNav';
-import { MadeDexCreateForm } from './MadeDexCreateForm';
-import { MadeDexId, MadeDexSummary, MadeDexVisibility } from './types';
+import { MadeDexCodeSheet } from './MadeDexCodeSheet';
+import { DEFAULT_MADE_DEX_COVER, MadeDexId, MadeDexSummary } from './types';
 
 interface Props {
   dexes: MadeDexSummary[];
   loading: boolean;
   error: string | null;
-  onCreate: (name: string, visibility: MadeDexVisibility) => Promise<void>;
+  onCreateNew: () => void;
   onOpenDex: (id: MadeDexId) => void;
-  onJoinWithCode: () => void;
+  onEnterCode: (code: string) => void;
   onTab: (tab: NavTab) => void;
-}
-
-// 서버는 아이콘을 주지 않는다. id로 고르면 같은 도감이 늘 같은 표지로 보인다
-const COVERS = [
-  { emoji: '🍱', color: 'bg-orange-100 text-orange-600' },
-  { emoji: '💑', color: 'bg-red-400/10 text-red-500' },
-  { emoji: '🍜', color: 'bg-blue-300/20 text-blue-500' },
-  { emoji: '🍰', color: 'bg-green-500/10 text-green-500' },
-];
-
-function cover(id: MadeDexId) {
-  return COVERS[id % COVERS.length];
 }
 
 export function MadeDexList({
   dexes,
   loading,
   error,
-  onCreate,
+  onCreateNew,
   onOpenDex,
-  onJoinWithCode,
+  onEnterCode,
   onTab,
 }: Props) {
-  const [createOpen, setCreateOpen] = useState(false);
+  const [joinOpen, setJoinOpen] = useState(false);
 
   return (
-    <div className="flex h-full flex-col bg-cream-100">
-      <header className="px-5 pb-2 pt-4">
-        <h1 className="font-display text-xl text-content-primary">제작 도감</h1>
-        <p className="mt-1 text-sm text-content-secondary">
-          함께 만든 도감을 둘러보세요
-        </p>
+    <div className="relative flex h-full flex-col bg-cream-100">
+      <header className="flex items-start justify-between gap-3 px-5 pb-2 pt-4">
+        <div>
+          <h1 className="font-display text-xl text-content-primary">제작 도감</h1>
+          <p className="mt-1 text-sm text-content-secondary">
+            함께 만든 도감을 둘러보세요
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setJoinOpen(true)}
+          className="flex min-h-touch shrink-0 items-center gap-1.5 rounded-full border border-orange-400 px-4 text-sm font-bold text-content-link active:scale-[0.98]">
+          <KeyRoundIcon size={16} aria-hidden />
+          초대코드
+        </button>
       </header>
 
       <main className="no-scrollbar flex-1 overflow-y-auto px-5 py-4">
@@ -78,11 +75,13 @@ export function MadeDexList({
                 onClick={() => onOpenDex(dex.id)}
                 className="flex w-full items-center gap-3 rounded-2xl bg-surface-card p-4 text-left shadow-card active:scale-[0.99]"
               >
-                <span
-                  className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-3xl ${cover(dex.id).color}`}
-                >
-                  {cover(dex.id).emoji}
-                </span>
+                {/* presigned URL이라 next/image의 도메인 설정 대상이 아니다 */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={dex.imageUrl ?? DEFAULT_MADE_DEX_COVER}
+                  alt=""
+                  className="h-14 w-14 shrink-0 rounded-2xl bg-cream-200 object-cover"
+                />
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center gap-1">
                     <span className="truncate font-display text-lg text-content-primary">
@@ -138,31 +137,12 @@ export function MadeDexList({
 
         <button
           type="button"
-          onClick={onJoinWithCode}
-          className="mt-4 flex min-h-touch w-full items-center justify-center gap-2 rounded-2xl border border-orange-400 bg-surface-card py-4 text-sm font-bold text-content-link"
+          onClick={onCreateNew}
+          className="mt-4 flex min-h-touch w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-orange-400 bg-orange-50 py-4 text-sm font-bold text-content-link"
         >
-          <KeyRoundIcon size={17} aria-hidden />
-          초대 코드로 참여
+          <PlusIcon size={18} aria-hidden />
+          새 도감 만들기
         </button>
-
-        {createOpen ? (
-          <MadeDexCreateForm
-            onCreate={async (name, visibility) => {
-              await onCreate(name, visibility);
-              setCreateOpen(false);
-            }}
-            onCancel={() => setCreateOpen(false)}
-          />
-        ) : (
-          <button
-            type="button"
-            onClick={() => setCreateOpen(true)}
-            className="mt-4 flex min-h-touch w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-orange-400 bg-orange-50 py-4 text-sm font-bold text-content-link"
-          >
-            <PlusIcon size={18} aria-hidden />
-            새 도감 만들기
-          </button>
-        )}
 
         <div className="mt-4 flex items-start gap-2 rounded-2xl bg-cream-200 p-3 text-xs text-content-muted">
           <UsersIcon
@@ -176,6 +156,12 @@ export function MadeDexList({
       </main>
 
       <BottomNav active="제작" onTab={onTab} />
+
+      {joinOpen && (
+        <MadeDexCodeSheet
+          onSubmit={onEnterCode}
+          onClose={() => setJoinOpen(false)} />
+      )}
     </div>
   );
 }

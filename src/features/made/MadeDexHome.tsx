@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeftIcon, CheckIcon, ChevronDownIcon, UserPlusIcon } from 'lucide-react';
+import { ArrowLeftIcon, CheckIcon, ChevronDownIcon, MenuIcon, UserPlusIcon } from 'lucide-react';
 import { BottomNav, NavTab } from '@/shared/ui/molecules/BottomNav';
 import { DexHelpSheet } from '@/shared/ui/molecules/DexHelpSheet';
 import { HelpIcon } from '@/shared/ui/atoms/HelpIcon';
@@ -11,7 +11,7 @@ import { useMadeDexSearch } from './useMadeDexSearch';
 
 export type { MadeCard } from './types';
 
-interface Props {dexId: MadeDexId;recentCard?: MadeCard | null;participants: MadeParticipant[];onBack: () => void;onSwitchDex: (id: MadeDexId) => void;onRegister: () => void;onManageParticipants: () => void;onTab: (tab: NavTab) => void;}
+interface Props {dexId: MadeDexId;recentCard?: MadeCard | null;participants: MadeParticipant[];onBack: () => void;onSwitchDex: (id: MadeDexId) => void;onRegister: () => void;onManageParticipants: () => void;onOpenInfo: () => void;onTab: (tab: NavTab) => void;}
 
 const CARDS: MadeCard[] = [{ name: '연남동 파스타집', emoji: '🍝', by: '신', location: '연남동', tags: ['데이트', '기념일'] }, { name: '을지로 노포', emoji: '🍲', by: '윤', location: '을지로', tags: ['점심', '혼밥'] }, { name: '성수 브런치', emoji: '🥞', by: '신', location: '성수동', tags: ['데이트', '주말'] }, { name: '망원 타코', emoji: '🌮', by: '윤', location: '망원동', tags: ['저녁'] }, { name: '한남 스시', emoji: '🍣', by: '신', location: '한남동', tags: ['기념일', '재방문'] }, { name: '연희 베이커리', emoji: '🥐', by: '윤', location: '연희동', tags: ['브런치'] }, { name: '홍대 라멘', emoji: '🍜', by: '신', location: '홍대', tags: ['혼밥', '점심'] }, { name: '이태원 커리', emoji: '🍛', by: '윤', location: '이태원', tags: ['저녁'] }];
 
@@ -31,6 +31,7 @@ export function MadeDexHome({
   onSwitchDex,
   onRegister,
   onManageParticipants,
+  onOpenInfo,
   onTab
 }: Props) {
   const [switchOpen, setSwitchOpen] = useState(false);
@@ -60,6 +61,13 @@ export function MadeDexHome({
             onClick={onRegister}
             className="min-h-touch shrink-0 rounded-full bg-action-primary px-4 text-xs font-bold text-content-on-action shadow-card">
             등록하기
+          </button>
+          <button
+            type="button"
+            onClick={onOpenInfo}
+            aria-label="도감 정보"
+            className="min-h-touch shrink-0">
+            <MenuIcon size={22} aria-hidden className="text-content-primary" />
           </button>
         </div>
 

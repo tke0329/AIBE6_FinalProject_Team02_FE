@@ -5,28 +5,14 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { MadeDexCodeEntry } from '@/features/made/MadeDexInvite';
 import { fetchInvitePreview, joinMadeDex } from '@/features/made/api';
 import { INVITE_CODE_LENGTH, normalizeInviteCode } from '@/features/made/types';
+import type { MadeDexId } from '@/features/made/types';
 import { useAuth } from '@/features/auth/AuthContext';
-import { ApiError, UnauthorizedError } from '@/shared/lib/api';
+import { madeErrorMessage } from '@/features/made/errors';
+import { ApiError } from '@/shared/lib/api';
 import { ROUTES } from '@/shared/lib/routes';
 
-/** 서버 에러 코드 → 화면 문구. 모르는 코드면 서버 message를 그대로 보여준다 */
-const MESSAGES: Record<string, string> = {
-  MADE_DEX_INVITE_CODE_REQUIRED: '초대 코드를 입력해 주세요.',
-  MADE_DEX_INVITE_CODE_INVALID: '존재하지 않는 초대 코드예요.',
-  MADE_DEX_INVITE_CODE_EXPIRED: '만료된 초대 코드예요. 새 코드를 요청해 주세요.',
-  MADE_DEX_ALREADY_JOINED: '이미 이 제작 도감에 참여 중이에요.',
-  MADE_DEX_FULL: '인원이 가득 찬 도감이에요.',
-  MADE_DEX_NOT_FOUND: '사라진 도감이에요.',
-};
-
 function messageOf(failure: unknown): string {
-  if (failure instanceof UnauthorizedError) {
-    return '로그인이 풀렸어요. 다시 로그인해 주세요.';
-  }
-  if (failure instanceof ApiError) {
-    return MESSAGES[failure.code] ?? failure.message;
-  }
-  return '참여하지 못했어요. 잠시 후 다시 시도해 주세요.';
+  return madeErrorMessage(failure, '참여하지 못했어요. 잠시 후 다시 시도해 주세요.');
 }
 
 function JoinContent() {
@@ -38,15 +24,20 @@ function JoinContent() {
   const [groupName, setGroupName] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [alreadyJoined, setAlreadyJoined] = useState(false);
   // 미리보기 응답이 늦게 도착했을 때 "지금 입력된 코드"와 대조하려고 들고 있는다
   const codeRef = useRef('');
+  // 이미 참여 중이라고 알릴 때 어디로 보낼지. 미리보기를 못 읽었으면 목록으로 보낸다
+  const previewDexId = useRef<MadeDexId | null>(null);
 
   const changeCode = useCallback((value: string) => {
     const next = normalizeInviteCode(value);
     codeRef.current = next;
+    previewDexId.current = null;
     setCode(next);
     setGroupName(null);
     setError(null);
+    setAlreadyJoined(false);
   }, []);
 
   // 미리보기는 링크로 들어온 경우에만 부른다.
@@ -55,7 +46,12 @@ function JoinContent() {
     if (!linkedCode || !me) return;
     const prefilled = normalizeInviteCode(linkedCode);
     codeRef.current = prefilled;
+    // 링크가 바뀌었는데 이전 미리보기가 남으면 "도감 열기"가 옛 도감으로 간다
+    previewDexId.current = null;
     setCode(prefilled);
+    setGroupName(null);
+    setError(null);
+    setAlreadyJoined(false);
     if (prefilled.length !== INVITE_CODE_LENGTH) return;
 
     let alive = true;
@@ -66,12 +62,9 @@ function JoinContent() {
     fetchInvitePreview(prefilled).
       then((preview) => {
         if (isStale()) return;
-        // 이미 멤버면 참여 버튼을 보여줄 이유가 없다
-        if (preview.alreadyMember) {
-          router.replace(ROUTES.madeDex(preview.madeDexId));
-          return;
-        }
+        previewDexId.current = preview.madeDexId;
         setGroupName(preview.name);
+        setAlreadyJoined(preview.alreadyMember);
       }).
       catch((failure) => {
         if (!isStale()) setError(messageOf(failure));
@@ -87,10 +80,20 @@ function JoinContent() {
     try {
       router.replace(ROUTES.madeDex(await joinMadeDex(code)));
     } catch (failure) {
-      setError(messageOf(failure));
+      // 미리보기 이후 참여했을 수도 있어 여기서도 같은 안내를 띄운다
+      if (failure instanceof ApiError && failure.code === 'MADE_DEX_ALREADY_JOINED') {
+        setAlreadyJoined(true);
+      } else {
+        setError(messageOf(failure));
+      }
       setSubmitting(false);
     }
   }, [code, router]);
+
+  const goToJoinedDex = () => {
+    const dexId = previewDexId.current;
+    router.replace(dexId ? ROUTES.madeDex(dexId) : ROUTES.made);
+  };
 
   // 초대 링크 자체는 로그인 없이 열리지만, 참여는 내가 누구인지 알아야 가능하다.
   // 로그인 후 원래 링크로 되돌리는 처리는 OAuth 콜백이 홈 고정이라 아직 없다.
@@ -117,10 +120,11 @@ function JoinContent() {
       code={code}
       onCodeChange={changeCode}
       groupName={groupName}
+      alreadyJoined={alreadyJoined}
       submitting={submitting}
       error={error}
       onBack={() => router.push(ROUTES.made)}
-      onSubmit={() => void submit()} />);
+      onSubmit={() => (alreadyJoined ? goToJoinedDex() : void submit())} />);
 
 }
 

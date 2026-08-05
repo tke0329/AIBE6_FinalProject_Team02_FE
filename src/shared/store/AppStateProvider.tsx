@@ -30,10 +30,18 @@ import React, {
 
 export type RegistrationSource = "basic" | "made" | "challenge";
 
-// TODO(멤버 관리 이슈): 제목·참여자는 아직 목업. 초대 코드는 API로 옮겼다
-const MADE_DEX_TITLE: Record<MadeDexId, string> = {
-  1: "우리의 데이트 도감",
-  2: "회사 점심 도감",
+// TODO(CATCHEAT-32): 도감 홈 아바타도 members API로 교체
+const MADE_PARTICIPANTS: Record<MadeDexId, MadeParticipant[]> = {
+  1: [
+    { id: "me", name: "신" },
+    { id: "yoon", name: "윤" },
+  ],
+  2: [
+    { id: "me", name: "신" },
+    { id: "yoon", name: "윤" },
+    { id: "min", name: "민" },
+    { id: "jay", name: "J" },
+  ],
 };
 
 /**
@@ -71,8 +79,6 @@ interface AppStore {
 
   // 제작 도감
   madeParticipants: Record<MadeDexId, MadeParticipant[]>;
-  madeDexTitle: (dexId: MadeDexId) => string;
-  removeParticipant: (dexId: MadeDexId, participantId: string) => void;
   recentMadeCard: MadeCard | null;
 
   // 챌린지
@@ -146,20 +152,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     refreshEntries().finally(() => setEntriesLoading(false));
   }, [authLoading, refreshEntries]);
 
-  const [madeParticipants, setMadeParticipants] = useState<
-    Record<MadeDexId, MadeParticipant[]>
-  >({
-    1: [
-      { id: "me", name: "신" },
-      { id: "yoon", name: "윤" },
-    ],
-    2: [
-      { id: "me", name: "신" },
-      { id: "yoon", name: "윤" },
-      { id: "min", name: "민" },
-      { id: "jay", name: "J" },
-    ],
-  });
+  const madeParticipants: Record<MadeDexId, MadeParticipant[]> = MADE_PARTICIPANTS;
   const [recentMadeCard, setRecentMadeCard] = useState<MadeCard | null>(null);
 
   const [challenges, setChallenges] =
@@ -226,18 +219,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       setSelectedTags([]);
       setRecordDraft({ memo: "", location: "" });
       setHasUpload(false);
-    },
-    [],
-  );
-
-  const removeParticipant = useCallback(
-    (dexId: MadeDexId, participantId: string) => {
-      setMadeParticipants((current) => ({
-        ...current,
-        [dexId]: (current[dexId] ?? []).filter(
-          (person) => person.id !== participantId,
-        ),
-      }));
     },
     [],
   );
@@ -360,8 +341,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         }
       },
       madeParticipants,
-      madeDexTitle: (dexId) => MADE_DEX_TITLE[dexId] ?? "제작 도감",
-      removeParticipant,
       recentMadeCard,
       challenges,
       createdThisMonth,
@@ -388,7 +367,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       profilePhoto,
       onboardingSeen,
       madeParticipants,
-      removeParticipant,
       recentMadeCard,
       challenges,
       createdThisMonth,

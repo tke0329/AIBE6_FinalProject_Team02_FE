@@ -27,6 +27,7 @@ export default function MadeDexHomePage() {
         router.push(ROUTES.register);
       }}
       onManageParticipants={() => router.push(ROUTES.madeParticipants(dexId))}
+      onOpenInfo={() => router.push(ROUTES.madeInfo(dexId))}
       onTab={(tab) => router.push(getTabHref(tab))} />);
 
 }

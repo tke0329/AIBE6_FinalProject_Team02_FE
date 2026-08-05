@@ -4,15 +4,26 @@ import {
   CheckIcon,
   ClipboardIcon,
   CopyIcon,
+  CrownIcon,
   LinkIcon,
+  LogOutIcon,
   RefreshCwIcon,
   UsersIcon,
 } from 'lucide-react';
 
-import { Badge } from '@/shared/ui/atoms/Badge';
-import { inviteDaysLeft, INVITE_CODE_LENGTH, MadeParticipant } from './types';
+import {
+  inviteDaysLeft,
+  INVITE_CODE_LENGTH,
+  memberInitial,
+  memberName,
+} from './types';
+import type { MadeDexMember, MadeDexRole } from './types';
 
-export type { MadeParticipant } from './types';
+// owner를 들고 있는 이유는 그룹장의 나가기가 그룹 삭제라 경고 문구가 완전히 다르기 때문이다
+type Confirm =
+  | { kind: 'kick'; member: MadeDexMember }
+  | { kind: 'transfer'; member: MadeDexMember }
+  | { kind: 'leave'; owner: boolean };
 
 interface Props {
   dexTitle: string;
@@ -28,13 +39,22 @@ interface Props {
   loadFailed: boolean;
   issuing: boolean;
   error: string | null;
-  participants: MadeParticipant[];
+  members: MadeDexMember[];
+  maxMembers: number;
+  /** 목록을 아직 못 읽었으면 null */
+  myRole: MadeDexRole | null;
+  membersLoading: boolean;
+  membersFailed: boolean;
+  memberBusy: boolean;
+  memberError: string | null;
   onBack: () => void;
   onIssue: () => void;
   onRetry: () => void;
   /** 실제로 클립보드에 들어갔는지 돌려준다 */
   onCopy: (text: string) => Promise<boolean>;
-  onRemove: (id: string) => void;
+  onKick: (member: MadeDexMember) => void;
+  onTransfer: (member: MadeDexMember) => void;
+  onLeave: () => void;
 }
 
 export function MadeDexInvite({
@@ -47,17 +67,25 @@ export function MadeDexInvite({
   loadFailed,
   issuing,
   error,
-  participants,
+  members,
+  maxMembers,
+  myRole,
+  membersLoading,
+  membersFailed,
+  memberBusy,
+  memberError,
   onBack,
   onIssue,
   onRetry,
   onCopy,
-  onRemove,
+  onKick,
+  onTransfer,
+  onLeave,
 }: Props) {
   // 어느 버튼을 눌렀는지까지 기억해야 "복사했어요"가 그 버튼에만 뜬다
   const [copied, setCopied] = useState<'code' | 'link' | null>(null);
   const [copyFailed, setCopyFailed] = useState(false);
-  const [removing, setRemoving] = useState<MadeParticipant | null>(null);
+  const [confirm, setConfirm] = useState<Confirm | null>(null);
 
   // 클립보드 API는 https나 localhost가 아니면 아예 없다.
   // 결과를 확인하지 않으면 복사되지 않았는데 "복사했어요"가 뜬다.
@@ -172,82 +200,226 @@ export function MadeDexInvite({
           <div className="flex items-center gap-2">
             <UsersIcon size={18} className="text-orange-500" />
             <h2 className="font-display text-lg text-brown">
-              참여자 {participants.length}명
+              참여자 {members.length}/{maxMembers}명
             </h2>
           </div>
-          {/* TODO(멤버 관리 이슈): 참여자 목록과 내보내기는 아직 목 데이터다 */}
-          <div className="mt-3 space-y-2">
-            {participants.map((participant) => (
-              <article
-                key={participant.id}
-                className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-soft">
-                <Badge
-                  variant="member"
-                  className="h-10 w-10 border-0 text-sm"
-                  label={`참여자 ${participant.name}`}>
-                  {participant.name}
-                </Badge>
-                <span className="flex-1 text-sm font-bold text-brown">
-                  {participant.name}님
-                </span>
-                {participant.id !== 'me' && (
-                  <button
-                    onClick={() => setRemoving(participant)}
-                    className="min-h-touch rounded-full bg-cream-200 px-4 text-xs font-bold text-brown-soft">
-                    삭제
-                  </button>
-                )}
-              </article>
-            ))}
-          </div>
+
+          {membersLoading ? (
+            <p className="mt-3 text-sm text-brown-muted">참여자를 불러오는 중…</p>
+          ) : membersFailed ? (
+            <div className="mt-3 rounded-2xl bg-white p-4 shadow-soft">
+              <p className="text-sm text-brown-soft">
+                참여자를 불러오지 못했어요.
+              </p>
+              <button
+                onClick={onRetry}
+                className="mt-3 inline-flex items-center gap-2 rounded-full bg-cream-200 px-4 py-2 text-xs font-bold text-brown-soft">
+                <RefreshCwIcon size={14} />
+                다시 시도
+              </button>
+            </div>
+          ) : (
+            <div className="mt-3 space-y-2">
+              {members.map((member) => (
+                <article
+                  key={member.userId}
+                  className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-soft">
+                  <MemberAvatar member={member} />
+                  <div className="flex-1 min-w-0">
+                    <p className="truncate text-sm font-bold text-brown">
+                      {memberName(member)}
+                      {member.me && (
+                        <span className="ml-1 text-xs text-brown-muted">(나)</span>
+                      )}
+                    </p>
+                    {member.role === 'OWNER' && (
+                      <span className="mt-0.5 inline-flex items-center gap-1 text-xs font-bold text-orange-600">
+                        <CrownIcon size={12} aria-hidden />
+                        그룹장
+                      </span>
+                    )}
+                  </div>
+                  {myRole === 'OWNER' && !member.me && (
+                    <div className="flex shrink-0 gap-1">
+                      <button
+                        disabled={memberBusy}
+                        onClick={() => setConfirm({ kind: 'transfer', member })}
+                        className="min-h-touch rounded-full bg-cream-200 px-3 text-xs font-bold text-brown-soft disabled:opacity-40">
+                        위임
+                      </button>
+                      <button
+                        disabled={memberBusy}
+                        onClick={() => setConfirm({ kind: 'kick', member })}
+                        className="min-h-touch rounded-full bg-cream-200 px-3 text-xs font-bold text-brown-soft disabled:opacity-40">
+                        내보내기
+                      </button>
+                    </div>
+                  )}
+                </article>
+              ))}
+            </div>
+          )}
+
+          {memberError && (
+            <p className="mt-3 text-sm font-bold text-red-500">{memberError}</p>
+          )}
         </section>
+
+        {/* 역할을 알기 전에는 감춘다. 그룹장에게 나가기는 그룹 삭제라 문구가 달라야 한다 */}
+        {!membersLoading && !membersFailed && myRole && (
+          <section className="mt-5">
+            <button
+              disabled={memberBusy}
+              onClick={() =>
+                setConfirm({ kind: 'leave', owner: myRole === 'OWNER' })
+              }
+              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white py-3 text-sm font-bold text-red-500 shadow-soft disabled:opacity-40">
+              <LogOutIcon size={16} aria-hidden />
+              {myRole === 'OWNER' ? '도감 없애고 나가기' : '도감에서 나가기'}
+            </button>
+          </section>
+        )}
 
         {/* 코드를 뿌리는 방법 안내라 그룹장에게만 의미가 있다 */}
         {canManage && (
           <section className="mt-5 rounded-2xl bg-white p-4 text-sm text-brown-soft shadow-soft">
             <ClipboardIcon size={18} className="mb-2 text-orange-500" />
-            코드를 받은 친구는 제작 도감 목록에서{' '}
-            <strong className="text-brown">초대 코드로 참여</strong>를 선택해{' '}
+            코드를 받은 친구는 제작 도감 목록 위쪽{' '}
+            <strong className="text-brown">초대코드</strong>를 눌러{' '}
             {INVITE_CODE_LENGTH}자리 코드를 입력하면 돼요. 링크를 보냈다면 누르는
             것만으로 코드가 채워져요.
           </section>
         )}
       </main>
 
-      {removing && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/35 px-5">
-          <section
-            role="dialog"
-            aria-modal="true"
-            className="w-full rounded-3xl bg-cream-50 p-5 shadow-pop">
-            <h2 className="font-display text-xl text-brown">
-              참여자를 내보낼까요?
-            </h2>
-            <p className="mt-2 text-sm text-brown-soft">
-              {removing.name}님을 도감에서 내보낼까요?
-              <br />
-              기존에 등록한 카드는 유지됩니다.
-            </p>
-            <div className="mt-5 grid grid-cols-2 gap-2">
-              <button
-                onClick={() => setRemoving(null)}
-                className="rounded-2xl bg-cream-200 py-3 text-sm font-bold text-brown-soft">
-                취소
-              </button>
-              <button
-                onClick={() => {
-                  onRemove(removing.id);
-                  setRemoving(null);
-                }}
-                className="rounded-2xl bg-orange-500 py-3 text-sm font-bold text-white">
-                내보내기
-              </button>
-            </div>
-          </section>
-        </div>
+      {confirm && (
+        <ConfirmDialog
+          confirm={confirm}
+          dexTitle={dexTitle}
+          onCancel={() => setConfirm(null)}
+          onConfirm={() => {
+            if (confirm.kind === 'kick') onKick(confirm.member);
+            else if (confirm.kind === 'transfer') onTransfer(confirm.member);
+            else onLeave();
+            setConfirm(null);
+          }} />
       )}
     </div>
   );
+}
+
+function MemberAvatar({ member }: {member: MadeDexMember;}) {
+  const name = memberName(member);
+
+  if (member.profileImageUrl) {
+    return (
+      // presigned URL이라 next/image의 도메인 설정 대상이 아니다
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={member.profileImageUrl}
+        alt={`${name} 프로필 사진`}
+        className="h-10 w-10 shrink-0 rounded-full object-cover" />);
+
+  }
+
+  return (
+    <span
+      aria-hidden
+      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cream-200 text-sm font-bold text-brown">
+      {memberInitial(member)}
+    </span>);
+
+}
+
+interface ConfirmDialogProps {
+  confirm: Confirm;
+  dexTitle: string;
+  onCancel: () => void;
+  onConfirm: () => void;
+}
+
+// 확인을 누르면 바로 닫는다. 진행 상태와 실패는 목록 쪽에서 알린다
+function ConfirmDialog({
+  confirm,
+  dexTitle,
+  onCancel,
+  onConfirm,
+}: ConfirmDialogProps) {
+  const copy =
+    confirm.kind === 'kick'
+      ? {
+          title: '참여자를 내보낼까요?',
+          body: (
+            <>
+              {memberName(confirm.member)}님을 도감에서 내보낼까요?
+              <br />
+              등록한 카드는 그대로 남고, 초대 코드를 다시 받으면 들어올 수 있어요.
+            </>
+          ),
+          action: '내보내기',
+        }
+      : confirm.kind === 'transfer'
+        ? {
+            title: '그룹장을 넘길까요?',
+            body: (
+              <>
+                {memberName(confirm.member)}님이 그룹장이 되고, 나는 일반
+                참여자가 돼요.
+                <br />
+                초대 코드 관리도 함께 넘어가요.
+              </>
+            ),
+            action: '위임하기',
+          }
+        : confirm.owner
+          ? {
+              title: '도감이 사라져요',
+              body: (
+                <>
+                  그룹장이 나가면 {dexTitle}이 사라지고, 참여자 모두가 함께
+                  나가게 돼요.
+                  <br />
+                  도감을 남기고 싶다면 먼저 다른 참여자에게 그룹장을 위임해
+                  주세요.
+                </>
+              ),
+              action: '없애고 나가기',
+            }
+          : {
+              title: '도감에서 나갈까요?',
+              body: (
+                <>
+                  {dexTitle}에서 나가면 카드를 더 등록할 수 없어요.
+                  <br />
+                  초대 코드를 다시 받으면 들어올 수 있어요.
+                </>
+              ),
+              action: '나가기',
+            };
+
+  return (
+    <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/35 px-5">
+      <section
+        role="dialog"
+        aria-modal="true"
+        className="w-full rounded-3xl bg-cream-50 p-5 shadow-pop">
+        <h2 className="font-display text-xl text-brown">{copy.title}</h2>
+        <p className="mt-2 text-sm leading-5 text-brown-soft">{copy.body}</p>
+        <div className="mt-5 grid grid-cols-2 gap-2">
+          <button
+            onClick={onCancel}
+            className="rounded-2xl bg-cream-200 py-3 text-sm font-bold text-brown-soft">
+            취소
+          </button>
+          <button
+            onClick={onConfirm}
+            className="rounded-2xl bg-orange-500 py-3 text-sm font-bold text-white">
+            {copy.action}
+          </button>
+        </div>
+      </section>
+    </div>);
+
 }
 
 interface CodeEntryProps {
@@ -256,6 +428,8 @@ interface CodeEntryProps {
   onCodeChange: (code: string) => void;
   /** 링크로 들어왔을 때 미리 확인한 그룹 이름 */
   groupName: string | null;
+  /** 이미 멤버다. 참여시키는 대신 도감으로 보낸다 */
+  alreadyJoined: boolean;
   submitting: boolean;
   error: string | null;
   onBack: () => void;
@@ -267,6 +441,7 @@ export function MadeDexCodeEntry({
   code,
   onCodeChange,
   groupName,
+  alreadyJoined,
   submitting,
   error,
   onBack,
@@ -283,32 +458,48 @@ export function MadeDexCodeEntry({
 
       <main className="flex-1 px-5 pt-8">
         <div className="rounded-3xl bg-white p-5 text-center shadow-soft">
-          <span className="text-4xl">🤝</span>
+          <span className="text-4xl">{alreadyJoined ? '📔' : '🤝'}</span>
           <h1 className="mt-3 font-display text-xl text-brown">
-            {groupName
-              ? `${groupName}에 참여할까요?`
-              : '친구의 제작 도감에 참여해요'}
+            {alreadyJoined
+              ? '이미 참여하고 있는 도감이에요'
+              : groupName
+                ? `${groupName}에 참여할까요?`
+                : '친구의 제작 도감에 참여해요'}
           </h1>
           <p className="mt-2 text-sm leading-5 text-brown-muted">
-            초대받은 {INVITE_CODE_LENGTH}자리 코드를 입력하면
-            <br />
-            함께 카드를 등록할 수 있어요.
+            {alreadyJoined ? (
+              <>
+                {groupName ? `${groupName}은 ` : '이 도감은 '}
+                이미 내 목록에 있어요.
+                <br />
+                코드를 다시 입력하지 않아도 바로 열 수 있어요.
+              </>
+            ) : (
+              <>
+                초대받은 {INVITE_CODE_LENGTH}자리 코드를 입력하면
+                <br />
+                함께 카드를 등록할 수 있어요.
+              </>
+            )}
           </p>
-          <input
-            value={code}
-            onChange={(event) => onCodeChange(event.target.value)}
-            placeholder="ABC123"
-            className="mt-6 w-full rounded-2xl border-2 border-cream-300 bg-cream-50 px-4 py-4 text-center font-display text-2xl uppercase tracking-[0.22em] outline-none focus:border-orange-400" />
+          {/* 이미 멤버면 코드는 확인이 끝난 값이라 고칠 이유가 없다 */}
+          {!alreadyJoined && (
+            <input
+              value={code}
+              onChange={(event) => onCodeChange(event.target.value)}
+              placeholder="ABC123"
+              className="mt-6 w-full rounded-2xl border-2 border-cream-300 bg-cream-50 px-4 py-4 text-center font-display text-2xl uppercase tracking-[0.22em] outline-none focus:border-orange-400" />
+          )}
           {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
         </div>
       </main>
 
       <div className="px-5 pb-8">
         <button
-          disabled={code.length !== INVITE_CODE_LENGTH || submitting}
+          disabled={!alreadyJoined && (code.length !== INVITE_CODE_LENGTH || submitting)}
           onClick={onSubmit}
           className="w-full rounded-2xl bg-orange-500 py-4 font-display text-lg text-white shadow-card disabled:opacity-40">
-          {submitting ? '참여하는 중…' : '도감 참여하기'}
+          {alreadyJoined ? '도감 열기' : submitting ? '참여하는 중…' : '도감 참여하기'}
         </button>
       </div>
     </div>
