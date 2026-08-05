@@ -18,6 +18,13 @@ export interface ChallengeTarget {
   imageUrl?: string;
   /** 개설 화면에서만 사용 — 업로드 전 로컬 파일 */
   file?: File | null;
+  /** 위치 인증 챌린지 — 목표 장소 */
+  placeName?: string | null;
+  lat?: number | null;
+  lng?: number | null;
+  /** 상세 기록 뷰 — 내가 인증한 사진/시각 (해금 시) */
+  myImageUrl?: string | null;
+  unlockedAt?: string | null;
 }
 
 export interface ChallengeData {
@@ -37,6 +44,8 @@ export interface ChallengeData {
   /** 기간 한정 챌린지가 종료됐는지(참여·등록 불가) */
   ended?: boolean;
   isCreator?: boolean;
+  /** 인증 방식 — 위치 인증이면 해금 시 현재 좌표 필요 */
+  verifyType?: 'FOOD' | 'LOCATION';
   target?: number;
   targetRestaurants?: ChallengeTarget[];
   completedTargetIds?: string[];

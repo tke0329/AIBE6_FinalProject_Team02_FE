@@ -38,3 +38,16 @@ export async function searchPlaces(
 export function displayAddress(place: PlaceSummary): string | null {
   return place.roadAddress ?? place.address;
 }
+
+/** 주소 → 좌표 (카카오 주소 검색). 위치 인증 챌린지에서 주소로 직접 지정할 때 사용 */
+export interface GeoPoint {
+  address: string;
+  lat: number | null;
+  lng: number | null;
+}
+
+export async function geocodeAddress(address: string): Promise<GeoPoint> {
+  return apiFetch<GeoPoint>(
+    `/api/v1/places/geocode?address=${encodeURIComponent(address)}`,
+  );
+}

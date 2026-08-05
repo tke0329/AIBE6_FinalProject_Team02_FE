@@ -1,15 +1,12 @@
-import { resolveBadgeImage } from "@/shared/data/badgeAssets";
-import { Badge } from "@/shared/ui/atoms/Badge";
-import {
-  ArrowLeftIcon,
-  BadgeIcon,
-  CameraIcon,
-  PlusIcon,
-  Trash2Icon,
-} from "lucide-react";
-import React, { useRef, useState } from "react";
-import { ChallengeData, ChallengeTarget, RewardBadge } from "./types";
-
+import { resolveBadgeImage } from '@/shared/data/badgeAssets';
+import { useAppState } from '@/shared/store/AppStateProvider';
+import { Badge } from '@/shared/ui/atoms/Badge';
+import { ArrowLeftIcon, BadgeIcon, CameraIcon, MapPinIcon, PlusIcon, Trash2Icon } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { ChallengeData, ChallengeTarget, RewardBadge } from './types';
+import { PlacePicker } from '@/features/register/PlacePicker';
+import { LocationInput } from '@/features/register/confirmApi';
+import { geocodeAddress } from '@/features/register/placeApi';
 interface Props {
   createdThisMonth: number;
   customBadge: RewardBadge | null;
@@ -35,11 +32,50 @@ export function ChallengeCreate({
   onCustomBadge,
   onUsePreset,
 }: Props) {
-  const [title, setTitle] = useState("");
-  const [targetName, setTargetName] = useState("");
+  const { challengeDraft, setChallengeDraft } = useAppState();
+  const title = challengeDraft.title;
+  const setTitle = (value: string) =>
+    setChallengeDraft({ ...challengeDraft, title: value });
+  const [targetName, setTargetName] = useState('');
   const [targetFile, setTargetFile] = useState<File | null>(null);
-  const [targetPreview, setTargetPreview] = useState("");
-  const [targets, setTargets] = useState<ChallengeTarget[]>([]);
+  const [targetPreview, setTargetPreview] = useState('');
+  const [targetPlace, setTargetPlace] = useState<LocationInput | null>(null);
+  const [addressInput, setAddressInput] = useState('');
+  const [addressError, setAddressError] = useState('');
+  const [resolving, setResolving] = useState(false);
+  // 주소 → 좌표 지오코딩 후 선택 장소로 지정
+  const resolveAddress = async () => {
+    const q = addressInput.trim();
+    if (!q || resolving) return;
+    setResolving(true);
+    setAddressError('');
+    try {
+      const g = await geocodeAddress(q);
+      if (g.lat == null || g.lng == null) {
+        setAddressError('해당 주소의 위치를 찾지 못했어요.');
+        return;
+      }
+      setTargetPlace({ name: g.address || q, lat: g.lat, lng: g.lng });
+      setAddressInput('');
+    } catch {
+      setAddressError('주소를 찾지 못했어요. 다시 확인해 주세요.');
+    } finally {
+      setResolving(false);
+    }
+  };
+  const targets = challengeDraft.targets;
+  const setTargets = (
+    updater:
+      | ChallengeTarget[]
+      | ((current: ChallengeTarget[]) => ChallengeTarget[]),
+  ) =>
+    setChallengeDraft({
+      ...challengeDraft,
+      targets:
+        typeof updater === 'function'
+          ? updater(challengeDraft.targets)
+          : updater,
+    });
   const [selectedCode, setSelectedCode] = useState(PRESETS[0].code);
   const [presetName, setPresetName] = useState(PRESETS[0].name); // 프리셋 기본 이름(편집 가능)
   const [submitting, setSubmitting] = useState(false); // 개설 중복 제출 방지
@@ -53,6 +89,13 @@ export function ChallengeCreate({
     resolveBadgeImage(selectedPreset.code, undefined) ??
     undefined;
   const enough = targets.length >= MIN_TARGETS; // 최소 5개 이상이어야 개설 가능
+  const verifyType = challengeDraft.verifyType;
+  const periodType = challengeDraft.periodType;
+  const endsAt = challengeDraft.endsAt;
+  const patchDraft = (patch: Partial<typeof challengeDraft>) =>
+    setChallengeDraft({ ...challengeDraft, ...patch });
+  // 기간 한정이면 종료일이 있어야 개설 가능
+  const periodOk = periodType === 'PERMANENT' || endsAt.trim().length > 0;
   const fileRef = useRef<HTMLInputElement>(null);
   const onPickFile = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -61,23 +104,31 @@ export function ChallengeCreate({
     setTargetFile(file);
     setTargetPreview(URL.createObjectURL(file));
   };
+  // 위치 인증은 좌표까지 있어야 함(직접 입력·좌표 없는 장소는 불가)
+  const placeReady =
+    targetPlace != null && targetPlace.lat != null && targetPlace.lng != null;
   const addTarget = () => {
     if (!targetName.trim()) return;
+    if (verifyType === 'LOCATION' && !placeReady) return; // 위치 인증은 좌표 필수
     setTargets((current) => [
       ...current,
       {
         id: `target-${Date.now()}`,
         name: targetName.trim(),
         file: targetFile,
-        imageUrl: targetPreview || "/images/default_food.png",
+        imageUrl: targetPreview || '/images/default_food.png',
+        placeName: targetPlace?.name ?? null,
+        lat: targetPlace?.lat ?? null,
+        lng: targetPlace?.lng ?? null,
       },
     ]);
-    setTargetName("");
+    setTargetName('');
     setTargetFile(null);
-    setTargetPreview("");
+    setTargetPreview('');
+    setTargetPlace(null);
   };
   const create = async () => {
-    if (submitting || !title.trim() || !enough || !canCreate) return;
+    if (submitting || !title.trim() || !enough || !periodOk || !canCreate) return;
     setSubmitting(true);
     try {
       await onCreate({
@@ -138,6 +189,56 @@ export function ChallengeCreate({
           />
         </label>
         <section className="mt-5">
+          <h2 className="font-display text-lg text-brown">인증 방식</h2>
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => patchDraft({ verifyType: 'FOOD' })}
+              className={`rounded-2xl border-2 p-3 text-left text-sm font-bold ${verifyType === 'FOOD' ? 'border-orange-500 bg-orange-50 text-orange-600' : 'border-transparent bg-white text-brown shadow-soft'}`}
+            >
+              📸 음식 사진
+              <span className="mt-0.5 block text-xs font-normal text-brown-muted">사진으로 인증</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => patchDraft({ verifyType: 'LOCATION' })}
+              className={`rounded-2xl border-2 p-3 text-left text-sm font-bold ${verifyType === 'LOCATION' ? 'border-orange-500 bg-orange-50 text-orange-600' : 'border-transparent bg-white text-brown shadow-soft'}`}
+            >
+              📍 위치 인증
+              <span className="mt-0.5 block text-xs font-normal text-brown-muted">지정 위치에서 인증</span>
+            </button>
+          </div>
+
+          <h2 className="mt-5 font-display text-lg text-brown">기한</h2>
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => patchDraft({ periodType: 'PERMANENT', endsAt: '' })}
+              className={`rounded-2xl border-2 p-3 text-sm font-bold ${periodType === 'PERMANENT' ? 'border-orange-500 bg-orange-50 text-orange-600' : 'border-transparent bg-white text-brown shadow-soft'}`}
+            >
+              상시
+            </button>
+            <button
+              type="button"
+              onClick={() => patchDraft({ periodType: 'LIMITED' })}
+              className={`rounded-2xl border-2 p-3 text-sm font-bold ${periodType === 'LIMITED' ? 'border-orange-500 bg-orange-50 text-orange-600' : 'border-transparent bg-white text-brown shadow-soft'}`}
+            >
+              기간 한정
+            </button>
+          </div>
+          {periodType === 'LIMITED' && (
+            <label className="mt-2 block">
+              <span className="mb-1 block text-xs font-bold text-brown-soft">종료일</span>
+              <input
+                type="date"
+                value={endsAt}
+                onChange={(event) => patchDraft({ endsAt: event.target.value })}
+                className="w-full rounded-2xl border border-cream-300 bg-white px-4 py-3 text-sm outline-none focus:border-orange-400"
+              />
+            </label>
+          )}
+        </section>
+        <section className="mt-5">
           <div className="flex items-end justify-between">
             <div>
               <h2 className="font-display text-lg text-brown">
@@ -190,7 +291,7 @@ export function ChallengeCreate({
               />
               <button
                 onClick={addTarget}
-                disabled={!targetName.trim()}
+                disabled={!targetName.trim() || (verifyType === 'LOCATION' && !placeReady)}
                 className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-500 text-white disabled:bg-action-disabled-bg disabled:text-action-disabled-text"
                 aria-label="목표 음식 추가"
               >
@@ -201,6 +302,50 @@ export function ChallengeCreate({
               음식 이름과 사진을 함께 등록하세요. 사진은 상세 도감에서 흑백으로
               보이다가, 참가자가 인증하면 컬러로 바뀌어요.
             </p>
+            {verifyType === 'LOCATION' && (
+              <div className="mt-3 border-t border-cream-200 pt-3">
+                <span className="mb-1.5 block text-xs font-bold text-brown-soft">
+                  인증 장소 (위치 인증 필수)
+                </span>
+                <PlacePicker value={targetPlace} onChange={setTargetPlace} />
+                {/* 또는 주소로 직접 입력 → 좌표 변환 */}
+                <div className="mt-2 flex gap-2">
+                  <input
+                    value={addressInput}
+                    onChange={(event) => setAddressInput(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        event.preventDefault();
+                        resolveAddress();
+                      }
+                    }}
+                    placeholder="또는 주소 입력 (예: 낙성대역6길 17-7)"
+                    className="min-w-0 flex-1 rounded-xl bg-cream-100 px-3 py-2.5 text-sm outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={resolveAddress}
+                    disabled={!addressInput.trim() || resolving}
+                    className="shrink-0 rounded-xl bg-brown px-3 text-sm font-bold text-white disabled:bg-action-disabled-bg disabled:text-action-disabled-text"
+                  >
+                    {resolving ? '확인 중' : '주소 확인'}
+                  </button>
+                </div>
+                {addressError && (
+                  <p className="mt-1.5 text-xs font-medium text-red-500">{addressError}</p>
+                )}
+                {placeReady && targetPlace && (
+                  <p className="mt-1.5 flex items-center gap-1 text-xs font-medium text-green-600">
+                    <MapPinIcon size={13} /> {targetPlace.name} 위치 확인됨
+                  </p>
+                )}
+                {targetPlace && !placeReady && (
+                  <p className="mt-1.5 text-xs font-medium text-orange-600">
+                    검색 결과에서 장소를 고르거나 주소를 입력해 위치를 지정해 주세요.
+                  </p>
+                )}
+              </div>
+            )}
           </div>
           <div className="mt-3 space-y-2">
             {targets.map((target, index) => (
@@ -222,6 +367,11 @@ export function ChallengeCreate({
                 <span className="flex-1 text-sm font-bold text-brown">
                   <small className="mr-1 text-brown-muted">{index + 1}.</small>
                   {target.name}
+                  {target.placeName && (
+                    <small className="mt-0.5 block text-xs font-normal text-brown-muted">
+                      📍 {target.placeName}
+                    </small>
+                  )}
                 </span>
                 <button
                   onClick={() =>
@@ -344,8 +494,13 @@ export function ChallengeCreate({
             {MIN_TARGETS - targets.length}개 더 필요)
           </p>
         )}
+        {canCreate && enough && !periodOk && (
+          <p className="mb-2 text-center text-xs font-medium text-brown-soft">
+            기간 한정 챌린지는 종료일을 선택해 주세요.
+          </p>
+        )}
         <button
-          disabled={submitting || !canCreate || !title.trim() || !enough}
+          disabled={submitting || !canCreate || !title.trim() || !enough || !periodOk}
           onClick={create}
           className="h-cta w-full rounded-full bg-orange-500 font-display text-lg text-white shadow-card disabled:bg-action-disabled-bg disabled:text-action-disabled-text disabled:shadow-none"
         >

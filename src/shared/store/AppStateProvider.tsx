@@ -2,7 +2,11 @@
 
 import { useAuth } from "@/features/auth/AuthContext";
 import { INITIAL_CHALLENGES } from "@/features/challenge/data";
-import { ChallengeData, RewardBadge } from "@/features/challenge/types";
+import {
+  ChallengeData,
+  ChallengeTarget,
+  RewardBadge,
+} from "@/features/challenge/types";
 import {
   fetchBasicDexEntries,
   fetchMyBasicDexEntries,
@@ -19,6 +23,7 @@ import {
 } from "@/features/onboarding/api";
 import { AI_CANDIDATES, DEX_ENTRIES, DexEntry } from "@/shared/data/dex";
 import { BadgeId } from "@/shared/ui/atoms/EquippedBadge";
+
 import React, {
   createContext,
   useCallback,
@@ -88,6 +93,21 @@ interface AppStore {
   createChallenge: (challenge: ChallengeData) => void;
   customBadge: RewardBadge | null;
   setCustomBadge: (badge: RewardBadge | null) => void;
+  challengeDraft: {
+    title: string;
+    targets: ChallengeTarget[];
+    verifyType: "FOOD" | "LOCATION";
+    periodType: "PERMANENT" | "LIMITED";
+    endsAt: string;
+  };
+  setChallengeDraft: (draft: {
+    title: string;
+    targets: ChallengeTarget[];
+    verifyType: "FOOD" | "LOCATION";
+    periodType: "PERMANENT" | "LIMITED";
+    endsAt: string;
+  }) => void;
+  resetChallengeDraft: () => void
 
   // 등록 플로우
   registrationSource: RegistrationSource;
@@ -157,7 +177,25 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
   const [challenges, setChallenges] =
     useState<ChallengeData[]>(INITIAL_CHALLENGES);
-  const [customBadge, setCustomBadge] = useState<RewardBadge | null>(null);
+    const [customBadge, setCustomBadge] = useState<RewardBadge | null>(null);
+  const [challengeDraft, setChallengeDraft] = useState<{
+    title: string;
+    targets: ChallengeTarget[];
+    verifyType: "FOOD" | "LOCATION";
+    periodType: "PERMANENT" | "LIMITED";
+    endsAt: string;
+  }>({ title: "", targets: [], verifyType: "FOOD", periodType: "PERMANENT", endsAt: "" });
+  const resetChallengeDraft = useCallback(
+    () =>
+      setChallengeDraft({
+        title: "",
+        targets: [],
+        verifyType: "FOOD",
+        periodType: "PERMANENT",
+        endsAt: "",
+      }),
+    [],
+  );
 
   const [registrationSource, setRegistrationSource] =
     useState<RegistrationSource>("basic");
@@ -348,6 +386,9 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       createChallenge,
       customBadge,
       setCustomBadge,
+      challengeDraft,
+      setChallengeDraft,
+      resetChallengeDraft,
       registrationSource,
       registrationChallengeId,
       registrationMadeDexId,
@@ -373,6 +414,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       findChallenge,
       createChallenge,
       customBadge,
+      challengeDraft,
       registrationSource,
       registrationChallengeId,
       registrationMadeDexId,

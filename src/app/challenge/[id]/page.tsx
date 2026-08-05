@@ -1,28 +1,32 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { notFound, useParams, useRouter } from 'next/navigation';
 import { ChallengeDetail } from '@/features/challenge/ChallengeDetail';
 import { RewardModal } from '@/features/challenge/RewardModal';
 import {
+  ChallengeDetailData,
   fetchChallengeDetail,
   fetchRewardBadge,
   joinChallenge,
-  unlockSlot,
-  ChallengeDetailData,
+  leaveChallenge,
   RewardBadgeInfo,
+  unlockSlot,
 } from '@/features/challenge/api';
-import { uploadImageToS3 } from '@/shared/lib/upload';
 import { ChallengeData } from '@/features/challenge/types';
 import { resolveBadgeImage } from '@/shared/data/badgeAssets';
-import { useAppState } from '@/shared/store/AppStateProvider';
 import { ROUTES } from '@/shared/lib/routes';
+import { uploadImageToS3 } from '@/shared/lib/upload';
+import { useAppState } from '@/shared/store/AppStateProvider';
+import { notFound, useParams, useRouter } from 'next/navigation';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { AlertModal } from '@/shared/ui/molecules/AlertModal';
+
 
 function ddayLabel(endsAt: string) {
   const days = Math.ceil((new Date(endsAt).getTime() - Date.now()) / 86_400_000);
   return days >= 0 ? `D-${days}` : '종료';
 }
 
+/** 위치 인증용 현재 좌표 취득 (권한 필요) */
 /** BE 상세 → 화면용 ChallengeData */
 function toChallengeData(d: ChallengeDetailData): ChallengeData {
   const total = d.slots.length;
@@ -37,11 +41,20 @@ function toChallengeData(d: ChallengeDetailData): ChallengeData {
     owner: '',
     joined: d.joined,
     completed: d.completed,
+    verifyType: d.verifyType,
     ended: d.periodType === 'LIMITED' && !!d.endsAt && new Date(d.endsAt).getTime() <= Date.now(),
     mine: `나 ${unlocked}/${total}`,
-    progress: total ? Math.round((unlocked / total) * 100) : 0,
+    progress: total ? unlocked / total : 0, // ProgressBar는 0~1 비율
     target: total,
-    targetRestaurants: d.slots.map((s) => ({ id: String(s.id), name: s.foodName, emoji: '🍽️', imageUrl: s.imageUrl ?? undefined })),
+    targetRestaurants: d.slots.map((s) => ({
+      id: String(s.id),
+      name: s.foodName,
+      emoji: '🍽️',
+      imageUrl: s.imageUrl ?? undefined,
+      placeName: s.placeName,
+      myImageUrl: s.myImageUrl,
+      unlockedAt: s.unlockedAt,
+    })),
     completedTargetIds: d.slots.filter((s) => s.unlocked).map((s) => String(s.id)),
   };
 }
@@ -56,6 +69,7 @@ export default function ChallengeDetailPage() {
   const [missing, setMissing] = useState(false);
   const [rewardBadge, setRewardBadge] = useState<RewardBadgeInfo | null>(null);
   const [showReward, setShowReward] = useState(false);
+  const [alertMessage, setAlertMessage] = useState<string | null>(null);
   const reqRef = useRef(0); // 최신 요청만 반영 — 다른 챌린지 응답이 늦게 도착해 덮는 것 방지
 
   const load = useCallback(() => {
@@ -118,19 +132,25 @@ export default function ChallengeDetailPage() {
           await joinChallenge(id);
           load();   // 참여 후 상태 갱신
         } catch (e) {
-          alert(e instanceof Error ? e.message : '참여에 실패했어요');
+          setAlertMessage(e instanceof Error ? e.message : '참여에 실패했어요');
         }
       }}
-      onUnlock={async (slotId, file) => {
+      onLeave={async () => {
+        if (!confirm('이 챌린지를 포기할까요? 내 인증 기록도 사라져요.')) return;
         try {
-          const { key } = await uploadImageToS3(file, file.name);   // S3 업로드 → key
-          const res = await unlockSlot(id, slotId, key);            // 인증(해금)
-          // 이번 해금으로 막 완주했으면 축하 팝업
-          if (res.completed && !challenge?.completed) setShowReward(true);
-          load();                                                   // 진행도 갱신
+          await leaveChallenge(id);
+          router.push(ROUTES.challenge);   // 나가면 목록으로
         } catch (e) {
-          alert(e instanceof Error ? e.message : '인증에 실패했어요');
+          setAlertMessage(e instanceof Error ? e.message : '나가기에 실패했어요');
         }
+      }}
+      onUnlock={async (slotId, file, coords) => {
+        // 위치·에러 처리는 인증 모달이 담당. 여기선 업로드 → 해금만 (실패는 throw)
+        const { key } = await uploadImageToS3(file, file.name);
+        const res = await unlockSlot(id, slotId, key, coords?.lat ?? null, coords?.lng ?? null);
+        // 이번 해금으로 막 완주했으면 축하 팝업
+        if (res.completed && !challenge?.completed) setShowReward(true);
+        load(); // 진행도 갱신
       }}
       onRegister={() => {
         startRegistration('challenge', challenge.id);
@@ -141,6 +161,13 @@ export default function ChallengeDetailPage() {
         badge={rewardBadge}
         onClose={() => setShowReward(false)}
         onGoToBadges={() => router.push(ROUTES.myBadges)}
+      />
+    )}
+    {alertMessage && (
+      <AlertModal
+        title="오류"
+        message={alertMessage}
+        onClose={() => setAlertMessage(null)}
       />
     )}
     </>);

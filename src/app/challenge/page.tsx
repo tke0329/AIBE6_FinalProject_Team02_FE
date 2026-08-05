@@ -1,17 +1,12 @@
 "use client";
 
-import {
-  ChallengeSort,
-  ChallengeSummary,
-  fetchChallenges,
-  fetchCreationTickets,
-  joinChallenge,
-} from "@/features/challenge/api";
-import { ChallengeCountHome } from "@/features/challenge/ChallengeCountHome";
-import { ChallengeData } from "@/features/challenge/types";
-import { getTabHref, ROUTES } from "@/shared/lib/routes";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { ChallengeCountHome } from '@/features/challenge/ChallengeCountHome';
+import { useAppState } from '@/shared/store/AppStateProvider';
+import { getTabHref, ROUTES } from '@/shared/lib/routes';
+import { ChallengeSummary, fetchChallenges, fetchCreationTickets, fetchMyChallenges } from '@/features/challenge/api';
+import { ChallengeData } from '@/features/challenge/types';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 const MONTHLY_LIMIT = 3;
 const PAGE_SIZE = 10;
@@ -19,6 +14,8 @@ const SORTS: ChallengeSort[] = ["LATEST", "VIEWS", "PARTICIPANTS", "UNLOCKS"];
 
 /** 서버 요약 → 화면 카드 형태로 변환 */
 function toChallengeData(c: ChallengeSummary): ChallengeData {
+  const total = c.totalSlots ?? 0;
+  const unlocked = c.unlockedCount ?? 0;
   return {
     id: String(c.id),
     title: c.name,
@@ -31,9 +28,10 @@ function toChallengeData(c: ChallengeSummary): ChallengeData {
           ? ddayLabel(c.endsAt)
           : "기간한정",
     participants: c.participantCount,
-    score: c.rankScore,
-    joined: c.joined,
-    owner: "",
+    owner: '',
+    target: total,
+    mine: `나 ${unlocked}/${total}`,
+    progress: total ? unlocked / total : 0, // ProgressBar는 0~1 비율
   };
 }
 
@@ -62,6 +60,9 @@ function ChallengeHome() {
   );
 
   const [challenges, setChallenges] = useState<ChallengeData[]>([]);
+  const [myCreated, setMyCreated] = useState<ChallengeData[]>([]);
+  const [myJoined, setMyJoined] = useState<ChallengeData[]>([]);
+  const [myCompleted, setMyCompleted] = useState<ChallengeData[]>([]);
   const [createdThisMonth, setCreatedThisMonth] = useState(0);
   const [exploreItems, setExploreItems] = useState<ChallengeData[]>([]);
   const [explorePage, setExplorePage] = useState(0);
@@ -138,6 +139,18 @@ function ChallengeHome() {
     fetchChallenges("ONGOING")
       .then((res) => setChallenges(res.content.map(toChallengeData)))
       .catch(() => {});
+    // 내 챌린지 탭 — relation별로 서버에서 받아 플래그를 붙인다
+    fetchMyChallenges('CREATED')
+      .then((list) => setMyCreated(list.map((c) => ({ ...toChallengeData(c), isCreator: true }))))
+      .catch(() => {});
+    fetchMyChallenges('JOINED')
+      .then((list) => setMyJoined(list.map((c) => ({ ...toChallengeData(c), joined: true }))))
+      .catch(() => {});
+    fetchMyChallenges('COMPLETED')
+      .then((list) =>
+        setMyCompleted(list.map((c) => ({ ...toChallengeData(c), joined: true, completed: true }))),
+      )
+      .catch(() => {});
     fetchCreationTickets()
       .then((t) => setCreatedThisMonth(MONTHLY_LIMIT - t.remaining))
       .catch(() => {});
@@ -180,6 +193,9 @@ function ChallengeHome() {
       mainTab={mainTab}
       onMainTabChange={onMainTabChange}
       challenges={challenges}
+      myCreated={myCreated}
+      myJoined={myJoined}
+      myCompleted={myCompleted}
       createdThisMonth={createdThisMonth}
       exploreItems={exploreItems}
       exploreSort={exploreSort}
