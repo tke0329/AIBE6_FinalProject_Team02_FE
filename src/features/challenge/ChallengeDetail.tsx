@@ -33,6 +33,7 @@ const RANKINGS = [
 export function ChallengeDetail({ challenge, onBack, onRegister, onJoin, onUnlock }: Props) {
   const [activeTab, setActiveTab] = useState<DetailTab>('기록 도감');
   const joined = Boolean(challenge.joined);
+  const ended = Boolean(challenge.ended);
   const targets = challenge.targetRestaurants ?? [];
   const completed = new Set(challenge.completedTargetIds ?? []);
   const badge = challenge.rewardBadge;
@@ -123,12 +124,12 @@ export function ChallengeDetail({ challenge, onBack, onRegister, onJoin, onUnloc
                       accessibleName={unlocked ? `${target.name}, 인증 완료` : '미해금 목표 음식'}
                       footer={
                         <p className="text-center text-xs text-content-secondary">
-                          {unlocked ? '인증 완료' : joined ? '인증하기' : '미해금'}
+                          {unlocked ? '인증 완료' : joined && !ended ? '인증하기' : '미해금'}
                         </p>
                       }
                     />
                   );
-                  return joined && !unlocked ? (
+                  return joined && !unlocked && !ended ? (
                     <button
                       key={target.id}
                       type="button"
@@ -184,7 +185,14 @@ export function ChallengeDetail({ challenge, onBack, onRegister, onJoin, onUnloc
         )}
       </main>
       <div className="border-t border-cream-300 bg-cream-50 px-5 py-4">
-        {joined ? (
+        {ended ? (
+          <button
+            disabled
+            className="h-cta w-full rounded-full bg-cream-200 font-display text-lg text-brown-muted"
+          >
+            종료된 챌린지예요
+          </button>
+        ) : joined ? (
           <button
             onClick={onRegister}
             className="flex h-cta w-full items-center justify-center gap-2 rounded-full bg-orange-500 font-display text-lg text-white shadow-card"
