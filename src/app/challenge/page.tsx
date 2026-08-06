@@ -1,12 +1,18 @@
 "use client";
 
 import { ChallengeCountHome } from '@/features/challenge/ChallengeCountHome';
-import { useAppState } from '@/shared/store/AppStateProvider';
 import { getTabHref, ROUTES } from '@/shared/lib/routes';
-import { ChallengeSummary, fetchChallenges, fetchCreationTickets, fetchMyChallenges } from '@/features/challenge/api';
+import {
+  ChallengeSort,
+  ChallengeSummary,
+  fetchChallenges,
+  fetchCreationTickets,
+  fetchMyChallenges,
+  joinChallenge,
+} from '@/features/challenge/api';
 import { ChallengeData } from '@/features/challenge/types';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
 const MONTHLY_LIMIT = 3;
 const PAGE_SIZE = 10;
@@ -28,6 +34,8 @@ function toChallengeData(c: ChallengeSummary): ChallengeData {
           ? ddayLabel(c.endsAt)
           : "기간한정",
     participants: c.participantCount,
+    score: c.rankScore,
+    joined: c.joined,
     owner: '',
     target: total,
     mine: `나 ${unlocked}/${total}`,

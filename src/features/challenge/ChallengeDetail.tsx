@@ -178,10 +178,10 @@ export function ChallengeDetail({ challenge, onBack, onRegister, onJoin, onUnloc
                 {targets.map((target) => {
                   const unlocked = completed.has(target.id);
                   // 해금됨 → 내 기록 보기, 미해금 & 참여중 → 인증(사진), 그 외 → 정적
-                  const clickable = unlocked || joined;
+                  const clickable = unlocked || (joined && !ended);
                   const onCardClick = unlocked
                     ? () => setRecord(target)
-                    : joined
+                    : joined && !ended
                       ? () => openCertify(target)
                       : undefined;
                   return (
@@ -210,7 +210,7 @@ export function ChallengeDetail({ challenge, onBack, onRegister, onJoin, onUnloc
                           accessibleName={unlocked ? `${target.name}, 인증 완료` : '미해금 목표 음식'}
                           footer={
                             <p className="text-center text-xs text-content-secondary">
-                              {unlocked ? '인증 완료' : joined ? '인증하기' : '미해금'}
+                              {unlocked ? '인증 완료' : joined && !ended ? '인증하기' : '미해금'}
                             </p>
                           }
                         />
@@ -254,7 +254,11 @@ export function ChallengeDetail({ challenge, onBack, onRegister, onJoin, onUnloc
         )}
       </main>
       <div className="border-t border-cream-300 bg-cream-50 px-5 py-4">
-        {joined ? (
+        {ended ? (
+          <p className="flex h-cta w-full items-center justify-center rounded-full bg-cream-200 font-display text-base text-brown-muted">
+            종료된 챌린지예요
+          </p>
+        ) : joined ? (
           <p className="flex h-cta w-full items-center justify-center gap-2 rounded-full bg-orange-50 font-display text-base text-orange-700">
             <PlusIcon size={18} aria-hidden />
             목표 음식을 눌러 인증하세요

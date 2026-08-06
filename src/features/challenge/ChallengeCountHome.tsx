@@ -110,14 +110,10 @@ export function ChallengeCountHome({
   // 내 챌린지 탭은 서버에서 relation별로 받아온 목록을 그대로 사용
   const mine =
     myTab === '참여 중' ? myJoined : myTab === '개설한' ? myCreated : myCompleted;
-  const discover = useMemo(
-    () =>
-      sortMode === '최근 등록순'
-        ? [...challenges].reverse()
-        : [...challenges].sort((a, b) => b.participants - a.participants),
-    [challenges, sortMode],
-  );
-  const podium = [...challenges].sort((a, b) => b.participants - a.participants).slice(0, 3);
+  // 종료 탭은 랭킹 미적용(최근 완료순). 랭킹은 진행중 + 최신순 외 정렬일 때만
+  const ended = exploreStatus === "FINISHED";
+  const isRanking = !ended && exploreSort !== "LATEST";
+  const podium = isRanking ? exploreItems.slice(0, 3) : [];
   return (
     <div className="relative flex h-full flex-col bg-cream-100">
       <header className="px-5 pt-4">

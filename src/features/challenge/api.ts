@@ -52,11 +52,39 @@ export interface ChallengeSummary {
   participantCount: number;
   totalSlots: number; // 전체 목표 수 (내 챌린지 진행도용, 탐색은 0)
   unlockedCount: number; // 내가 해금한 수 (내 챌린지 진행도용, 탐색은 0)
+  rankScore: number | null; // 현재 정렬 지표값(최근 7일 조회/참여/해금). 최신순·완료면 null
+  joined: boolean; // 요청 유저의 참여 여부(탐색 목록 참여중 표시)
 }
 
-/** 챌린지 탐색 (진행중/완료) */
-export function fetchChallenges(status: "ONGOING" | "FINISHED" = "ONGOING") {
-  return apiFetch<ChallengeSummary[]>(`/api/v1/challenges?status=${status}`);
+// 탐색 정렬 기준. 랭킹 3종은 최근 7일 기준
+export type ChallengeSort = "LATEST" | "VIEWS" | "PARTICIPANTS" | "UNLOCKS";
+
+/** 목록 페이지 응답 (BE PageResponse<T>와 대응) */
+export interface PageResponse<T> {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  hasNext: boolean;
+}
+
+/** 챌린지 탐색 (진행중/완료 · 정렬 · 페이지) */
+export function fetchChallenges(
+  status: "ONGOING" | "FINISHED" = "ONGOING",
+  sort: ChallengeSort = "LATEST",
+  page = 0,
+  size = 10,
+) {
+  const q = new URLSearchParams({
+    status,
+    sort,
+    page: String(page),
+    size: String(size),
+  });
+  return apiFetch<PageResponse<ChallengeSummary>>(
+    `/api/v1/challenges?${q.toString()}`,
+  );
 }
 
 export type MyChallengeRelation = "CREATED" | "JOINED" | "COMPLETED";
