@@ -22,6 +22,9 @@ export interface ChallengeTarget {
     placeName?: string | null
     lat?: number | null
     lng?: number | null
+    /** 가게명 · 설명(선택) */
+    storeName?: string | null
+    description?: string | null
     /** 상세 기록 뷰 — 내가 인증한 사진/시각 (해금 시) */
     myImageUrl?: string | null
     unlockedAt?: string | null
@@ -44,8 +47,6 @@ export interface ChallengeData {
     /** 기간 한정 챌린지가 종료됐는지(참여·등록 불가) */
     ended?: boolean
     isCreator?: boolean
-    /** 인증 방식 — 위치 인증이면 해금 시 현재 좌표 필요 */
-    verifyType?: 'FOOD' | 'LOCATION'
     target?: number
     targetRestaurants?: ChallengeTarget[]
     completedTargetIds?: string[]

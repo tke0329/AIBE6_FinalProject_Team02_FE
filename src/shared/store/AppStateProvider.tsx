@@ -73,15 +73,15 @@ interface AppStore {
     setCustomBadge: (badge: RewardBadge | null) => void
     challengeDraft: {
         title: string
+        description: string
         targets: ChallengeTarget[]
-        verifyType: 'FOOD' | 'LOCATION'
         periodType: 'PERMANENT' | 'LIMITED'
         endsAt: string
     }
     setChallengeDraft: (draft: {
         title: string
+        description: string
         targets: ChallengeTarget[]
-        verifyType: 'FOOD' | 'LOCATION'
         periodType: 'PERMANENT' | 'LIMITED'
         endsAt: string
     }) => void
@@ -154,17 +154,17 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     const [customBadge, setCustomBadge] = useState<RewardBadge | null>(null)
     const [challengeDraft, setChallengeDraft] = useState<{
         title: string
+        description: string
         targets: ChallengeTarget[]
-        verifyType: 'FOOD' | 'LOCATION'
         periodType: 'PERMANENT' | 'LIMITED'
         endsAt: string
-    }>({ title: '', targets: [], verifyType: 'FOOD', periodType: 'PERMANENT', endsAt: '' })
+    }>({ title: '', description: '', targets: [], periodType: 'PERMANENT', endsAt: '' })
     const resetChallengeDraft = useCallback(
         () =>
             setChallengeDraft({
                 title: '',
+                description: '',
                 targets: [],
-                verifyType: 'FOOD',
                 periodType: 'PERMANENT',
                 endsAt: '',
             }),
