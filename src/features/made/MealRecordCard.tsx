@@ -1,7 +1,7 @@
 import React from 'react'
 import { PlusIcon } from 'lucide-react'
 import { LogitAvatar } from './LogitAvatar'
-import { cardName } from './logitTypes'
+import { cardName, timeLabel } from './logitTypes'
 import type { LogitFeedCard } from './logitTypes'
 
 interface Props {
@@ -41,26 +41,34 @@ export function MealRecordCard({ card, readOnly = false, onOpen, onRecord }: Pro
                     type="button"
                     onClick={onOpen}
                     aria-label={`${card.me ? '내' : `${name}님의`} 기록 ${card.recordCount}개 보기`}
-                    className="block w-full overflow-hidden rounded-2xl bg-surface-card shadow-card transition-transform active:scale-[0.98]"
+                    className="block w-full overflow-hidden rounded-2xl bg-cream-200 shadow-card transition-transform active:scale-[0.98]"
                 >
-                    <span className="block aspect-[4/3] w-full bg-cream-200">
+                    <span className="relative block aspect-[4/3] w-full bg-cream-200">
                         {card.thumbnailUrl && (
                             // presigned URL이라 next/image의 도메인 설정 대상이 아니다
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={card.thumbnailUrl} alt="" className="h-full w-full object-cover" />
                         )}
-                    </span>
-                    <span className="flex flex-wrap items-center gap-1 p-3">
-                        {chips.map((food) => (
-                            <span
-                                key={food}
-                                className="max-w-full truncate rounded-full bg-orange-100 px-2 py-1 text-xs font-bold text-orange-600"
-                            >
-                                {food}
+                        {/* 사진 밝기를 가리지 않으려고 그라데이션 대신 알약 하나만 얹는다 */}
+                        {card.loggedAt && (
+                            <span className="absolute bottom-2 left-2 rounded-full bg-black/50 px-2.5 py-1 text-xs font-bold tabular-nums text-white backdrop-blur-sm">
+                                {timeLabel(card.loggedAt)}
                             </span>
-                        ))}
-                        {folded > 0 && <span className="text-xs font-bold text-content-muted">+{folded}</span>}
+                        )}
                     </span>
+                    {chips.length > 0 && (
+                        <span className="flex flex-wrap items-center gap-1 p-3">
+                            {chips.map((food) => (
+                                <span
+                                    key={food}
+                                    className="max-w-full truncate rounded-full bg-orange-100 px-2 py-1 text-xs font-bold text-orange-600"
+                                >
+                                    {food}
+                                </span>
+                            ))}
+                            {folded > 0 && <span className="text-xs font-bold text-content-muted">+{folded}</span>}
+                        </span>
+                    )}
                 </button>
             ) : card.me && !readOnly ? (
                 <button

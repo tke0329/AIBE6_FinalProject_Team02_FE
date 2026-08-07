@@ -1,6 +1,13 @@
 import { apiFetch } from '@/shared/lib/api'
 import type { MadeDexId } from './types'
-import type { LogitFeed, LogitRecordDetail, LogitSlot, SlotDeleteResult } from './logitTypes'
+import type {
+    LogitFeed,
+    LogitRecordCreateRequest,
+    LogitRecordDetail,
+    LogitRecordUpdateRequest,
+    LogitSlot,
+    SlotDeleteResult,
+} from './logitTypes'
 
 function base(madeDexId: MadeDexId): string {
     return `/api/v1/made-dexes/${madeDexId}`
@@ -52,6 +59,21 @@ export function restoreSlot(madeDexId: MadeDexId, slotId: number): Promise<Logit
 export function fetchFeed(madeDexId: MadeDexId, date?: string): Promise<LogitFeed> {
     const query = date ? `?date=${date}` : ''
     return apiFetch<LogitFeed>(`${base(madeDexId)}/feed${query}`)
+}
+
+export function createRecord(madeDexId: MadeDexId, request: LogitRecordCreateRequest): Promise<{ recordId: number }> {
+    return apiFetch<{ recordId: number }>(`${base(madeDexId)}/records`, {
+        method: 'POST',
+        body: JSON.stringify(request),
+    })
+}
+
+/** 사진·음식명은 보낸 목록으로 전부 교체된다 */
+export function updateRecord(madeDexId: MadeDexId, recordId: number, request: LogitRecordUpdateRequest): Promise<void> {
+    return apiFetch<void>(`${base(madeDexId)}/records/${recordId}`, {
+        method: 'PUT',
+        body: JSON.stringify(request),
+    })
 }
 
 export function fetchRecord(madeDexId: MadeDexId, recordId: number): Promise<LogitRecordDetail> {

@@ -1,6 +1,8 @@
-import React, { useEffect, useRef } from 'react'
-import { XIcon } from 'lucide-react'
+import React, { useState } from 'react'
+import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
+import { BottomSheet } from '@/shared/ui/molecules/BottomSheet'
 import { Calendar } from '@/shared/ui/molecules/Calendar'
+import { MonthGrid } from './MonthGrid'
 import { formatDate, parseDate } from './logitTypes'
 
 interface Props {
@@ -11,57 +13,106 @@ interface Props {
     onClose: () => void
 }
 
-/** 거슬러 올라갈 개월 수. 개설일을 모르니 일단 1년치를 편다 */
-const MONTHS = 12
+function firstOfMonth(value: Date): Date {
+    return new Date(value.getFullYear(), value.getMonth(), 1)
+}
 
+function shiftMonth(value: Date, delta: number): Date {
+    return new Date(value.getFullYear(), value.getMonth() + delta, 1)
+}
+
+/**
+ * 한 달치만 보여 주고, 먼 날짜는 `연도. 월`을 눌러 옮긴다.
+ * 월 선택은 시트를 새로 띄우지 않고 같은 자리에서 내용만 바뀐다.
+ */
 export function LogitCalendar({ date, today, onSelect, onClose }: Props) {
-    const scrollRef = useRef<HTMLDivElement>(null)
     const todayDate = parseDate(today)
-    const startMonth = new Date(todayDate.getFullYear(), todayDate.getMonth() - (MONTHS - 1), 1)
+    const maxMonth = firstOfMonth(todayDate)
 
-    // 이번 달이 맨 아래에 있다. 열자마자 오늘이 보여야 한다
-    useEffect(() => {
-        const scroll = scrollRef.current
-        if (scroll) scroll.scrollTop = scroll.scrollHeight
-    }, [])
+    const [month, setMonth] = useState(firstOfMonth(parseDate(date)))
+    const [pickingMonth, setPickingMonth] = useState(false)
 
-    useEffect(() => {
-        const onKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') onClose()
-        }
-        document.addEventListener('keydown', onKeyDown)
-        return () => document.removeEventListener('keydown', onKeyDown)
-    }, [onClose])
+    const atMaxMonth = month >= maxMonth
 
     return (
-        <div
-            role="dialog"
-            aria-modal="true"
-            aria-label="날짜 선택"
-            className="absolute inset-0 z-40 flex flex-col bg-surface-app"
-        >
-            <header className="flex shrink-0 items-center gap-2 px-4 pt-4">
-                <h2 className="flex-1 font-display text-xl text-content-primary">날짜 선택</h2>
-                <button type="button" onClick={onClose} aria-label="닫기" className="min-h-touch shrink-0 px-2">
-                    <XIcon size={22} aria-hidden className="text-content-primary" />
-                </button>
-            </header>
+        <BottomSheet title="날짜 선택" showTitle={false} onClose={onClose} draggable>
+            <div className="px-5 pb-8 pt-2">
+                <div className="flex items-center justify-between">
+                    <button
+                        type="button"
+                        onClick={() => setPickingMonth((open) => !open)}
+                        aria-expanded={pickingMonth}
+                        className="flex min-h-touch items-center gap-1 font-display text-xl text-content-primary"
+                    >
+                        {month.getFullYear()}. {String(month.getMonth() + 1).padStart(2, '0')}
+                        <ChevronDownIcon
+                            size={18}
+                            aria-hidden
+                            className={`text-content-muted transition-transform ${pickingMonth ? 'rotate-180' : ''}`}
+                        />
+                    </button>
 
-            <div ref={scrollRef} className="no-scrollbar flex-1 overflow-y-auto px-4 py-4">
-                <Calendar
-                    mode="single"
-                    selected={parseDate(date)}
-                    month={startMonth}
-                    numberOfMonths={MONTHS}
-                    startMonth={startMonth}
-                    endMonth={todayDate}
-                    disabled={{ after: todayDate }}
-                    hideNavigation
-                    onSelect={(picked) => {
-                        if (picked) onSelect(formatDate(picked))
-                    }}
-                />
+                    {/* 달을 고르는 중에는 날짜 이동 조작이 할 일이 없다 */}
+                    {!pickingMonth && (
+                        <div className="flex items-center gap-1">
+                            <button
+                                type="button"
+                                onClick={() => onSelect(today)}
+                                className="min-h-touch rounded-full bg-cream-200 px-3 text-xs font-bold text-content-secondary"
+                            >
+                                오늘
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setMonth(shiftMonth(month, -1))}
+                                aria-label="이전 달"
+                                className="min-h-touch px-1 text-content-secondary"
+                            >
+                                <ChevronLeftIcon size={20} aria-hidden />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setMonth(shiftMonth(month, 1))}
+                                disabled={atMaxMonth}
+                                aria-label="다음 달"
+                                className="min-h-touch px-1 text-content-secondary disabled:text-action-disabled-text"
+                            >
+                                <ChevronRightIcon size={20} aria-hidden />
+                            </button>
+                        </div>
+                    )}
+                </div>
+
+                {/* 두 화면의 높이가 달라 시트가 튀지 않도록 바닥 높이를 맞춘다 */}
+                <div className="min-h-72">
+                    {pickingMonth ? (
+                        <MonthGrid
+                            month={month}
+                            maxMonth={maxMonth}
+                            onPick={(picked) => {
+                                setMonth(picked)
+                                setPickingMonth(false)
+                            }}
+                        />
+                    ) : (
+                        <Calendar
+                            mode="single"
+                            selected={parseDate(date)}
+                            month={month}
+                            onMonthChange={setMonth}
+                            endMonth={todayDate}
+                            disabled={{ after: todayDate }}
+                            hideNavigation
+                            // 연도와 달은 위쪽 버튼이 맡는다
+                            classNames={{ month_caption: 'hidden' }}
+                            className="pt-2"
+                            onSelect={(picked) => {
+                                if (picked) onSelect(formatDate(picked))
+                            }}
+                        />
+                    )}
+                </div>
             </div>
-        </div>
+        </BottomSheet>
     )
 }

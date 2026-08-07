@@ -7,7 +7,7 @@ export const MAX_SLOTS = 6
 export const RECORD_MIN_PHOTOS = 1
 export const RECORD_MAX_PHOTOS = 8
 export const FOOD_NAME_MAX = 100
-export const MEMO_MAX = 100
+export const CAPTION_MAX = 100
 
 export interface LogitSlot {
     slotId: number
@@ -28,6 +28,8 @@ export interface LogitFeedCard {
     thumbnailUrl: string | null
     foodNames: string[]
     recordIds: number[]
+    /** 대표 사진을 낸 기록의 먹은 시각. 빈 카드이거나 적지 않았으면 null */
+    loggedAt: string | null
 }
 
 export interface LogitFeedSlot {
@@ -44,10 +46,38 @@ export interface LogitFeed {
     slots: LogitFeedSlot[]
 }
 
+interface LogitRecordFields {
+    slotId: number
+    loggedOn: string
+    /** `HH:mm`. 적지 않으면 null이고, 화면에도 시각을 띄우지 않는다 */
+    loggedTime: string | null
+    foodNames: string[]
+    locationName: string | null
+    lat: number | null
+    lng: number | null
+}
+
+/** 글은 사진마다 붙는다. 기록 전체 메모는 없다 */
+export interface LogitPhotoInput {
+    imageKey: string
+    caption: string | null
+}
+
+export interface LogitRecordCreateRequest extends LogitRecordFields {
+    photos: LogitPhotoInput[]
+}
+
+/** 유지할 기존 사진과 새로 올린 것을 나눠 보낸다. 최종 순서는 keep 다음에 new */
+export interface LogitRecordUpdateRequest extends LogitRecordFields {
+    keepPhotos: Array<{ photoId: number; caption: string | null }>
+    newPhotos: LogitPhotoInput[]
+}
+
 export interface LogitRecordPhoto {
     photoId: number
     /** 서명된 조회 URL. 원본 S3 key는 서버가 내보내지 않는다 */
     url: string
+    caption: string | null
 }
 
 export interface LogitRecordDetail {
@@ -60,11 +90,11 @@ export interface LogitRecordDetail {
     mine: boolean
     photos: LogitRecordPhoto[]
     foodNames: string[]
-    memo: string | null
     locationName: string | null
     lat: number | null
     lng: number | null
-    createdAt: string
+    /** 먹은 시각. 적지 않았으면 null */
+    loggedAt: string | null
 }
 
 /** 기록이 있어 지우지 못하고 숨긴 경우 hidden=true */
@@ -95,6 +125,18 @@ export function shiftDate(date: string, days: number): string {
     const moved = parseDate(date)
     moved.setDate(moved.getDate() + days)
     return formatDate(moved)
+}
+
+/** `2026-08-07T16:00:00` → `16:00`. 서버가 이미 한국 시각으로 주므로 변환하지 않는다 */
+export function timeLabel(loggedAt: string): string {
+    return loggedAt.slice(11, 16)
+}
+
+/** `16:00` → `오후 4:00`. 고르는 화면에서는 24시간 표기가 낯설다 */
+export function timeText(time: string): string {
+    const [hour, minute] = time.split(':').map(Number)
+    const hour12 = hour % 12 === 0 ? 12 : hour % 12
+    return `${hour >= 12 ? '오후' : '오전'} ${hour12}:${String(minute).padStart(2, '0')}`
 }
 
 const LABEL = new Intl.DateTimeFormat('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' })

@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react'
 import { ChevronLeftIcon, ChevronRightIcon, MapPinIcon } from 'lucide-react'
 import { BottomSheet } from '@/shared/ui/molecules/BottomSheet'
 import { ConfirmDialog } from '@/shared/ui/molecules/ConfirmDialog'
+import { PhotoCarousel } from './PhotoCarousel'
 import { deleteRecord, fetchRecord } from './logitApi'
 import { madeErrorMessage } from './errors'
+import { timeLabel } from './logitTypes'
 import type { LogitRecordDetail } from './logitTypes'
 import type { MadeDexId } from './types'
 
@@ -93,18 +95,7 @@ export function RecordDetailSheet({ madeDexId, recordIds, onClose, onEdit, onDel
 
                 {record && !loading && !error && (
                     <>
-                        <div className="no-scrollbar -mx-5 flex snap-x snap-mandatory gap-2 overflow-x-auto px-5">
-                            {record.photos.map((photo) => (
-                                // presigned URL이라 next/image의 도메인 설정 대상이 아니다
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img
-                                    key={photo.photoId}
-                                    src={photo.url}
-                                    alt=""
-                                    className="aspect-[4/3] w-4/5 max-w-80 shrink-0 snap-start rounded-2xl object-cover"
-                                />
-                            ))}
-                        </div>
+                        <PhotoCarousel photos={record.photos} />
 
                         <div className="flex flex-wrap gap-1 pt-3">
                             {record.foodNames.map((food) => (
@@ -117,12 +108,6 @@ export function RecordDetailSheet({ madeDexId, recordIds, onClose, onEdit, onDel
                             ))}
                         </div>
 
-                        {record.memo && (
-                            <p className="whitespace-pre-wrap break-keep pt-3 text-sm leading-5 text-content-primary">
-                                {record.memo}
-                            </p>
-                        )}
-
                         {record.locationName && (
                             <p className="flex items-center gap-1 pt-2 text-xs text-content-secondary">
                                 <MapPinIcon size={14} aria-hidden />
@@ -131,6 +116,7 @@ export function RecordDetailSheet({ madeDexId, recordIds, onClose, onEdit, onDel
                         )}
 
                         <p className="pt-3 text-xs text-content-muted">
+                            {record.loggedAt && `${timeLabel(record.loggedAt)} · `}
                             {record.mine ? '내' : `${record.authorNickname ?? '이름 없는 참여자'}님의`} 기록
                         </p>
 
