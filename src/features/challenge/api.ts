@@ -8,6 +8,8 @@ export interface CreateSlotInput {
     lat?: number | null
     lng?: number | null
     imageKey?: string | null // 개설자가 등록한 목표 음식 사진(S3 key)
+    storeName?: string | null // 가게명
+    description?: string | null // 설명/팁(선택)
 }
 
 export interface CreateChallengePayload {
@@ -96,6 +98,8 @@ export interface ChallengeSlotDetail {
     imageUrl: string | null // 개설자가 등록한 목표 사진(프리사인 URL). 미해금이면 흑백 표시
     myImageUrl: string | null // 내가 인증한 사진(해금 시). 없으면 null
     unlockedAt: string | null // 내가 인증한 시각. 없으면 null
+    storeName: string | null // 가게명
+    description: string | null // 설명/팁
 }
 
 export interface ChallengeDetailData {

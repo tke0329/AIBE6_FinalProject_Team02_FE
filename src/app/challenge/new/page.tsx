@@ -57,6 +57,8 @@ export default function ChallengeCreatePage() {
                                     placeName: t.placeName ?? null,
                                     lat: t.lat ?? null,
                                     lng: t.lng ?? null,
+                                    storeName: t.storeName ?? null,
+                                    description: t.description ?? null,
                                 }
                             }),
                         )
@@ -79,7 +81,7 @@ export default function ChallengeCreatePage() {
                             rewardBadgeId = (await createRewardBadge({ name: badge.name, imageKey: key })).badgeId
                         }
 
-                        const created = await createChallenge({
+                        await createChallenge({
                             name: challenge.title,
                             periodType: challengeDraft.periodType, // 상시 / 기간 한정
                             startsAt: null,
@@ -90,10 +92,7 @@ export default function ChallengeCreatePage() {
                             rewardBadgeId,
                             slots,
                         })
-                        setCustomBadge(null)
-                        resetChallengeDraft()
-                        // 개설 완료 → 방금 만든 챌린지 상세로 (상세의 뒤로가기는 목록으로)
-                        router.push(ROUTES.challengeDetail(String(created.challengeId)))
+                        // 성공 → 위저드가 완료 화면을 보여주고, '확인'(onBack)에서 초기화·목록 이동
                     } catch (e) {
                         setAlertMessage(e instanceof Error ? e.message : '챌린지 개설에 실패했어요')
                     }
