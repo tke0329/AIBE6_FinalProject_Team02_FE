@@ -1,20 +1,19 @@
+import { PlacePicker } from '@/features/register/PlacePicker'
+import { LocationInput } from '@/features/register/confirmApi'
+import { geocodeAddress } from '@/features/register/placeApi'
 import { resolveBadgeImage } from '@/shared/data/badgeAssets'
 import { useAppState } from '@/shared/store/AppStateProvider'
 import { Badge } from '@/shared/ui/atoms/Badge'
+import { AnimatePresence, motion } from 'framer-motion'
 import {
     ArrowLeftIcon,
     CameraIcon,
     CheckIcon,
     MapPinIcon,
-    PencilIcon,
-    Trash2Icon,
+    Trash2Icon
 } from 'lucide-react'
-import { AnimatePresence, motion } from 'framer-motion'
 import React, { useRef, useState } from 'react'
 import { ChallengeData, ChallengeTarget, RewardBadge } from './types'
-import { PlacePicker } from '@/features/register/PlacePicker'
-import { LocationInput } from '@/features/register/confirmApi'
-import { geocodeAddress } from '@/features/register/placeApi'
 
 interface Props {
     createdThisMonth: number
@@ -365,7 +364,7 @@ export function ChallengeCreate({ createdThisMonth, customBadge, onBack, onCreat
                                     <input
                                         value={desc}
                                         onChange={(e) => setDesc(e.target.value)}
-                                        placeholder="설명 (선택) — 히든 메뉴·팁"
+                                        placeholder="설명(팁이나, 설명하고 싶은걸 적으세요!)"
                                         className="mt-3 w-full rounded-xl bg-cream-100 px-3 py-2.5 text-sm outline-none"
                                     />
 
