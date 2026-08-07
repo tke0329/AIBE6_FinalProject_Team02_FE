@@ -1,25 +1,249 @@
+'use client'
 
+import { useEffect, useState } from 'react'
+import { ArrowLeftIcon, UserPlusIcon, UserCheckIcon, XIcon, CheckIcon } from 'lucide-react'
+import { BottomNav, NavTab } from '@/shared/ui/molecules/BottomNav'
+import { TabBar } from '@/shared/ui/molecules/TabBar'
+import { ServerBadge } from '@/shared/ui/atoms/ServerBadge'
+import { ProgressBar } from '@/shared/ui/atoms/ProgressBar'
+import {
+    PublicProfile,
+    RelationStatus,
+    UserBasicDexItem,
+    fetchPublicProfile,
+    fetchUserBasicDex,
+    fetchUserChallenges,
+    sendFriendRequest,
+    removeFriend,
+    fetchFriendRequests,
+    acceptFriendRequest,
+    deleteFriendRequest,
+} from '@/features/friend/api'
+import type { ChallengeSummary, MyChallengeRelation } from '@/features/challenge/api'
 
-
-
-import React, { useState } from 'react';
-import { ArrowLeftIcon, MedalIcon, UserCheckIcon, UserPlusIcon } from 'lucide-react';
-import { ProgressBar } from '@/shared/ui/atoms/ProgressBar';
-import { EquippedBadge } from '@/shared/ui/atoms/EquippedBadge';
-import { BottomNav, NavTab } from '@/shared/ui/molecules/BottomNav';
-import { Badge } from '@/shared/ui/atoms/Badge';
-import { TabBar } from '@/shared/ui/molecules/TabBar';
-
-const TABS = ['기본도감', '제작도감', '챌린지도감'] as const;
-const SUBTABS = ['개설한', '참여 중', '완료한'] as const;
-interface Props {onBack: () => void;onTab: (tab: NavTab) => void;}
-
-export function UserProfile({ onBack, onTab }: Props) {
-  const [following, setFollowing] = useState(false);const [tab, setTab] = useState<(typeof TABS)[number]>('챌린지도감');const [subtab, setSubtab] = useState<(typeof SUBTABS)[number]>('참여 중');
-  return <div className="flex h-full flex-col bg-cream-100"><main className="no-scrollbar flex-1 overflow-y-auto"><header className="flex items-center gap-3 px-5 pt-4"><button onClick={onBack} aria-label="뒤로가기"><ArrowLeftIcon size={21} /></button><span className="font-display text-lg text-brown">프로필</span></header><div className="px-5 pt-3"><div className="flex items-center gap-4"><span className="flex h-16 w-16 items-center justify-center rounded-full bg-orange-200 font-display text-2xl text-orange-700">윤</span><div className="flex flex-1 items-center justify-around">{[{ n: 42, l: '수집' }, { n: 128, l: '팔로워' }, { n: 54, l: '팔로잉' }].map((stat) => <div key={stat.l} className="flex flex-col items-center"><span className="font-display text-lg text-brown">{stat.n}</span><span className="text-xs text-brown-muted">{stat.l}</span></div>)}</div></div><div className="mt-3 flex items-center gap-2"><EquippedBadge badge="gold-spoon" /><span className="font-display text-lg text-brown">윤하연수</span></div><button onClick={() => setFollowing((value) => !value)} className={`mt-3 flex w-full items-center justify-center gap-2 min-h-touch rounded-2xl border-2 text-sm font-medium ${following ? 'border-cream-300 bg-white text-brown-soft' : 'border-orange-400 text-orange-600'}`}>{following ? <UserCheckIcon size={16} /> : <UserPlusIcon size={16} />} {following ? '팔로잉' : '팔로우'}</button></div><div className="mt-4 px-5"><TabBar label="프로필 도감 종류" variant="segmented" items={TABS.map((item) => ({ id: item, label: item }))} value={tab} onChange={setTab} /></div>{tab === '기본도감' && <BaseDexPreview />}{tab === '제작도감' && <MadeDexPreview />}{tab === '챌린지도감' && <ChallengeContent subtab={subtab} onSelect={setSubtab} />}</main><BottomNav active="마이" onTab={onTab} /></div>;
+const TABS = ['기본도감', '챌린지도감'] as const
+const SUBTABS = ['개설한', '참여 중', '완료한'] as const
+const RELATION: Record<(typeof SUBTABS)[number], MyChallengeRelation> = {
+    개설한: 'CREATED',
+    '참여 중': 'JOINED',
+    완료한: 'COMPLETED',
 }
-function BaseDexPreview() {return <div className="grid grid-cols-3 gap-3 px-5 py-5 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">{['🍜', '🍣', '🍰', '🍲', '🍝', '🍗'].map((emoji, index) => <div key={`${emoji}-${index}`} className="flex aspect-square items-center justify-center rounded-2xl bg-white text-3xl shadow-soft">{emoji}</div>)}</div>;}
-function MadeDexPreview() {return <div className="space-y-3 px-5 py-5"><article className="rounded-2xl bg-white p-4 shadow-soft"><p className="font-display text-base text-brown">우리의 데이트 도감</p><p className="mt-1 text-xs text-brown-muted">8 / 24 수집 · 둘이 함께 채우는 중</p><div className="mt-3"><ProgressBar value={8 / 24} animate={false} /></div></article><article className="rounded-2xl bg-white p-4 shadow-soft"><p className="font-display text-base text-brown">회사 점심 도감</p><p className="mt-1 text-xs text-brown-muted">13 / 30 수집 · 4명 참여</p></article></div>;}
-function ChallengeContent({ subtab, onSelect }: {subtab: (typeof SUBTABS)[number];onSelect: (tab: (typeof SUBTABS)[number]) => void;}) {return <><div className="mt-3 px-5"><TabBar label="챌린지 상태" variant="pill" items={SUBTABS.map((item) => ({ id: item, label: item }))} value={subtab} onChange={onSelect} /></div><div className="space-y-3 px-5 py-3">{subtab === '참여 중' && <><ChallengeCard title="평양냉면 성지순례" tag="위치인증" dday="D-3" participants="42명 참가 중" mine="나 3/10" progress={0.3} note="상위 20%는 벌써 7/10 이상" /><ChallengeCard title="이번 달 라면 15회" tag="카운트" dday="D-11" participants="18명 참가 중" mine="나 6/15" progress={6 / 15} /></>}{subtab === '개설한' && <PreviewCard title="여름 별미 10선" meta="27명 참가 · 시즌1 진행 중 · D-18" action="관리 · 다음 시즌 예약" />}{subtab === '완료한' && <PreviewCard title="국밥 로드 · 2위" meta="완주일 2026.06.02" action="명예의 전당 보기" medal />}</div></>;}
-function ChallengeCard({ title, tag, dday, participants, mine, progress, note }: {title: string;tag: string;dday: string;participants: string;mine: string;progress: number;note?: string;}) {return <article className="rounded-2xl bg-white p-4 shadow-soft"><div className="flex items-center gap-2"><span className="flex-1 font-display text-base text-brown">{title}</span><Badge variant="type">{tag}</Badge><Badge variant="dday">{dday}</Badge></div><p className="mt-2 text-xs text-brown-soft">{participants}</p><p className="mt-1 text-sm font-bold text-brown">{mine}</p><div className="mt-2"><ProgressBar value={progress} animate={false} label={`${title} 진행률`} /></div>{note && <p className="mt-2 text-xs text-brown-soft">{note}</p>}</article>;}
-function PreviewCard({ title, meta, action, medal }: {title: string;meta: string;action: string;medal?: boolean;}) {return <article className="flex items-center gap-3 rounded-2xl border-2 border-dashed border-cream-300 bg-cream-50 p-4">{medal && <span className="flex h-10 w-10 items-center justify-center rounded-full bg-yellow-400 text-white"><MedalIcon size={20} /></span>}<div className="flex-1"><p className="font-medium text-brown">{title}</p><p className="text-xs text-brown-muted">{meta}</p></div><button className="text-xs font-medium text-orange-600">{action}</button></article>;}
+
+interface Props {
+    userId: number | 'me'
+    onBack: () => void
+    onTab: (tab: NavTab) => void
+    onOpenUser: (id: number) => void
+}
+
+export function UserProfile({ userId, onBack, onTab }: Props) {
+    const [profile, setProfile] = useState<PublicProfile | null>(null)
+    const [tab, setTab] = useState<(typeof TABS)[number]>('기본도감')
+    const [subtab, setSubtab] = useState<(typeof SUBTABS)[number]>('참여 중')
+    const [basicDex, setBasicDex] = useState<UserBasicDexItem[]>([])
+    const [challenges, setChallenges] = useState<ChallengeSummary[]>([])
+
+    const reload = () =>
+        fetchPublicProfile(userId)
+            .then(setProfile)
+            .catch(() => {})
+
+    useEffect(() => {
+        reload()
+    }, [userId])
+    useEffect(() => {
+        if (tab === '기본도감')
+            fetchUserBasicDex(userId)
+                .then(setBasicDex)
+                .catch(() => setBasicDex([]))
+    }, [tab, userId])
+    useEffect(() => {
+        if (tab === '챌린지도감')
+            fetchUserChallenges(userId, RELATION[subtab])
+                .then(setChallenges)
+                .catch(() => setChallenges([]))
+    }, [tab, subtab, userId])
+
+    if (!profile) {
+        return (
+            <div className="flex h-full items-center justify-center bg-cream-100">
+                <p className="text-sm text-brown-soft">불러오는 중…</p>
+            </div>
+        )
+    }
+
+    const { user, relationStatus } = profile
+    return (
+        <div className="flex h-full flex-col bg-cream-100">
+            <main className="no-scrollbar flex-1 overflow-y-auto">
+                <header className="flex items-center gap-3 px-5 pt-4">
+                    <button onClick={onBack} aria-label="뒤로가기">
+                        <ArrowLeftIcon size={21} />
+                    </button>
+                    <span className="font-display text-lg text-brown">프로필</span>
+                </header>
+                <div className="px-5 pt-3">
+                    <div className="flex items-center gap-4">
+                        <span className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-orange-200 font-display text-2xl text-orange-700">
+                            {user.profileImageUrl ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img src={user.profileImageUrl} alt="" className="h-full w-full object-cover" />
+                            ) : (
+                                <span>{user.nickname.charAt(0) || '?'}</span>
+                            )}
+                        </span>
+                        <div className="flex items-center gap-2">
+                            {user.equippedBadge && (
+                                <ServerBadge
+                                    code={user.equippedBadge.code}
+                                    imageUrl={user.equippedBadge.imageUrl}
+                                    name={user.equippedBadge.name}
+                                    size={40}
+                                />
+                            )}
+                            <span className="font-display text-lg text-brown">{user.nickname}</span>
+                        </div>
+                    </div>
+                    <RelationButton
+                        status={relationStatus}
+                        userId={typeof userId === 'number' ? userId : user.userId}
+                        onChanged={reload}
+                    />
+                </div>
+                <div className="mt-4 px-5">
+                    <TabBar
+                        label="프로필 도감 종류"
+                        variant="segmented"
+                        items={TABS.map((t) => ({ id: t, label: t }))}
+                        value={tab}
+                        onChange={(v) => setTab(v as (typeof TABS)[number])}
+                    />
+                </div>
+                {tab === '기본도감' && (
+                    <div className="grid grid-cols-3 gap-3 px-5 py-5 sm:grid-cols-4">
+                        {basicDex
+                            .filter((d) => d.unlocked)
+                            .map((d) => (
+                                <div
+                                    key={d.id}
+                                    className="flex aspect-square flex-col items-center justify-center gap-1 overflow-hidden rounded-2xl bg-white text-3xl shadow-soft"
+                                >
+                                    {d.illustrationUrl ? (
+                                        // eslint-disable-next-line @next/next/no-img-element
+                                        <img
+                                            src={d.illustrationUrl}
+                                            alt={d.name}
+                                            className="h-2/3 w-2/3 object-contain"
+                                        />
+                                    ) : (
+                                        <span>🍽️</span>
+                                    )}
+                                    <span className="px-1 text-center text-[11px] text-brown-soft">{d.name}</span>
+                                </div>
+                            ))}
+                        {basicDex.filter((d) => d.unlocked).length === 0 && (
+                            <p className="col-span-full py-10 text-center text-sm text-brown-soft">
+                                수집한 도감이 없어요
+                            </p>
+                        )}
+                    </div>
+                )}
+                {tab === '챌린지도감' && (
+                    <>
+                        <div className="mt-3 px-5">
+                            <TabBar
+                                label="챌린지 상태"
+                                variant="pill"
+                                items={SUBTABS.map((t) => ({ id: t, label: t }))}
+                                value={subtab}
+                                onChange={(v) => setSubtab(v as (typeof SUBTABS)[number])}
+                            />
+                        </div>
+                        <div className="space-y-3 px-5 py-3">
+                            {challenges.map((c) => (
+                                <article key={c.id} className="rounded-2xl bg-white p-4 shadow-soft">
+                                    <p className="font-display text-base text-brown">{c.name}</p>
+                                    <p className="mt-1 text-xs text-brown-muted">{c.participantCount}명 참여</p>
+                                    {c.totalSlots > 0 && (
+                                        <div className="mt-2">
+                                            <ProgressBar value={c.unlockedCount / c.totalSlots} animate={false} />
+                                        </div>
+                                    )}
+                                </article>
+                            ))}
+                            {challenges.length === 0 && (
+                                <p className="py-10 text-center text-sm text-brown-soft">해당 챌린지가 없어요</p>
+                            )}
+                        </div>
+                    </>
+                )}
+            </main>
+            <BottomNav active="마이" onTab={onTab} />
+        </div>
+    )
+}
+
+/** 관계 버튼 4상태 (SELF면 미표시) */
+function RelationButton({
+    status,
+    userId,
+    onChanged,
+}: {
+    status: RelationStatus
+    userId: number
+    onChanged: () => void
+}) {
+    if (status === 'SELF') return null
+
+    const handleReceived = async () => {
+        // 받은 요청 → requestId를 찾아 수락
+        const reqs = await fetchFriendRequests('received')
+        const mine = reqs.find((r) => r.user.userId === userId)
+        if (mine) {
+            await acceptFriendRequest(mine.requestId)
+            onChanged()
+        }
+    }
+    const handleCancel = async () => {
+        const reqs = await fetchFriendRequests('sent')
+        const mine = reqs.find((r) => r.user.userId === userId)
+        if (mine) {
+            await deleteFriendRequest(mine.requestId)
+            onChanged()
+        }
+    }
+
+    const base =
+        'mt-3 flex w-full items-center justify-center gap-2 min-h-touch rounded-2xl border-2 text-sm font-medium'
+    if (status === 'FRIEND')
+        return (
+            <button
+                onClick={() => {
+                    if (confirm('친구를 삭제할까요?')) removeFriend(userId).then(onChanged)
+                }}
+                className={`${base} border-cream-300 bg-white text-brown-soft`}
+            >
+                <UserCheckIcon size={16} /> 친구 삭제
+            </button>
+        )
+    if (status === 'REQUEST_SENT')
+        return (
+            <button onClick={handleCancel} className={`${base} border-cream-300 bg-white text-brown-soft`}>
+                <XIcon size={16} /> 요청 취소
+            </button>
+        )
+    if (status === 'REQUEST_RECEIVED')
+        return (
+            <button onClick={handleReceived} className={`${base} border-orange-400 text-orange-600`}>
+                <CheckIcon size={16} /> 수락하기
+            </button>
+        )
+    return (
+        <button
+            onClick={() => sendFriendRequest(userId).then(onChanged)}
+            className={`${base} border-orange-400 text-orange-600`}
+        >
+            <UserPlusIcon size={16} /> 친구 추가
+        </button>
+    )
+}
