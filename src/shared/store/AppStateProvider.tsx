@@ -73,12 +73,14 @@ interface AppStore {
     setCustomBadge: (badge: RewardBadge | null) => void
     challengeDraft: {
         title: string
+        description: string
         targets: ChallengeTarget[]
         periodType: 'PERMANENT' | 'LIMITED'
         endsAt: string
     }
     setChallengeDraft: (draft: {
         title: string
+        description: string
         targets: ChallengeTarget[]
         periodType: 'PERMANENT' | 'LIMITED'
         endsAt: string
@@ -152,14 +154,16 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     const [customBadge, setCustomBadge] = useState<RewardBadge | null>(null)
     const [challengeDraft, setChallengeDraft] = useState<{
         title: string
+        description: string
         targets: ChallengeTarget[]
         periodType: 'PERMANENT' | 'LIMITED'
         endsAt: string
-    }>({ title: '', targets: [], periodType: 'PERMANENT', endsAt: '' })
+    }>({ title: '', description: '', targets: [], periodType: 'PERMANENT', endsAt: '' })
     const resetChallengeDraft = useCallback(
         () =>
             setChallengeDraft({
                 title: '',
+                description: '',
                 targets: [],
                 periodType: 'PERMANENT',
                 endsAt: '',

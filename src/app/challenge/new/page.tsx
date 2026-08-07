@@ -83,6 +83,7 @@ export default function ChallengeCreatePage() {
 
                         await createChallenge({
                             name: challenge.title,
+                            description: challengeDraft.description.trim() || null, // 소개글(선택)
                             periodType: challengeDraft.periodType, // 상시 / 기간 한정
                             startsAt: null,
                             endsAt:

@@ -228,6 +228,14 @@ export function ChallengeCreate({ createdThisMonth, customBadge, onBack, onCreat
                                     placeholder="예: 서울 라멘 성지순례"
                                     className="mt-6 w-full border-0 border-b-2 border-orange-500 bg-transparent pb-2 text-xl text-brown outline-none placeholder:text-brown-muted/50"
                                 />
+                                <textarea
+                                    value={challengeDraft.description}
+                                    onChange={(e) => patchDraft({ description: e.target.value })}
+                                    placeholder="소개글 (선택) — 어떤 챌린지인지 짧게 소개해요"
+                                    rows={3}
+                                    maxLength={200}
+                                    className="mt-5 w-full resize-none rounded-2xl border border-cream-300 bg-white px-4 py-3 text-sm text-brown outline-none focus:border-orange-400 placeholder:text-brown-muted/50"
+                                />
                                 {!canCreate && (
                                     <p className="mt-4 rounded-2xl bg-orange-50 p-3 text-sm text-orange-700">
                                         이번 달 개설 가능 횟수(3회)를 모두 사용했어요.
