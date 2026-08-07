@@ -77,11 +77,6 @@ export function inviteDaysLeft(expiresAt: string, now = Date.now()): number {
     return remain <= 0 ? 0 : Math.ceil(remain / (24 * 60 * 60 * 1000))
 }
 
-export interface MadeParticipant {
-    id: string
-    name: string
-}
-
 /** BE MadeDex.MAX_MEMBERS와 맞춘다 — 넘기면 서버가 MADE_DEX_FULL로 막는다 */
 export const MADE_DEX_MAX_MEMBERS = 12
 
@@ -112,13 +107,4 @@ export function memberName(member: MadeDexMember): string {
 
 export function memberInitial(member: MadeDexMember): string {
     return memberName(member).charAt(0)
-}
-
-export interface MadeCard {
-    name: string
-    emoji: string
-    /** 등록한 참여자 이름 */
-    by: string
-    location: string
-    tags: string[]
 }

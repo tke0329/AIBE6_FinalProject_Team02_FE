@@ -26,3 +26,25 @@ export function madeErrorMessage(failure: unknown, fallback: string): string {
 export function isNotOwner(failure: unknown): boolean {
     return failure instanceof ApiError && failure.code === 'MADE_DEX_NOT_OWNER'
 }
+
+function hasCode(failure: unknown, code: string): boolean {
+    return failure instanceof ApiError && failure.code === code
+}
+
+// 슬롯·기록 에러는 서버 문구를 그대로 쓴다. 여기 옮겨 적으면 서버가 문구를 고쳤을 때 둘이 갈라진다.
+// 화면이 문구가 아니라 동작을 바꿔야 하는 것만 아래로 분기한다.
+
+/** 다른 멤버가 먼저 순서를 바꿨다. 문구를 띄우기 전에 목록을 다시 읽어야 한다 */
+export function isSlotOrderStale(failure: unknown): boolean {
+    return hasCode(failure, 'MADE_DEX_SLOT_ORDER_MISMATCH')
+}
+
+/** 이름 필드 옆에 붙여야 하는 에러다. 시트를 닫으면 안 된다 */
+export function isSlotNameTaken(failure: unknown): boolean {
+    return hasCode(failure, 'MADE_DEX_SLOT_NAME_DUPLICATED')
+}
+
+/** 남이 나를 내보냈거나 그룹이 사라졌다. 이 화면에 머무를 수 없다 */
+export function isNotMember(failure: unknown): boolean {
+    return hasCode(failure, 'MADE_DEX_NOT_MEMBER') || hasCode(failure, 'MADE_DEX_NOT_FOUND')
+}

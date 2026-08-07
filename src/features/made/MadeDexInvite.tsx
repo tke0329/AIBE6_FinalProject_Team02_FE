@@ -11,6 +11,7 @@ import {
     UsersIcon,
 } from 'lucide-react'
 
+import { ConfirmDialog as ConfirmView } from '@/shared/ui/molecules/ConfirmDialog'
 import { inviteDaysLeft, INVITE_CODE_LENGTH, memberInitial, memberName } from './types'
 import type { MadeDexMember, MadeDexRole } from './types'
 
@@ -382,23 +383,13 @@ function ConfirmDialog({ confirm, dexTitle, onCancel, onConfirm }: ConfirmDialog
                   }
 
     return (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/35 px-5">
-            <section role="dialog" aria-modal="true" className="w-full rounded-3xl bg-cream-50 p-5 shadow-pop">
-                <h2 className="font-display text-xl text-brown">{copy.title}</h2>
-                <p className="mt-2 text-sm leading-5 text-brown-soft">{copy.body}</p>
-                <div className="mt-5 grid grid-cols-2 gap-2">
-                    <button
-                        onClick={onCancel}
-                        className="rounded-2xl bg-cream-200 py-3 text-sm font-bold text-brown-soft"
-                    >
-                        취소
-                    </button>
-                    <button onClick={onConfirm} className="rounded-2xl bg-orange-500 py-3 text-sm font-bold text-white">
-                        {copy.action}
-                    </button>
-                </div>
-            </section>
-        </div>
+        <ConfirmView
+            title={copy.title}
+            message={copy.body}
+            actionText={copy.action}
+            onCancel={onCancel}
+            onConfirm={onConfirm}
+        />
     )
 }
 

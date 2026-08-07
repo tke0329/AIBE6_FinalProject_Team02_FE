@@ -4,7 +4,7 @@ import { useAuth } from '@/features/auth/AuthContext'
 import { INITIAL_CHALLENGES } from '@/features/challenge/data'
 import { ChallengeData, ChallengeTarget, RewardBadge } from '@/features/challenge/types'
 import { fetchBasicDexEntries, fetchMyBasicDexEntries } from '@/features/dex/api'
-import { MadeCard, MadeDexId, MadeParticipant, parseMadeDexId } from '@/features/made/types'
+import { MadeDexId, parseMadeDexId } from '@/features/made/types'
 import { fetchOnboardingStatus, postOnboardingComplete } from '@/features/onboarding/api'
 import { AI_CANDIDATES, DEX_ENTRIES, DexEntry } from '@/shared/data/dex'
 import { BadgeId } from '@/shared/ui/atoms/EquippedBadge'
@@ -12,20 +12,6 @@ import { BadgeId } from '@/shared/ui/atoms/EquippedBadge'
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 
 export type RegistrationSource = 'basic' | 'made' | 'challenge'
-
-// TODO(CATCHEAT-32): 도감 홈 아바타도 members API로 교체
-const MADE_PARTICIPANTS: Record<MadeDexId, MadeParticipant[]> = {
-    1: [
-        { id: 'me', name: '신' },
-        { id: 'yoon', name: '윤' },
-    ],
-    2: [
-        { id: 'me', name: '신' },
-        { id: 'yoon', name: '윤' },
-        { id: 'min', name: '민' },
-        { id: 'jay', name: 'J' },
-    ],
-}
 
 /**
  * 라우트를 건너 공유되는 앱 상태.
@@ -59,10 +45,6 @@ interface AppStore {
     // 온보딩
     onboardingSeen: boolean | null
     completeOnboarding: () => void
-
-    // 제작 도감
-    madeParticipants: Record<MadeDexId, MadeParticipant[]>
-    recentMadeCard: MadeCard | null
 
     // 챌린지
     challenges: ChallengeData[]
@@ -146,9 +128,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         setEntriesLoading(true)
         refreshEntries().finally(() => setEntriesLoading(false))
     }, [authLoading, refreshEntries])
-
-    const madeParticipants: Record<MadeDexId, MadeParticipant[]> = MADE_PARTICIPANTS
-    const [recentMadeCard, setRecentMadeCard] = useState<MadeCard | null>(null)
 
     const [challenges, setChallenges] = useState<ChallengeData[]>(INITIAL_CHALLENGES)
     const [customBadge, setCustomBadge] = useState<RewardBadge | null>(null)
@@ -259,16 +238,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
                 ],
             }
 
-            if (registrationSource === 'made') {
-                setRecentMadeCard({
-                    name: selectedFood.name,
-                    emoji: selectedFood.emoji,
-                    by: '신',
-                    location,
-                    tags: tags.length ? tags : ['새 기록'],
-                })
-            }
-
             setEntries((current) =>
                 current.some((entry) => entry.id === savedEntry.id)
                     ? current.map((entry) => (entry.id === savedEntry.id ? savedEntry : entry))
@@ -307,8 +276,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
                     // 미로그인/실패해도 화면은 진행 (서버 반영은 다음 로그인 때)
                 }
             },
-            madeParticipants,
-            recentMadeCard,
             challenges,
             createdThisMonth,
             findChallenge,
@@ -336,8 +303,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
             equippedBadge,
             profilePhoto,
             onboardingSeen,
-            madeParticipants,
-            recentMadeCard,
             challenges,
             createdThisMonth,
             findChallenge,

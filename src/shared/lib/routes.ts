@@ -27,6 +27,10 @@ export const ROUTES = {
     madeManage: (dexId: MadeDexId) => `/made/${dexId}/manage`,
     madeEdit: (dexId: MadeDexId) => `/made/${dexId}/edit`,
     madeParticipants: (dexId: MadeDexId) => `/made/${dexId}/participants`,
+    /** 식사 기록 화면(CATCHEAT-52). 날짜와 끼니를 채운 채로 연다 */
+    madeRecordNew: (dexId: MadeDexId, date: string, slotId?: number) =>
+        slotId ? `/made/${dexId}/records/new?date=${date}&slotId=${slotId}` : `/made/${dexId}/records/new?date=${date}`,
+    madeRecordEdit: (dexId: MadeDexId, recordId: number) => `/made/${dexId}/records/${recordId}/edit`,
 
     challenge: '/challenge',
     challengeNew: '/challenge/new',
