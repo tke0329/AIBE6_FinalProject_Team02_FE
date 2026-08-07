@@ -45,7 +45,7 @@ export function ChallengeDetail({ challenge, onBack, onRegister, onJoin, onUnloc
     const completed = new Set(challenge.completedTargetIds ?? [])
     const badge = challenge.rewardBadge
     const [record, setRecord] = useState<ChallengeTarget | null>(null) // 해금 기록 모달
-    const isLocation = challenge.verifyType === 'LOCATION'
+    const isLocation = true // 챌린지는 위치 인증 전용
 
     // 인증(등록) 모달 상태
     const [certify, setCertify] = useState<ChallengeTarget | null>(null)

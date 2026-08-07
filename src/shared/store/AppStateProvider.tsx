@@ -74,14 +74,12 @@ interface AppStore {
     challengeDraft: {
         title: string
         targets: ChallengeTarget[]
-        verifyType: 'FOOD' | 'LOCATION'
         periodType: 'PERMANENT' | 'LIMITED'
         endsAt: string
     }
     setChallengeDraft: (draft: {
         title: string
         targets: ChallengeTarget[]
-        verifyType: 'FOOD' | 'LOCATION'
         periodType: 'PERMANENT' | 'LIMITED'
         endsAt: string
     }) => void
@@ -155,16 +153,14 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     const [challengeDraft, setChallengeDraft] = useState<{
         title: string
         targets: ChallengeTarget[]
-        verifyType: 'FOOD' | 'LOCATION'
         periodType: 'PERMANENT' | 'LIMITED'
         endsAt: string
-    }>({ title: '', targets: [], verifyType: 'FOOD', periodType: 'PERMANENT', endsAt: '' })
+    }>({ title: '', targets: [], periodType: 'PERMANENT', endsAt: '' })
     const resetChallengeDraft = useCallback(
         () =>
             setChallengeDraft({
                 title: '',
                 targets: [],
-                verifyType: 'FOOD',
                 periodType: 'PERMANENT',
                 endsAt: '',
             }),

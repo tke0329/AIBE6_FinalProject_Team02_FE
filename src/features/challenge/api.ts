@@ -1,8 +1,6 @@
 import { apiFetch } from '@/shared/lib/api'
 
-export type ChallengeType = 'FIRST_COME' | 'COLLECTION'
 export type PeriodType = 'PERMANENT' | 'LIMITED'
-export type VerifyType = 'FOOD' | 'LOCATION'
 
 export interface CreateSlotInput {
     foodName: string
@@ -15,9 +13,7 @@ export interface CreateSlotInput {
 export interface CreateChallengePayload {
     name: string
     description?: string | null
-    challengeType: ChallengeType
     periodType: PeriodType
-    verifyType?: VerifyType // FOOD(기본) / LOCATION(위치 인증)
     startsAt?: string | null // ISO, null이면 지금부터
     endsAt?: string | null // LIMITED면 필수
     rewardBadgeId?: number | null
@@ -45,7 +41,6 @@ export interface ChallengeSummary {
     id: number
     name: string
     description: string | null
-    challengeType: ChallengeType
     periodType: PeriodType
     startsAt: string
     endsAt: string | null
@@ -107,9 +102,7 @@ export interface ChallengeDetailData {
     id: number
     name: string
     description: string | null
-    challengeType: ChallengeType
     periodType: PeriodType
-    verifyType: VerifyType
     startsAt: string
     endsAt: string | null
     rewardBadgeId: number | null

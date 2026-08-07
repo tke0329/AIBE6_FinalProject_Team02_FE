@@ -81,8 +81,6 @@ export default function ChallengeCreatePage() {
 
                         const created = await createChallenge({
                             name: challenge.title,
-                            challengeType: 'COLLECTION',
-                            verifyType: challengeDraft.verifyType, // 음식 사진 / 위치 인증
                             periodType: challengeDraft.periodType, // 상시 / 기간 한정
                             startsAt: null,
                             endsAt:

@@ -26,7 +26,7 @@ function toChallengeData(c: ChallengeSummary): ChallengeData {
         id: String(c.id),
         title: c.name,
         emoji: '🏆',
-        tag: c.challengeType === 'FIRST_COME' ? '선착순' : '수집형',
+        tag: '수집형',
         dday: c.periodType === 'PERMANENT' ? '상시' : c.endsAt ? ddayLabel(c.endsAt) : '기간한정',
         participants: c.participantCount,
         score: c.rankScore,

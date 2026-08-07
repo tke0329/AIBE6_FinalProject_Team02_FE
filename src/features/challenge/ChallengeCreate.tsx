@@ -77,7 +77,6 @@ export function ChallengeCreate({
     const rewardName = customBadge ? customBadge.name : presetName
     const rewardImage = customBadge?.customImage ?? resolveBadgeImage(selectedPreset.code, undefined) ?? undefined
     const enough = targets.length >= MIN_TARGETS // 최소 5개 이상이어야 개설 가능
-    const verifyType = challengeDraft.verifyType
     const periodType = challengeDraft.periodType
     const endsAt = challengeDraft.endsAt
     const patchDraft = (patch: Partial<typeof challengeDraft>) => setChallengeDraft({ ...challengeDraft, ...patch })
@@ -95,7 +94,7 @@ export function ChallengeCreate({
     const placeReady = targetPlace != null && targetPlace.lat != null && targetPlace.lng != null
     const addTarget = () => {
         if (!targetName.trim()) return
-        if (verifyType === 'LOCATION' && !placeReady) return // 위치 인증은 좌표 필수
+        if (!placeReady) return // 위치 좌표 필수
         setTargets((current) => [
             ...current,
             {
@@ -173,26 +172,8 @@ export function ChallengeCreate({
                     />
                 </label>
                 <section className="mt-5">
-                    <h2 className="font-display text-lg text-brown">인증 방식</h2>
-                    <div className="mt-2 grid grid-cols-2 gap-2">
-                        <button
-                            type="button"
-                            onClick={() => patchDraft({ verifyType: 'FOOD' })}
-                            className={`rounded-2xl border-2 p-3 text-left text-sm font-bold ${verifyType === 'FOOD' ? 'border-orange-500 bg-orange-50 text-orange-600' : 'border-transparent bg-white text-brown shadow-soft'}`}
-                        >
-                            📸 음식 사진
-                            <span className="mt-0.5 block text-xs font-normal text-brown-muted">사진으로 인증</span>
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => patchDraft({ verifyType: 'LOCATION' })}
-                            className={`rounded-2xl border-2 p-3 text-left text-sm font-bold ${verifyType === 'LOCATION' ? 'border-orange-500 bg-orange-50 text-orange-600' : 'border-transparent bg-white text-brown shadow-soft'}`}
-                        >
-                            📍 위치 인증
-                            <span className="mt-0.5 block text-xs font-normal text-brown-muted">
-                                지정 위치에서 인증
-                            </span>
-                        </button>
+                    <div className="flex items-center gap-2 rounded-2xl bg-orange-50 px-3 py-2 text-sm font-bold text-orange-700">
+                        📍 위치 인증 챌린지 — 참가자는 지정 장소에서 인증해요
                     </div>
 
                     <h2 className="mt-5 font-display text-lg text-brown">기한</h2>
@@ -271,7 +252,7 @@ export function ChallengeCreate({
                             />
                             <button
                                 onClick={addTarget}
-                                disabled={!targetName.trim() || (verifyType === 'LOCATION' && !placeReady)}
+                                disabled={!targetName.trim() || !placeReady}
                                 className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-500 text-white disabled:bg-action-disabled-bg disabled:text-action-disabled-text"
                                 aria-label="목표 음식 추가"
                             >
@@ -282,7 +263,7 @@ export function ChallengeCreate({
                             음식 이름과 사진을 함께 등록하세요. 사진은 상세 도감에서 흑백으로 보이다가, 참가자가
                             인증하면 컬러로 바뀌어요.
                         </p>
-                        {verifyType === 'LOCATION' && (
+                        {true && (
                             <div className="mt-3 border-t border-cream-200 pt-3">
                                 <span className="mb-1.5 block text-xs font-bold text-brown-soft">
                                     인증 장소 (위치 인증 필수)
