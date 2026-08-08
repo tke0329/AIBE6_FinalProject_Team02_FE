@@ -73,6 +73,61 @@ export interface LogitRecordUpdateRequest extends LogitRecordFields {
     newPhotos: LogitPhotoInput[]
 }
 
+// --- 하루 카드 ---
+
+export interface DayCardAuthor {
+    userId: number
+    nickname: string | null
+    profileImageUrl: string | null
+    me: boolean
+}
+
+/** 카드에 놓이는 음식 사진 한 장
+ * caption은 사진에 붙인 글로 없을 수 있음 */
+export interface DayCardItem {
+    caption: string | null
+    imageUrl: string | null
+    author: DayCardAuthor
+}
+
+/** 하루 카드 한 층 = 끼니
+ * items는 가입 순으로 정렬 */
+export interface DayCardSlot {
+    slotId: number
+    name: string
+    sortOrder: number
+    hidden: boolean
+    items: DayCardItem[]
+}
+
+export interface DayCardParticipant {
+    userId: number
+    nickname: string | null
+    profileImageUrl: string | null
+    me: boolean
+    /** 담은 사진 수 */
+    count: number
+    /** 사진에 붙인 글(있는 것만) */
+    captions: string[]
+}
+
+export interface DayCardStats {
+    foodCount: number
+    participantCount: number
+    recordedSlotCount: number
+}
+
+export interface LogitDayCard {
+    date: string
+    slots: DayCardSlot[]
+    participants: DayCardParticipant[]
+    stats: DayCardStats
+}
+
+export function authorName(author: DayCardAuthor | DayCardParticipant): string {
+    return author.nickname?.trim() || '이름 없는 참여자'
+}
+
 export interface LogitRecordPhoto {
     photoId: number
     /** 서명된 조회 URL. 원본 S3 key는 서버가 내보내지 않는다 */

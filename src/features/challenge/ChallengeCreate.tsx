@@ -5,13 +5,7 @@ import { resolveBadgeImage } from '@/shared/data/badgeAssets'
 import { useAppState } from '@/shared/store/AppStateProvider'
 import { Badge } from '@/shared/ui/atoms/Badge'
 import { AnimatePresence, motion } from 'framer-motion'
-import {
-    ArrowLeftIcon,
-    CameraIcon,
-    CheckIcon,
-    MapPinIcon,
-    Trash2Icon
-} from 'lucide-react'
+import { ArrowLeftIcon, CameraIcon, CheckIcon, MapPinIcon, Trash2Icon } from 'lucide-react'
 import React, { useRef, useState } from 'react'
 import { ChallengeData, ChallengeTarget, RewardBadge } from './types'
 
@@ -45,7 +39,14 @@ const variants = {
     exit: (dir: number) => ({ x: dir > 0 ? -48 : 48, opacity: 0 }),
 }
 
-export function ChallengeCreate({ createdThisMonth, customBadge, onBack, onCreate, onCustomBadge, onUsePreset }: Props) {
+export function ChallengeCreate({
+    createdThisMonth,
+    customBadge,
+    onBack,
+    onCreate,
+    onCustomBadge,
+    onUsePreset,
+}: Props) {
     const { challengeDraft, setChallengeDraft } = useAppState()
     const patchDraft = (patch: Partial<typeof challengeDraft>) => setChallengeDraft({ ...challengeDraft, ...patch })
 
@@ -256,7 +257,11 @@ export function ChallengeCreate({ createdThisMonth, customBadge, onBack, onCreat
                                             key={p}
                                             type="button"
                                             onClick={() =>
-                                                patchDraft(p === 'PERMANENT' ? { periodType: p, endsAt: '' } : { periodType: p })
+                                                patchDraft(
+                                                    p === 'PERMANENT'
+                                                        ? { periodType: p, endsAt: '' }
+                                                        : { periodType: p },
+                                                )
                                             }
                                             className={`flex w-full items-center gap-3 rounded-2xl border-2 p-4 text-left ${periodType === p ? 'border-orange-500 bg-orange-50' : 'border-cream-200 bg-white'}`}
                                         >
@@ -314,12 +319,22 @@ export function ChallengeCreate({ createdThisMonth, customBadge, onBack, onCreat
                                             className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-orange-50 text-orange-500"
                                         >
                                             {targetPreview ? (
-                                                <img src={targetPreview} alt="" className="h-full w-full object-cover" />
+                                                <img
+                                                    src={targetPreview}
+                                                    alt=""
+                                                    className="h-full w-full object-cover"
+                                                />
                                             ) : (
                                                 <CameraIcon size={20} />
                                             )}
                                         </button>
-                                        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onPickFile} />
+                                        <input
+                                            ref={fileRef}
+                                            type="file"
+                                            accept="image/*"
+                                            className="hidden"
+                                            onChange={onPickFile}
+                                        />
                                         <div className="min-w-0 flex-1 space-y-2">
                                             <input
                                                 value={storeName}
@@ -337,7 +352,9 @@ export function ChallengeCreate({ createdThisMonth, customBadge, onBack, onCreat
                                     </div>
 
                                     <div className="mt-3 border-t border-cream-200 pt-3">
-                                        <span className="mb-1.5 block text-xs font-bold text-brown-soft">주소 / 위치</span>
+                                        <span className="mb-1.5 block text-xs font-bold text-brown-soft">
+                                            주소 / 위치
+                                        </span>
                                         <PlacePicker value={targetPlace} onChange={setTargetPlace} />
                                         <div className="mt-2 flex gap-2">
                                             <input
@@ -361,7 +378,9 @@ export function ChallengeCreate({ createdThisMonth, customBadge, onBack, onCreat
                                                 {resolving ? '확인 중' : '주소 확인'}
                                             </button>
                                         </div>
-                                        {addressError && <p className="mt-1.5 text-xs font-medium text-red-500">{addressError}</p>}
+                                        {addressError && (
+                                            <p className="mt-1.5 text-xs font-medium text-red-500">{addressError}</p>
+                                        )}
                                         {placeReady && targetPlace && (
                                             <p className="mt-1.5 flex items-center gap-1 text-xs font-medium text-green-600">
                                                 <MapPinIcon size={13} /> {targetPlace.name} 위치 확인됨
@@ -387,9 +406,13 @@ export function ChallengeCreate({ createdThisMonth, customBadge, onBack, onCreat
                                 </div>
 
                                 <div className="mt-3 flex items-center justify-between px-1">
-                                    <span className="text-xs font-bold text-brown-soft">담은 음식 {targets.length}개</span>
+                                    <span className="text-xs font-bold text-brown-soft">
+                                        담은 음식 {targets.length}개
+                                    </span>
                                     {!enough && (
-                                        <span className="text-xs text-brown-muted">{MIN_TARGETS - targets.length}개 더 필요</span>
+                                        <span className="text-xs text-brown-muted">
+                                            {MIN_TARGETS - targets.length}개 더 필요
+                                        </span>
                                     )}
                                 </div>
 
@@ -406,7 +429,11 @@ export function ChallengeCreate({ createdThisMonth, customBadge, onBack, onCreat
                                             >
                                                 <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-orange-50">
                                                     {t.imageUrl ? (
-                                                        <img src={t.imageUrl} alt="" className="h-full w-full object-cover" />
+                                                        <img
+                                                            src={t.imageUrl}
+                                                            alt=""
+                                                            className="h-full w-full object-cover"
+                                                        />
                                                     ) : (
                                                         '🍽️'
                                                     )}
@@ -454,7 +481,15 @@ export function ChallengeCreate({ createdThisMonth, customBadge, onBack, onCreat
                                                 className={`flex items-center gap-3 rounded-2xl border-2 p-3 text-left ${selected ? 'border-orange-500 bg-orange-50' : 'border-cream-200 bg-white'}`}
                                             >
                                                 <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-orange-50">
-                                                    {image ? <img src={image} alt="" className="h-full w-full object-cover" /> : '🏅'}
+                                                    {image ? (
+                                                        <img
+                                                            src={image}
+                                                            alt=""
+                                                            className="h-full w-full object-cover"
+                                                        />
+                                                    ) : (
+                                                        '🏅'
+                                                    )}
                                                 </span>
                                                 <span className="text-sm font-bold text-brown">{preset.name}</span>
                                             </button>
@@ -466,7 +501,11 @@ export function ChallengeCreate({ createdThisMonth, customBadge, onBack, onCreat
                                     >
                                         <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-orange-100 text-xl">
                                             {customBadge?.customImage ? (
-                                                <img src={customBadge.customImage} alt="커스텀" className="h-full w-full object-cover" />
+                                                <img
+                                                    src={customBadge.customImage}
+                                                    alt="커스텀"
+                                                    className="h-full w-full object-cover"
+                                                />
                                             ) : (
                                                 '✏️'
                                             )}
@@ -482,7 +521,9 @@ export function ChallengeCreate({ createdThisMonth, customBadge, onBack, onCreat
 
                                 {!customBadge && (
                                     <label className="mt-3 block">
-                                        <span className="mb-1.5 block text-sm font-bold text-brown">보상 뱃지 이름</span>
+                                        <span className="mb-1.5 block text-sm font-bold text-brown">
+                                            보상 뱃지 이름
+                                        </span>
                                         <input
                                             value={presetName}
                                             onChange={(e) => setPresetName(e.target.value)}

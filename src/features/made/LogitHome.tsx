@@ -1,20 +1,16 @@
 import React, { useState } from 'react'
-import { ArrowLeftIcon, MenuIcon, PencilIcon, PlusIcon } from 'lucide-react'
+import { ArrowLeftIcon, MenuIcon, PencilIcon, PlusIcon, SparklesIcon } from 'lucide-react'
 import { BottomNav, NavTab } from '@/shared/ui/molecules/BottomNav'
 import { DexHelpSheet } from '@/shared/ui/molecules/DexHelpSheet'
 import { HelpIcon } from '@/shared/ui/atoms/HelpIcon'
-import { TabBar } from '@/shared/ui/molecules/TabBar'
 import { DateStrip } from './DateStrip'
-import { FridgeGrid } from './FridgeGrid'
+import { DayCardView } from './DayCardView'
 import { LogitCalendar } from './LogitCalendar'
 import { MealSlotSection } from './MealSlotSection'
 import { RecordDetailSheet } from './RecordDetailSheet'
 import { SlotEditSheet } from './SlotEditSheet'
-import { fridgeFromFeed } from './fridgeFromFeed'
 import { useLogitFeed } from './useLogitFeed'
 import type { MadeDexId } from './types'
-
-type LogitTab = 'home' | 'fridge'
 
 interface Props {
     dexId: MadeDexId
@@ -27,14 +23,9 @@ interface Props {
     onTab: (tab: NavTab) => void
 }
 
-const TABS = [
-    { id: 'home' as const, label: '홈' },
-    { id: 'fridge' as const, label: '로그' },
-]
-
 export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRecord, onTab }: Props) {
     const feed = useLogitFeed(dexId)
-    const [tab, setTab] = useState<LogitTab>('home')
+    const [dayCardOpen, setDayCardOpen] = useState(false)
     const [helpOpen, setHelpOpen] = useState(false)
     const [slotsOpen, setSlotsOpen] = useState(false)
     const [calendarOpen, setCalendarOpen] = useState(false)
@@ -68,11 +59,9 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
                     onOpenCalendar={() => setCalendarOpen(true)}
                     className="pt-2"
                 />
-
-                <TabBar label="로그잇 보기 전환" items={TABS} value={tab} onChange={setTab} className="mb-3" />
             </header>
 
-            <main className="no-scrollbar flex-1 overflow-y-auto px-5 pb-28">
+            <main className="no-scrollbar flex-1 overflow-y-auto px-5 pb-48">
                 {feed.error && (
                     <div className="pt-10 text-center">
                         <p className="break-keep text-sm font-bold text-content-primary">{feed.error}</p>
@@ -93,7 +82,7 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
                     </div>
                 )}
 
-                {!feed.error && feed.feed && tab === 'home' && (
+                {!feed.error && feed.feed && (
                     <>
                         {slots.map((slot) => (
                             <MealSlotSection
@@ -114,22 +103,28 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
                         </button>
                     </>
                 )}
-
-                {!feed.error && feed.feed && tab === 'fridge' && (
-                    <div className="pt-5">
-                        <FridgeGrid entries={fridgeFromFeed(feed.feed)} onRecord={() => onRecord(feed.date)} />
-                    </div>
-                )}
             </main>
 
-            <button
-                type="button"
-                onClick={() => onRecord(feed.date)}
-                className="absolute bottom-20 left-4 right-4 flex h-cta items-center justify-center gap-1 rounded-full bg-action-primary text-sm font-bold text-content-on-action shadow-card"
-            >
-                <PlusIcon size={18} aria-hidden />
-                식사 기록하기
-            </button>
+            <div className="absolute bottom-20 left-4 right-4 flex flex-col gap-2">
+                {!feed.error && feed.feed && (
+                    <button
+                        type="button"
+                        onClick={() => setDayCardOpen(true)}
+                        className="flex h-cta items-center justify-center gap-2 rounded-full border border-edge-default bg-surface-card text-sm font-bold text-content-primary shadow-card"
+                    >
+                        <SparklesIcon size={18} aria-hidden className="text-content-link" />
+                        오늘의 냉장고 만들기
+                    </button>
+                )}
+                <button
+                    type="button"
+                    onClick={() => onRecord(feed.date)}
+                    className="flex h-cta items-center justify-center gap-1 rounded-full bg-action-primary text-sm font-bold text-content-on-action shadow-card"
+                >
+                    <PlusIcon size={18} aria-hidden />
+                    식사 기록하기
+                </button>
+            </div>
 
             <BottomNav active="제작" onTab={onTab} />
 
@@ -162,6 +157,24 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
                         feed.reload()
                     }}
                 />
+            )}
+
+            {dayCardOpen && (
+                <div className="absolute inset-0 z-20 flex flex-col bg-cream-100">
+                    <div className="shrink-0 bg-surface-app px-5 pt-4">
+                        <button
+                            type="button"
+                            onClick={() => setDayCardOpen(false)}
+                            aria-label="냉장고 닫기"
+                            className="min-h-touch"
+                        >
+                            <ArrowLeftIcon size={21} aria-hidden />
+                        </button>
+                    </div>
+                    <main className="no-scrollbar flex-1 overflow-y-auto px-5 pb-10">
+                        <DayCardView madeDexId={dexId} date={feed.date} onRecord={() => onRecord(feed.date)} />
+                    </main>
+                </div>
             )}
         </div>
     )
