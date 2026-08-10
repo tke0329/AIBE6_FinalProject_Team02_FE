@@ -130,6 +130,7 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
 
             {calendarOpen && feed.today && (
                 <LogitCalendar
+                    madeDexId={dexId}
                     date={feed.date}
                     today={feed.today}
                     onSelect={(picked) => {
@@ -172,7 +173,12 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
                         </button>
                     </div>
                     <main className="no-scrollbar flex-1 overflow-y-auto px-5 pb-10">
-                        <DayCardView madeDexId={dexId} date={feed.date} onRecord={() => onRecord(feed.date)} />
+                        <DayCardView
+                            madeDexId={dexId}
+                            date={feed.date}
+                            title={title}
+                            onRecord={() => onRecord(feed.date)}
+                        />
                     </main>
                 </div>
             )}

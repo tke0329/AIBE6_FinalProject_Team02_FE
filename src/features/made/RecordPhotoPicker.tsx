@@ -8,6 +8,8 @@ interface Props {
     photos: RecordPhoto[]
     onAdd: () => void
     onCaption: (id: string, caption: string) => void
+    /** 맨 앞으로 옮긴다. 맨 앞 사진이 냉장고와 목록에 놓이는 대표다 */
+    onCover: (id: string) => void
     onRemove: (id: string) => void
     onRetry: (id: string) => void
 }
@@ -16,7 +18,7 @@ interface Props {
 const DOT_LIMIT = 8
 
 /** 사진을 넘겨 가며 그 사진에 붙일 글을 적는다 */
-export function RecordPhotoPicker({ photos, onAdd, onCaption, onRemove, onRetry }: Props) {
+export function RecordPhotoPicker({ photos, onAdd, onCaption, onCover, onRemove, onRetry }: Props) {
     const trackRef = useRef<HTMLDivElement>(null)
     const [index, setIndex] = useState(0)
 
@@ -82,6 +84,22 @@ export function RecordPhotoPicker({ photos, onAdd, onCaption, onRemove, onRetry 
                             >
                                 <XIcon size={18} aria-hidden className="text-white" />
                             </button>
+
+                            {/* 한 장뿐이면 고를 것이 없다 */}
+                            {count > 1 &&
+                                (position === 0 ? (
+                                    <span className="absolute left-2 top-2 rounded-full bg-action-primary px-2 py-1 text-xs font-bold text-content-on-action">
+                                        대표
+                                    </span>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={() => onCover(photo.id)}
+                                        className="no-touch-expand absolute left-2 top-2 rounded-full bg-black/45 px-2 py-1 text-xs font-bold text-white"
+                                    >
+                                        대표로
+                                    </button>
+                                ))}
                         </div>
                     )
                 })}
@@ -119,6 +137,8 @@ export function RecordPhotoPicker({ photos, onAdd, onCaption, onRemove, onRetry 
                     className="mt-3 min-h-touch w-full rounded-xl bg-cream-100 px-3 text-sm text-content-primary"
                 />
             )}
+
+            {count > 1 && <p className="pt-2 text-xs text-content-muted">대표 사진이 냉장고와 목록에 놓여요</p>}
 
             <div className="flex items-center justify-between pt-2">
                 <p className="text-xs text-content-muted">
