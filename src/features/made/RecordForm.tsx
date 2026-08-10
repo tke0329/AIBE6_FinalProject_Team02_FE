@@ -58,6 +58,7 @@ export function RecordForm({ madeDexId, recordId, slotId, date, onBack, onDone }
                     photos={form.photos}
                     onAdd={() => setSourceOpen(true)}
                     onCaption={form.writeCaption}
+                    onCover={form.makeCover}
                     onRemove={form.removePhoto}
                     onRetry={form.retryPhoto}
                 />

@@ -1,43 +1,39 @@
-import React, { useRef, useState } from 'react'
-import { ArrowLeftIcon, CameraIcon, CrownIcon, MapPinIcon, PlusIcon, XIcon } from 'lucide-react'
+import React, { useState } from 'react'
+import { ArrowLeftIcon, MapPinIcon, PlusIcon, XIcon } from 'lucide-react'
 import { ProgressBar } from '@/shared/ui/atoms/ProgressBar'
 import { Badge } from '@/shared/ui/atoms/Badge'
 import { FoodCard } from '@/shared/ui/molecules/FoodCard'
 import { TabBar } from '@/shared/ui/molecules/TabBar'
 import { ChallengeData, ChallengeTarget } from './types'
+import { ReviewSection } from './ReviewSection'
+import { CertifyWizard } from './CertifyWizard'
+import { fetchChallengeReviews, fetchFoodReviews, writeChallengeReview, writeFoodReview } from './api'
 
-type DetailTab = '기록 도감' | '랭킹'
+type DetailTab = '기록 도감' | '리뷰'
 interface Props {
     challenge: ChallengeData
     onBack: () => void
     onRegister: () => void
     onJoin?: () => void
-    onUnlock?: (slotId: string, file: File, coords: { lat: number; lng: number } | null) => void | Promise<void>
+    // 사진+위치로 해금 실행 후 완료 여부 반환 (해금 위저드가 호출)
+    onUnlock?: (
+        slotId: string,
+        file: File,
+        coords: { lat: number; lng: number } | null,
+    ) => Promise<{ completed: boolean }>
+    // 이 해금으로 챌린지를 완주했을 때 (완주 보상 팝업 트리거)
+    onUnlockCompleted?: () => void
     onLeave?: () => void
 }
-const RANKINGS = [
-    { rank: 1, name: '윤하연수', initial: '윤', count: 14, tone: 'bg-amber-200 text-amber-800' },
-    { rank: 2, name: '민지수', initial: '민', count: 12, tone: 'bg-slate-200 text-slate-700' },
-    {
-        rank: 3,
-        name: '주말식도락',
-        initial: '주',
-        count: 11,
-        tone: 'bg-orange-200 text-orange-800',
-    },
-    {
-        rank: 4,
-        name: '신재락현',
-        initial: '신',
-        count: 6,
-        tone: 'bg-orange-200 text-orange-800',
-        me: true,
-    },
-    { rank: 5, name: '라면러버', initial: '라', count: 5, tone: 'bg-cream-200 text-brown-soft' },
-    { rank: 6, name: '한입만', initial: '한', count: 4, tone: 'bg-cream-200 text-brown-soft' },
-]
-
-export function ChallengeDetail({ challenge, onBack, onRegister, onJoin, onUnlock, onLeave }: Props) {
+export function ChallengeDetail({
+    challenge,
+    onBack,
+    onRegister,
+    onJoin,
+    onUnlock,
+    onUnlockCompleted,
+    onLeave,
+}: Props) {
     const [activeTab, setActiveTab] = useState<DetailTab>('기록 도감')
     const joined = Boolean(challenge.joined)
     const ended = Boolean(challenge.ended)
@@ -45,65 +41,12 @@ export function ChallengeDetail({ challenge, onBack, onRegister, onJoin, onUnloc
     const completed = new Set(challenge.completedTargetIds ?? [])
     const badge = challenge.rewardBadge
     const [record, setRecord] = useState<ChallengeTarget | null>(null) // 해금 기록 모달
-    const isLocation = true // 챌린지는 위치 인증 전용
+    const [locked, setLocked] = useState<ChallengeTarget | null>(null) // 미해금 미리보기 모달
 
-    // 인증(등록) 모달 상태
+    // 해금 위저드 (사진 → 위치 → 리뷰)
     const [certify, setCertify] = useState<ChallengeTarget | null>(null)
-    const [certFile, setCertFile] = useState<File | null>(null)
-    const [certPreview, setCertPreview] = useState('')
-    const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null)
-    const [locating, setLocating] = useState(false)
-    const [certError, setCertError] = useState('')
-    const [submitting, setSubmitting] = useState(false)
-    const certFileRef = useRef<HTMLInputElement>(null)
+    const openCertify = (target: ChallengeTarget) => setCertify(target)
 
-    const openCertify = (target: ChallengeTarget) => {
-        setCertify(target)
-        setCertFile(null)
-        setCertPreview('')
-        setCoords(null)
-        setCertError('')
-    }
-    const onCertFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
-        e.target.value = ''
-        if (!file) return
-        setCertFile(file)
-        setCertPreview(URL.createObjectURL(file))
-    }
-    const captureLocation = () => {
-        if (!navigator.geolocation) {
-            setCertError('이 브라우저에서는 위치를 쓸 수 없어요')
-            return
-        }
-        setLocating(true)
-        setCertError('')
-        navigator.geolocation.getCurrentPosition(
-            (pos) => {
-                setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude })
-                setLocating(false)
-            },
-            () => {
-                setCertError('위치 권한을 허용해 주세요')
-                setLocating(false)
-            },
-            { enableHighAccuracy: true, timeout: 10_000 },
-        )
-    }
-    const canSubmit = Boolean(certFile) && (!isLocation || coords != null) && !submitting
-    const submitCertify = async () => {
-        if (!certify || !certFile || !onUnlock) return
-        setSubmitting(true)
-        setCertError('')
-        try {
-            await onUnlock(certify.id, certFile, coords)
-            setCertify(null)
-        } catch (e) {
-            setCertError(e instanceof Error ? e.message : '인증에 실패했어요. 다시 시도해 주세요.')
-        } finally {
-            setSubmitting(false)
-        }
-    }
     return (
         <div className="flex h-full flex-col bg-cream-100">
             <header className="flex items-center gap-3 px-5 py-4">
@@ -162,7 +105,7 @@ export function ChallengeDetail({ challenge, onBack, onRegister, onJoin, onUnloc
                 <TabBar
                     label="챌린지 상세 보기 전환"
                     variant="segmented"
-                    items={(['기록 도감', '랭킹'] as DetailTab[]).map((tab) => ({
+                    items={(['기록 도감', '리뷰'] as DetailTab[]).map((tab) => ({
                         id: tab,
                         label: tab,
                     }))}
@@ -170,7 +113,7 @@ export function ChallengeDetail({ challenge, onBack, onRegister, onJoin, onUnloc
                     onChange={setActiveTab}
                     className="mt-4"
                 />
-                {activeTab === '기록 도감' ? (
+                {activeTab === '기록 도감' && (
                     <section className="mt-4">
                         <div className="mb-3 flex items-center justify-between">
                             <h2 className="font-bold text-brown">목표 도감</h2>
@@ -182,29 +125,21 @@ export function ChallengeDetail({ challenge, onBack, onRegister, onJoin, onUnloc
                             <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
                                 {targets.map((target) => {
                                     const unlocked = completed.has(target.id)
-                                    // 해금됨 → 내 기록 보기, 미해금 & 참여중 → 인증(사진), 그 외 → 정적
-                                    const clickable = unlocked || (joined && !ended)
-                                    const onCardClick = unlocked
-                                        ? () => setRecord(target)
-                                        : joined && !ended
-                                          ? () => openCertify(target)
-                                          : undefined
+                                    // 해금됨 → 내 기록 보기 / 미해금 → 미리보기(흑백+리뷰 일부). 미리보기 안에서 인증 진입
+                                    const clickable = true
+                                    const onCardClick = unlocked ? () => setRecord(target) : () => setLocked(target)
                                     return (
                                         // FoodCard가 <button>(잠금 시 disabled)이라 클릭을 먹음 →
                                         // 카드는 pointer-events-none로 통과시키고, 바깥 div가 클릭을 받는다
                                         <div
                                             key={target.id}
-                                            role={clickable ? 'button' : undefined}
-                                            tabIndex={clickable ? 0 : undefined}
-                                            onClick={clickable ? onCardClick : undefined}
+                                            role="button"
+                                            tabIndex={0}
+                                            onClick={onCardClick}
                                             aria-label={
-                                                clickable
-                                                    ? unlocked
-                                                        ? `${target.name} 기록 보기`
-                                                        : `${target.name} 인증하기`
-                                                    : undefined
+                                                unlocked ? `${target.name} 기록 보기` : `${target.name} 미리보기`
                                             }
-                                            className={clickable ? 'cursor-pointer' : undefined}
+                                            className="cursor-pointer"
                                         >
                                             <div className="pointer-events-none">
                                                 <FoodCard
@@ -236,31 +171,19 @@ export function ChallengeDetail({ challenge, onBack, onRegister, onJoin, onUnloc
                             </div>
                         )}
                     </section>
-                ) : (
+                )}
+                {activeTab === '리뷰' && (
                     <section className="mt-4">
-                        <LeaderboardPodium />
-                        <div className="mt-4 space-y-2">
-                            {RANKINGS.slice(3).map((user) => (
-                                <article
-                                    key={user.rank}
-                                    className={`flex items-center gap-3 rounded-2xl p-3 ${user.me ? 'bg-orange-100 ring-1 ring-orange-400' : 'bg-white shadow-soft'}`}
-                                >
-                                    <span className="w-5 text-center font-display text-sm text-brown-muted">
-                                        {user.rank}
-                                    </span>
-                                    <span
-                                        className={`flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold ${user.tone}`}
-                                    >
-                                        {user.initial}
-                                    </span>
-                                    <span className="flex-1 text-sm font-bold text-brown">
-                                        {user.name}
-                                        {user.me && <small className="ml-1 text-xs text-orange-600">나</small>}
-                                    </span>
-                                    <span className="text-sm font-bold text-orange-600">{user.count}개</span>
-                                </article>
-                            ))}
-                        </div>
+                        <h2 className="mb-3 font-bold text-brown">챌린지 리뷰</h2>
+                        <ReviewSection
+                            reloadKey={`challenge-${challenge.id}`}
+                            load={() => fetchChallengeReviews(challenge.id)}
+                            write={(payload) => writeChallengeReview(challenge.id, payload)}
+                            canWrite={Boolean(challenge.completed)}
+                            lockedReason="챌린지를 완료하면 리뷰를 쓸 수 있어요"
+                            preview={!challenge.completed}
+                            previewMessage="완주하면 리뷰를 모두 볼 수 있어요"
+                        />
                     </section>
                 )}
             </main>
@@ -289,7 +212,7 @@ export function ChallengeDetail({ challenge, onBack, onRegister, onJoin, onUnloc
                     onClick={() => setRecord(null)}
                 >
                     <div
-                        className="w-full max-w-md rounded-3xl bg-white p-5 shadow-pop"
+                        className="max-h-[85vh] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-5 shadow-pop"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="mb-3 flex items-center justify-between">
@@ -319,107 +242,96 @@ export function ChallengeDetail({ challenge, onBack, onRegister, onJoin, onUnloc
                                 {new Date(record.unlockedAt).toLocaleString('ko-KR')} 인증
                             </p>
                         )}
+                        <div className="mt-4 border-t border-cream-200 pt-4">
+                            <h4 className="mb-2 font-bold text-brown">리뷰</h4>
+                            <ReviewSection
+                                reloadKey={`food-${record.id}`}
+                                load={() => fetchFoodReviews(challenge.id, record.id)}
+                                write={(payload) => writeFoodReview(challenge.id, record.id, payload)}
+                                canWrite
+                                lockedReason=""
+                            />
+                        </div>
                     </div>
                 </div>
             )}
-            {certify && (
+            {locked && (
                 <div
                     className="absolute inset-0 z-20 flex items-end justify-center bg-black/40 p-4"
-                    onClick={() => (submitting ? null : setCertify(null))}
+                    onClick={() => setLocked(null)}
                 >
                     <div
-                        className="w-full max-w-md rounded-3xl bg-white p-5 shadow-pop"
+                        className="max-h-[85vh] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-5 shadow-pop"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="mb-3 flex items-center justify-between">
-                            <h3 className="font-display text-lg text-brown">{certify.name} 인증</h3>
-                            <button onClick={() => setCertify(null)} aria-label="닫기" disabled={submitting}>
+                            <h3 className="font-display text-lg text-brown">{locked.name}</h3>
+                            <button onClick={() => setLocked(null)} aria-label="닫기">
                                 <XIcon size={20} className="text-brown-muted" />
                             </button>
                         </div>
-
-                        <button
-                            type="button"
-                            onClick={() => certFileRef.current?.click()}
-                            className="flex aspect-square w-full items-center justify-center overflow-hidden rounded-2xl bg-cream-100 text-sm text-brown-muted"
-                        >
-                            {certPreview ? (
-                                <img src={certPreview} alt="" className="h-full w-full object-cover" />
-                            ) : (
-                                <span className="flex flex-col items-center gap-1">
-                                    <CameraIcon size={26} />
-                                    사진 올리기
+                        <div className="relative mb-3">
+                            <img
+                                src={locked.imageUrl || '/images/default_food.png'}
+                                alt={`${locked.name} 미리보기`}
+                                className="aspect-square w-full rounded-2xl object-cover grayscale"
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/20">
+                                <span className="rounded-full bg-black/55 px-3 py-1 text-xs font-bold text-white">
+                                    미해금
                                 </span>
-                            )}
-                        </button>
-                        <input
-                            ref={certFileRef}
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={onCertFile}
-                        />
-
-                        {isLocation && (
-                            <div className="mt-3 rounded-2xl bg-cream-50 p-3">
-                                <p className="flex items-center gap-1 text-xs font-bold text-brown-soft">
-                                    <MapPinIcon size={13} /> {certify.placeName ?? '지정 위치'}
-                                </p>
-                                {coords ? (
-                                    <p className="mt-1 text-xs font-medium text-green-600">현재 위치 확인됨</p>
-                                ) : (
-                                    <button
-                                        type="button"
-                                        onClick={captureLocation}
-                                        disabled={locating}
-                                        className="mt-2 w-full rounded-xl bg-brown py-2 text-sm font-bold text-white disabled:opacity-60"
-                                    >
-                                        {locating ? '위치 확인 중…' : '현재 위치 확인'}
-                                    </button>
-                                )}
                             </div>
+                        </div>
+                        {locked.placeName && (
+                            <p className="flex items-center gap-1 text-sm text-brown-soft">
+                                <MapPinIcon size={15} /> {locked.placeName}
+                            </p>
                         )}
-
-                        {certError && <p className="mt-2 text-xs font-medium text-red-500">{certError}</p>}
-
-                        <button
-                            type="button"
-                            onClick={submitCertify}
-                            disabled={!canSubmit}
-                            className="mt-4 h-cta w-full rounded-full bg-orange-500 font-display text-lg text-white shadow-card disabled:bg-action-disabled-bg disabled:text-action-disabled-text disabled:shadow-none"
-                        >
-                            {submitting ? '인증 중…' : '인증하기'}
-                        </button>
-                        <p className="mt-2 text-center text-xs text-brown-muted">
-                            {isLocation ? '지정 위치에서 사진과 함께 인증돼요' : '사진을 올려 인증해요'}
-                        </p>
+                        {locked.description && <p className="mt-1 text-sm text-brown-soft">{locked.description}</p>}
+                        {joined && !ended ? (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    const t = locked
+                                    setLocked(null)
+                                    openCertify(t)
+                                }}
+                                className="mt-3 h-cta w-full rounded-full bg-orange-500 font-display text-base text-white shadow-card"
+                            >
+                                인증하기
+                            </button>
+                        ) : (
+                            <p className="mt-3 rounded-full bg-cream-200 py-3 text-center text-sm font-medium text-brown-muted">
+                                {ended ? '종료된 챌린지예요' : '참여하면 인증할 수 있어요'}
+                            </p>
+                        )}
+                        <div className="mt-4 border-t border-cream-200 pt-4">
+                            <h4 className="mb-2 font-bold text-brown">리뷰</h4>
+                            <ReviewSection
+                                reloadKey={`food-locked-${locked.id}`}
+                                load={() => fetchFoodReviews(challenge.id, locked.id)}
+                                write={(payload) => writeFoodReview(challenge.id, locked.id, payload)}
+                                canWrite={false}
+                                lockedReason="인증하면 리뷰를 남길 수 있어요"
+                                preview
+                                previewMessage="인증하면 리뷰를 모두 볼 수 있어요"
+                            />
+                        </div>
                     </div>
                 </div>
             )}
-        </div>
-    )
-}
-function LeaderboardPodium() {
-    const podium = [RANKINGS[1], RANKINGS[0], RANKINGS[2]]
-    return (
-        <div className="flex items-end justify-center gap-2">
-            {podium.map((user) => (
-                <div key={user.rank} className={`flex flex-col items-center ${user.rank === 1 ? 'w-28' : 'w-24'}`}>
-                    {user.rank === 1 && <CrownIcon size={20} className="mb-1 text-amber-500" />}
-                    <span
-                        className={`flex items-center justify-center rounded-full font-bold ${user.rank === 1 ? 'h-16 w-16 bg-amber-200 text-amber-800' : 'h-12 w-12 bg-cream-200 text-brown-soft'}`}
-                    >
-                        {user.initial}
-                    </span>
-                    <span className="mt-1 text-xs font-bold text-brown">{user.name}</span>
-                    <span className="text-xs text-orange-600">{user.count}개</span>
-                    <span
-                        className={`mt-1 flex w-full items-center justify-center rounded-t-lg py-1 text-xs font-bold ${user.rank === 1 ? 'bg-amber-400 text-white' : user.rank === 2 ? 'bg-slate-300 text-white' : 'bg-orange-200 text-orange-700'}`}
-                    >
-                        {user.rank}위
-                    </span>
-                </div>
-            ))}
+            {certify && onUnlock && (
+                <CertifyWizard
+                    name={certify.name}
+                    placeName={certify.placeName}
+                    onUnlock={(file, coords) => onUnlock(certify.id, file, coords)}
+                    onSubmitReview={(payload) => writeFoodReview(challenge.id, certify.id, payload).then(() => {})}
+                    onClose={(completedNow) => {
+                        setCertify(null)
+                        if (completedNow) onUnlockCompleted?.()
+                    }}
+                />
+            )}
         </div>
     )
 }

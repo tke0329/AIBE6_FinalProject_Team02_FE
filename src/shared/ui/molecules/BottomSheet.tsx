@@ -1,5 +1,5 @@
+import { motion, useDragControls, useReducedMotion } from 'framer-motion'
 import React, { useEffect, useRef } from 'react'
-import { motion, useReducedMotion } from 'framer-motion'
 
 interface BottomSheetProps {
     /** 시트 제목. 접근 가능한 이름으로도 쓰임 */
@@ -10,6 +10,12 @@ interface BottomSheetProps {
     children: React.ReactNode
     /** 아래로 끌어 닫기 허용 (댓글 시트 등) */
     draggable?: boolean
+    /**
+     * 손잡이에서만 끌어 닫기. 시트 안에 세로 스크롤 영역(휠·긴 목록)이 있을 때 쓴다.
+     * framer는 drag가 켜지면 패널에 touch-action을 걸어 안쪽 세로 스크롤을 막는데,
+     * dragListener를 끄면 그 설정을 건너뛰므로 스크롤과 끌어 닫기를 함께 쓸 수 있다
+     */
+    dragHandleOnly?: boolean
     className?: string
     /** 패널 높이 제한. 기본은 내용만큼 */
     maxHeightClass?: string
@@ -29,11 +35,14 @@ export function BottomSheet({
     onClose,
     children,
     draggable = false,
+    dragHandleOnly = false,
     className = '',
     maxHeightClass = 'max-h-[80%]',
 }: BottomSheetProps) {
     const panelRef = useRef<HTMLElement>(null)
     const reduceMotion = useReducedMotion()
+    const dragControls = useDragControls()
+    const handleOnly = draggable && dragHandleOnly
 
     useEffect(() => {
         const trigger = document.activeElement as HTMLElement | null
@@ -73,10 +82,14 @@ export function BottomSheet({
 
     return (
         <div className="absolute inset-0 z-50 flex flex-col justify-end">
+            {/*
+                no-touch-expand가 없으면 전역 아이콘버튼 규칙(globals.css)이 position을 relative로 덮어
+                배경이 높이 0으로 찌그러진다 — 딤도 안 보이고 바깥을 눌러도 닫히지 않는다
+            */}
             <button
                 type="button"
                 aria-label={`${title} 닫기`}
-                className="absolute inset-0 bg-black/35"
+                className="no-touch-expand absolute inset-0 bg-black/35"
                 onClick={onClose}
             />
 
@@ -87,6 +100,8 @@ export function BottomSheet({
                 aria-modal="true"
                 aria-label={title}
                 drag={draggable ? 'y' : false}
+                dragListener={handleOnly ? false : undefined}
+                dragControls={handleOnly ? dragControls : undefined}
                 dragConstraints={{ top: 0, bottom: 180 }}
                 dragElastic={0.15}
                 onDragEnd={(_, info) => {
@@ -97,7 +112,13 @@ export function BottomSheet({
                 transition={reduceMotion ? { duration: 0 } : { duration: 0.3, ease: 'easeOut' }}
                 className={`relative z-10 flex ${maxHeightClass} flex-col rounded-t-3xl bg-surface-app shadow-modal outline-none ${className}`}
             >
-                <div className="flex shrink-0 flex-col items-center pt-3">
+                {/* 손잡이. handleOnly면 여기서만 끌어 닫는다 — 잡을 자리를 주려고 아래도 띄운다 */}
+                <div
+                    className={`flex shrink-0 flex-col items-center pt-3 ${
+                        handleOnly ? 'cursor-grab touch-none pb-2 active:cursor-grabbing' : ''
+                    }`}
+                    onPointerDown={handleOnly ? (event) => dragControls.start(event) : undefined}
+                >
                     <span aria-hidden className="h-1 w-10 rounded-full bg-cream-300" />
                 </div>
                 {showTitle ? (

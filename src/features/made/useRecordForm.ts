@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { MAX_PHOTOS, putToS3, requestUploadTargets, validatePhotoFile } from '@/shared/lib/upload'
-import { createRecord, fetchRecord, fetchSlots, updateRecord } from './logitApi'
+import { createRecord, fetchRecord, fetchSlots, setDayCardCover, updateRecord } from './logitApi'
 import { madeErrorMessage } from './errors'
 import { RECORD_MAX_PHOTOS, timeLabel } from './logitTypes'
 import { hasFailure, newPhotoId, newPhotosOf, readyCount, updatePayloadOf } from './recordPhotos'
@@ -178,6 +178,15 @@ export function useRecordForm({ madeDexId, recordId, initialSlotId, initialDate 
         applyPhotos((current) => current.filter((photo) => photo.id !== id))
     }
 
+    /** 맨 앞 사진이 대표다 — 고른 것을 앞으로 옮긴다 */
+    const makeCover = (id: string) => {
+        applyPhotos((current) => {
+            const target = current.find((photo) => photo.id === id)
+            if (!target) return current
+            return [target, ...current.filter((photo) => photo.id !== id)]
+        })
+    }
+
     const retryPhoto = (id: string) => {
         const target = photosRef.current.find((photo) => photo.id === id)
         if (target?.kind !== 'new') return
@@ -191,6 +200,35 @@ export function useRecordForm({ madeDexId, recordId, initialSlotId, initialDate 
     }
 
     const failed = hasFailure(photos)
+
+    /**
+     * 수정 API는 사진을 `기존 전부 → 새로 올린 것 전부` 순으로 다시 붙인다.
+     * 그래서 새로 올린 사진을 대표로 골라도 기존 사진 뒤로 밀린다.
+     * 저장 뒤 그 자리(=기존 장수 번째)의 사진을 다시 앞으로 옮겨야 하므로, 그 index를 알려 준다.
+     * 옮길 필요가 없으면 null.
+     */
+    const coverFixIndex = (): number | null => {
+        // 올리지 못한 사진은 payload에서 빠지므로 자리 계산에서도 뺀다
+        const sent = photos.filter((photo) => photo.kind === 'kept' || Boolean(photo.key))
+        const cover = sent[0]
+        if (!cover || cover.kind === 'kept') return null
+
+        const keptCount = sent.filter((photo) => photo.kind === 'kept').length
+        return keptCount === 0 ? null : keptCount
+    }
+
+    /** 저장은 이미 끝났다. 대표를 못 옮겨도 기록을 실패로 돌리지 않는다 */
+    const fixCover = async (savedId: number) => {
+        const index = coverFixIndex()
+        if (index === null) return
+        try {
+            const saved = await fetchRecord(madeDexId, savedId)
+            const cover = saved.photos[index]
+            if (cover) await setDayCardCover(madeDexId, savedId, cover.photoId)
+        } catch {
+            return
+        }
+    }
 
     const submit = async (): Promise<boolean> => {
         // 실패한 사진은 key가 없어 payload에서 빠진다. 그대로 보내면 말없이 사라진다
@@ -213,9 +251,11 @@ export function useRecordForm({ madeDexId, recordId, initialSlotId, initialDate 
                 lng: null,
             }
             if (recordId === null) {
+                // 새 기록은 보낸 순서가 그대로 저장된다 — 대표가 이미 맨 앞이다
                 await createRecord(madeDexId, { ...common, photos: newPhotosOf(photos) })
             } else {
                 await updateRecord(madeDexId, recordId, { ...common, ...updatePayloadOf(photos) })
+                await fixCover(recordId)
             }
             return true
         } catch (failure) {
@@ -244,6 +284,7 @@ export function useRecordForm({ madeDexId, recordId, initialSlotId, initialDate 
         failed,
         addFiles,
         writeCaption,
+        makeCover,
         removePhoto,
         retryPhoto,
         submit,

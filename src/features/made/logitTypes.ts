@@ -82,12 +82,21 @@ export interface DayCardAuthor {
     me: boolean
 }
 
-/** 카드에 놓이는 음식 사진 한 장
- * caption은 사진에 붙인 글로 없을 수 있음 */
-export interface DayCardItem {
+/** 아이템에 담긴 사진 한 장 */
+export interface DayCardPhoto {
+    photoId: number
     caption: string | null
     imageUrl: string | null
+}
+
+/** 카드에 놓이는 아이템 = 기록 하나
+ * 선반에는 대표(첫 장)만 놓고 장수를 숫자로 표시함
+ * 애니메이션은 photos를 전부 날리므로 나머지 사진도 함께 옴
+ * photos는 비지 않음 — 대표는 photos[0] */
+export interface DayCardItem {
+    recordId: number
     author: DayCardAuthor
+    photos: DayCardPhoto[]
 }
 
 /** 하루 카드 한 층 = 끼니
@@ -119,9 +128,18 @@ export interface DayCardStats {
 
 export interface LogitDayCard {
     date: string
+    /** 로그잇 참여자 전원, 가입 순 */
+    members: DayCardAuthor[]
     slots: DayCardSlot[]
     participants: DayCardParticipant[]
     stats: DayCardStats
+}
+
+/** 캘린더 마커. daysWithRecords는 그 달에 기록이 있는 날(일) */
+export interface DayCardCalendar {
+    year: number
+    month: number
+    daysWithRecords: number[]
 }
 
 export function authorName(author: DayCardAuthor | DayCardParticipant): string {

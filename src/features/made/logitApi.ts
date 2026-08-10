@@ -1,5 +1,6 @@
 import { apiFetch } from '@/shared/lib/api'
 import type {
+    DayCardCalendar,
     LogitDayCard,
     LogitFeed,
     LogitRecordCreateRequest,
@@ -83,6 +84,19 @@ export function updateRecord(madeDexId: MadeDexId, recordId: number, request: Lo
 export function fetchDayCard(madeDexId: MadeDexId, date?: string): Promise<LogitDayCard> {
     const query = date ? `?date=${date}` : ''
     return apiFetch<LogitDayCard>(`${base(madeDexId)}/day-card${query}`)
+}
+
+/** 냉장고에 놓일 대표 사진 지정 — 고른 사진이 첫 장이 되고 카드의 글도 그 사진의 글이 됨 */
+export function setDayCardCover(madeDexId: MadeDexId, recordId: number, photoId: number): Promise<void> {
+    return apiFetch<void>(`${base(madeDexId)}/day-card/records/${recordId}/cover`, {
+        method: 'PATCH',
+        body: JSON.stringify({ photoId }),
+    })
+}
+
+/** 캘린더 마커 */
+export function fetchDayCardCalendar(madeDexId: MadeDexId, year: number, month: number): Promise<DayCardCalendar> {
+    return apiFetch<DayCardCalendar>(`${base(madeDexId)}/day-card/calendar?year=${year}&month=${month}`)
 }
 
 export function fetchRecord(madeDexId: MadeDexId, recordId: number): Promise<LogitRecordDetail> {
