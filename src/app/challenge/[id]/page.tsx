@@ -19,6 +19,7 @@ import { useAppState } from '@/shared/store/AppStateProvider'
 import { notFound, useParams, useRouter } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AlertModal } from '@/shared/ui/molecules/AlertModal'
+import { ConfirmModal } from '@/shared/ui/molecules/ConfirmModal'
 
 function ddayLabel(endsAt: string) {
     const days = Math.ceil((new Date(endsAt).getTime() - Date.now()) / 86_400_000)
@@ -68,6 +69,7 @@ export default function ChallengeDetailPage() {
     const [rewardBadge, setRewardBadge] = useState<RewardBadgeInfo | null>(null)
     const [showReward, setShowReward] = useState(false)
     const [alertMessage, setAlertMessage] = useState<string | null>(null)
+    const [confirmLeave, setConfirmLeave] = useState(false)
     const reqRef = useRef(0) // 최신 요청만 반영 — 다른 챌린지 응답이 늦게 도착해 덮는 것 방지
 
     const load = useCallback(() => {
@@ -140,22 +142,17 @@ export default function ChallengeDetailPage() {
                         setAlertMessage(e instanceof Error ? e.message : '참여에 실패했어요')
                     }
                 }}
-                onLeave={async () => {
-                    if (!confirm('이 챌린지를 포기할까요? 내 인증 기록도 사라져요.')) return
-                    try {
-                        await leaveChallenge(id)
-                        router.push(ROUTES.challenge) // 나가면 목록으로
-                    } catch (e) {
-                        setAlertMessage(e instanceof Error ? e.message : '나가기에 실패했어요')
-                    }
-                }}
+                onLeave={() => setConfirmLeave(true)}
                 onUnlock={async (slotId, file, coords) => {
-                    // 위치·에러 처리는 인증 모달이 담당. 여기선 업로드 → 해금만 (실패는 throw)
+                    // 위치·에러 처리는 해금 위저드가 담당. 여기선 업로드 → 해금만 (실패는 throw)
                     const { key } = await uploadImageToS3(file, file.name)
                     const res = await unlockSlot(id, slotId, key, coords?.lat ?? null, coords?.lng ?? null)
-                    // 이번 해금으로 막 완주했으면 축하 팝업
-                    if (res.completed && !challenge?.completed) setShowReward(true)
                     load() // 진행도 갱신
+                    return { completed: res.completed }
+                }}
+                onUnlockCompleted={() => {
+                    // 위저드(리뷰 단계)까지 끝난 뒤 완주 보상 팝업
+                    if (!challenge?.completed) setShowReward(true)
                 }}
                 onRegister={() => {
                     startRegistration('challenge', challenge.id)
@@ -170,6 +167,25 @@ export default function ChallengeDetailPage() {
                 />
             )}
             {alertMessage && <AlertModal title="오류" message={alertMessage} onClose={() => setAlertMessage(null)} />}
+            {confirmLeave && (
+                <ConfirmModal
+                    title="챌린지 포기"
+                    message="이 챌린지를 포기할까요? 내 인증 기록도 사라져요."
+                    confirmText="포기하기"
+                    cancelText="계속하기"
+                    danger
+                    onCancel={() => setConfirmLeave(false)}
+                    onConfirm={async () => {
+                        setConfirmLeave(false)
+                        try {
+                            await leaveChallenge(id)
+                            router.push(ROUTES.challenge)
+                        } catch (e) {
+                            setAlertMessage(e instanceof Error ? e.message : '나가기에 실패했어요')
+                        }
+                    }}
+                />
+            )}
         </>
     )
 }

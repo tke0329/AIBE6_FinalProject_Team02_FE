@@ -13,6 +13,7 @@ import {
 import { ChallengeData } from '@/features/challenge/types'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
+import { AlertModal } from '@/shared/ui/molecules/AlertModal'
 
 const MONTHLY_LIMIT = 3
 const PAGE_SIZE = 10
@@ -68,6 +69,7 @@ function ChallengeHome() {
     const [exploreHasNext, setExploreHasNext] = useState(false)
     const [exploreLoading, setExploreLoading] = useState(false)
     const [exploreError, setExploreError] = useState(false)
+    const [alertMessage, setAlertMessage] = useState<string | null>(null)
     const reqRef = useRef(0) // 최신 탐색 요청만 반영(정렬/상태 빠른 전환 경합 방어)
     const joiningRef = useRef<Set<string>>(new Set()) // 참여 요청 중복 방지
 
@@ -164,40 +166,43 @@ function ChallengeHome() {
             await joinChallenge(c.id)
         } catch (e) {
             setExploreItems((prev) => prev.map((it) => (it.id === c.id ? { ...it, joined: false } : it)))
-            alert(e instanceof Error ? e.message : '참여에 실패했어요')
+            setAlertMessage(e instanceof Error ? e.message : '참여에 실패했어요')
         } finally {
             joiningRef.current.delete(c.id)
         }
     }
 
     return (
-        <ChallengeCountHome
-            mainTab={mainTab}
-            onMainTabChange={onMainTabChange}
-            challenges={challenges}
-            myCreated={myCreated}
-            myJoined={myJoined}
-            myCompleted={myCompleted}
-            createdThisMonth={createdThisMonth}
-            exploreItems={exploreItems}
-            exploreSort={exploreSort}
-            exploreStatus={exploreStatus}
-            exploreHasNext={exploreHasNext}
-            exploreLoading={exploreLoading}
-            exploreError={exploreError}
-            onExploreStatusChange={onExploreStatusChange}
-            onExploreSortChange={onExploreSortChange}
-            onExploreLoadMore={onExploreLoadMore}
-            onExploreRetry={onExploreRetry}
-            onJoinChallenge={onJoinChallenge}
-            onOpenChallenge={(challenge) => {
-                // 목록에서 진입했음을 표시 → 상세 뒤로가기가 이 목록으로 복귀(공유·딥링크와 구분)
-                sessionStorage.setItem('challenge:fromList', '1')
-                router.push(ROUTES.challengeDetail(challenge.id))
-            }}
-            onCreateChallenge={() => router.push(ROUTES.challengeNew)}
-            onTab={(tab) => router.push(getTabHref(tab))}
-        />
+        <>
+            <ChallengeCountHome
+                mainTab={mainTab}
+                onMainTabChange={onMainTabChange}
+                challenges={challenges}
+                myCreated={myCreated}
+                myJoined={myJoined}
+                myCompleted={myCompleted}
+                createdThisMonth={createdThisMonth}
+                exploreItems={exploreItems}
+                exploreSort={exploreSort}
+                exploreStatus={exploreStatus}
+                exploreHasNext={exploreHasNext}
+                exploreLoading={exploreLoading}
+                exploreError={exploreError}
+                onExploreStatusChange={onExploreStatusChange}
+                onExploreSortChange={onExploreSortChange}
+                onExploreLoadMore={onExploreLoadMore}
+                onExploreRetry={onExploreRetry}
+                onJoinChallenge={onJoinChallenge}
+                onOpenChallenge={(challenge) => {
+                    // 목록에서 진입했음을 표시 → 상세 뒤로가기가 이 목록으로 복귀(공유·딥링크와 구분)
+                    sessionStorage.setItem('challenge:fromList', '1')
+                    router.push(ROUTES.challengeDetail(challenge.id))
+                }}
+                onCreateChallenge={() => router.push(ROUTES.challengeNew)}
+                onTab={(tab) => router.push(getTabHref(tab))}
+            />
+            {alertMessage && <AlertModal title="오류" message={alertMessage} onClose={() => setAlertMessage(null)} />}
+        </>
     )
 }
 

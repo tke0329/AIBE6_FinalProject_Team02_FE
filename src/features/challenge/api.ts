@@ -184,3 +184,69 @@ export interface RewardBadgeInfo {
 export function fetchRewardBadge(badgeId: number | string) {
     return apiFetch<RewardBadgeInfo>(`/api/v1/challenges/reward-badges/${badgeId}`)
 }
+
+export interface Review {
+    id: number
+    reviewerId: number
+    reviewerNickname: string | null
+    content: string | null
+    rating: number | null
+    likeCount: number
+    likedByMe: boolean // 내가 좋아요 눌렀는지
+    mine: boolean // 내가 쓴 리뷰인지(수정/삭제 노출)
+    createdAt: string
+    updatedAt: string | null
+}
+
+export interface ReviewWritePayload {
+    content?: string | null
+    rating?: number | null
+}
+
+/** 음식 리뷰 목록(해당 슬롯) */
+export function fetchFoodReviews(challengeId: string | number, slotId: string | number) {
+    return apiFetch<Review[]>(`/api/v1/challenges/${challengeId}/slots/${slotId}/reviews`)
+}
+
+/** 음식 리뷰 작성 — 해당 슬롯 해금 후 */
+export function writeFoodReview(challengeId: string | number, slotId: string | number, payload: ReviewWritePayload) {
+    return apiFetch<{ reviewId: number }>(`/api/v1/challenges/${challengeId}/slots/${slotId}/reviews`, {
+        method: 'POST',
+        body: JSON.stringify({ content: payload.content ?? null, rating: payload.rating ?? null }),
+    })
+}
+
+/** 챌린지 리뷰 목록 */
+export function fetchChallengeReviews(challengeId: string | number) {
+    return apiFetch<Review[]>(`/api/v1/challenges/${challengeId}/reviews`)
+}
+
+/** 챌린지 리뷰 작성 — 챌린지 완료 후 */
+export function writeChallengeReview(challengeId: string | number, payload: ReviewWritePayload) {
+    return apiFetch<{ reviewId: number }>(`/api/v1/challenges/${challengeId}/reviews`, {
+        method: 'POST',
+        body: JSON.stringify({ content: payload.content ?? null, rating: payload.rating ?? null }),
+    })
+}
+
+/** 리뷰 수정 — 작성자 본인 */
+export function editReview(reviewId: string | number, payload: ReviewWritePayload) {
+    return apiFetch<void>(`/api/v1/challenges/reviews/${reviewId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ content: payload.content ?? null, rating: payload.rating ?? null }),
+    })
+}
+
+/** 리뷰 삭제 — 작성자 본인 */
+export function deleteReview(reviewId: string | number) {
+    return apiFetch<void>(`/api/v1/challenges/reviews/${reviewId}`, {
+        method: 'DELETE',
+    })
+}
+
+/** 리뷰 좋아요 토글 */
+export function toggleReviewLike(reviewId: string | number) {
+    return apiFetch<{ liked: boolean; likeCount: number }>(`/api/v1/challenges/reviews/${reviewId}/likes`, {
+        method: 'POST',
+    })
+}
