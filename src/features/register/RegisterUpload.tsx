@@ -1,18 +1,53 @@
+'use client'
 
+import { DexEntry } from '@/shared/data/dex'
+import { ArrowLeftIcon } from 'lucide-react'
+import { FoodNamePicker } from './FoodNamePicker'
+import { PhotoUploader } from './PhotoUploader'
 
-import React from 'react';
-import { ArrowLeftIcon, CameraIcon, ImageIcon, UploadCloudIcon, XIcon } from 'lucide-react';
+interface Props {
+    /** 도감 200칸. AppStateProvider가 이미 받아 둔 것을 그대로 쓴다 */
+    entries: DexEntry[]
+    /** 사진 업로드 완료 + 음식 이름 1개 이상 */
+    canProceed: boolean
+    onBack: () => void
+    onNext: () => void
+}
 
-interface Props {hasPhoto: boolean;onBack: () => void;onAddPhoto: () => void;onNext: () => void;}
+/**
+ * 등록 1단계 — 사진과 음식 이름.
+ *
+ * 둘 다 필수다 ("사진과 음식 이름이 등록의 필수 입력").
+ * 사진 없는 등록 경로도, 이름 없이 AI에게 맞히게 하는 경로도 만들지 않는다.
+ */
+export function RegisterUpload({ entries, canProceed, onBack, onNext }: Props) {
+    return (
+        <div className="flex h-full flex-col bg-cream-100">
+            <header className="flex shrink-0 items-center gap-3 px-5 py-4">
+                <button type="button" onClick={onBack} aria-label="뒤로가기">
+                    <ArrowLeftIcon size={22} aria-hidden className="text-brown" />
+                </button>
+                <span className="font-display text-lg text-brown">음식 등록</span>
+            </header>
 
-export function RegisterUpload({ hasPhoto, onBack, onAddPhoto, onNext }: Props) {
-  return <div className="flex h-full flex-col bg-cream-100">
-    <header className="flex items-center gap-3 px-5 py-4"><button onClick={onBack} aria-label="뒤로가기"><ArrowLeftIcon size={22} className="text-brown" /></button><span className="font-display text-lg text-brown">음식 등록</span></header>
-    <main className="flex-1 px-5"><h1 className="font-display text-xl text-brown">음식 사진을 올려 주세요</h1><p className="mt-1 text-sm text-brown-soft">한 상 사진도 OK · 최소 1장 ~ 최대 5장</p>
-      {hasPhoto ? <div className="relative mt-5 flex aspect-[4/3] w-full flex-col items-center justify-center rounded-3xl bg-orange-50 text-7xl shadow-soft">🍜<span className="mt-3 text-sm font-medium text-brown">선택한 음식 사진</span><button onClick={onAddPhoto} aria-label="사진 다시 선택" className="absolute right-3 top-3 rounded-full bg-white p-1.5 text-brown-muted shadow-soft"><XIcon size={16} /></button></div> : <button onClick={onAddPhoto} className="mt-5 flex aspect-[4/3] w-full flex-col items-center justify-center rounded-3xl border-2 border-dashed border-orange-400/60 bg-orange-50/40 text-brown-muted"><UploadCloudIcon size={44} className="text-orange-400" /><span className="mt-2 text-sm">사진을 여기에 올려 주세요</span><span className="text-xs">한 상 사진도 수집할 수 있어요</span></button>}
-      <div className="mt-4 grid grid-cols-2 gap-3"><button onClick={onAddPhoto} className="flex items-center justify-center gap-2 rounded-2xl bg-orange-500 py-3.5 font-medium text-white shadow-card active:scale-[0.98]"><CameraIcon size={18} />촬영하기</button><button onClick={onAddPhoto} className="flex items-center justify-center gap-2 rounded-2xl border-2 border-orange-400 py-3.5 font-medium text-orange-600 active:scale-[0.98]"><ImageIcon size={18} />앨범에서 선택</button></div>
-      <div className="mt-6"><label className="mb-1.5 block text-sm font-medium text-brown-soft">음식 이름을 알려 주세요 (선택)</label><input placeholder="예: 김치찌개" className="w-full rounded-2xl border border-cream-300 bg-white px-4 py-3 text-sm outline-none focus:border-orange-400" /></div>
-    </main>
-    <div className="px-5 pb-8 pt-4"><button disabled={!hasPhoto} onClick={onNext} className="w-full rounded-2xl bg-orange-500 py-4 font-display text-lg text-white shadow-card disabled:cursor-not-allowed disabled:opacity-40">다음</button></div>
-  </div>;
+            <main className="no-scrollbar flex-1 overflow-y-auto px-5 pb-4">
+                <h1 className="font-display text-xl text-brown">음식 사진을 올려 주세요</h1>
+                <p className="mt-1 text-sm text-brown-soft">최대 5장까지 올릴 수 있어요</p>
+
+                <PhotoUploader />
+                <FoodNamePicker entries={entries} />
+            </main>
+
+            <div className="shrink-0 px-5 pb-8 pt-4">
+                <button
+                    type="button"
+                    disabled={!canProceed}
+                    onClick={onNext}
+                    className="w-full rounded-2xl bg-orange-500 py-4 font-display text-lg text-white shadow-card disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                    다음
+                </button>
+            </div>
+        </div>
+    )
 }

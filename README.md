@@ -4,28 +4,28 @@
 
 ## 스택
 
-| 분류 | 사용 | 버전 |
-|---|---|---|
-| 프레임워크 | Next.js (App Router) | 15.5.21 |
-| 런타임 / UI | React · React DOM | 18.3.1 |
-| 언어 | TypeScript (`strict: true`) | 5.9.3 |
-| 스타일 | Tailwind CSS + PostCSS + Autoprefixer | 3.4.17 |
-| 디자인 토큰 | CSS 변수 (`globals.css`) → Tailwind theme | — |
-| 애니메이션 | framer-motion | 11.18.2 |
-| 아이콘 | lucide-react | 0.522.0 |
-| 폰트 | Pretendard(본문) · Jua(디스플레이) — CDN | — |
-| 상태 | React Context + hooks (`AppStateProvider`) | 무의존성 |
-| 린트 | ESLint + eslint-config-next | 8.57.1 |
-| 패키지 매니저 | npm | Node 24 |
+| 분류          | 사용                                       | 버전     |
+| ------------- | ------------------------------------------ | -------- |
+| 프레임워크    | Next.js (App Router)                       | 15.5.21  |
+| 런타임 / UI   | React · React DOM                          | 18.3.1   |
+| 언어          | TypeScript (`strict: true`)                | 5.9.3    |
+| 스타일        | Tailwind CSS + PostCSS + Autoprefixer      | 3.4.17   |
+| 디자인 토큰   | CSS 변수 (`globals.css`) → Tailwind theme  | —        |
+| 애니메이션    | framer-motion                              | 11.18.2  |
+| 아이콘        | lucide-react                               | 0.522.0  |
+| 폰트          | Pretendard(본문) · Jua(디스플레이) — CDN   | —        |
+| 상태          | React Context + hooks (`AppStateProvider`) | 무의존성 |
+| 린트          | ESLint + eslint-config-next                | 8.57.1   |
+| 패키지 매니저 | npm                                        | Node 24  |
 
 ### 의도적으로 쓰지 않은 것
 
-| 항목 | 이유 |
-|---|---|
-| Redux / Zustand / Jotai | 화면 간 공유 상태가 한 덩어리라 Context로 충분. 규모가 커지면 교체 지점은 `AppStateProvider` 한 곳 |
-| TanStack Query / SWR | 아직 서버 통신이 없음. API 연동 시 도입 지점은 features의 훅 |
-| MUI / shadcn 등 컴포넌트 라이브러리 | DESIGN.md의 토큰·variant 규칙을 그대로 강제하려고 자체 atoms/molecules로 구성 |
-| CSS-in-JS | Tailwind 토큰 단일 경로 유지 |
+| 항목                                | 이유                                                                                               |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Redux / Zustand / Jotai             | 화면 간 공유 상태가 한 덩어리라 Context로 충분. 규모가 커지면 교체 지점은 `AppStateProvider` 한 곳 |
+| TanStack Query / SWR                | 아직 서버 통신이 없음. API 연동 시 도입 지점은 features의 훅                                       |
+| MUI / shadcn 등 컴포넌트 라이브러리 | DESIGN.md의 토큰·variant 규칙을 그대로 강제하려고 자체 atoms/molecules로 구성                      |
+| CSS-in-JS                           | Tailwind 토큰 단일 경로 유지                                                                       |
 
 ### 아직 없는 것 (연동 시 추가 필요)
 
@@ -110,15 +110,15 @@ public/
 
 아래 UI가 필요하면 **새로 만들지 말고 variant를 추가**할 것.
 
-| 컴포넌트 | 위치 | variant |
-|---|---|---|
-| `FoodCard` | molecules | `unlocked` / `locked` / `recent` |
-| `ProgressBar` | atoms | 기본 — 제작 도감에서는 **사용 금지** (§6) |
-| `Badge` | atoms | `dday` / `type` / `member` / `reward` |
-| `TabBar` | molecules | `segmented` / `pill` / `scroll` |
-| `SearchBar` | atoms | 단일 |
-| `BottomSheet` | molecules | `draggable` 옵션 |
-| `HelpIcon` | atoms | 단일 |
+| 컴포넌트      | 위치      | variant                                   |
+| ------------- | --------- | ----------------------------------------- |
+| `FoodCard`    | molecules | `unlocked` / `locked` / `recent`          |
+| `ProgressBar` | atoms     | 기본 — 제작 도감에서는 **사용 금지** (§6) |
+| `Badge`       | atoms     | `dday` / `type` / `member` / `reward`     |
+| `TabBar`      | molecules | `segmented` / `pill` / `scroll`           |
+| `SearchBar`   | atoms     | 단일                                      |
+| `BottomSheet` | molecules | `draggable` 옵션                          |
+| `HelpIcon`    | atoms     | 단일                                      |
 
 `BottomSheet`는 포커스 트랩·Escape 닫기·트리거로 포커스 복귀를 내장(§5). 시트를 새로 만들 때
 직접 오버레이를 짜지 말고 이걸 감쌀 것.

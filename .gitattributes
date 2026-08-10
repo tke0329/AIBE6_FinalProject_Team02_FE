@@ -1,0 +1,2 @@
+# 모든 텍스트 파일 줄바꿈 LF로 통일 (Prettier 기본값과 일치, OS 무관 일관)
+* text=auto eol=lf

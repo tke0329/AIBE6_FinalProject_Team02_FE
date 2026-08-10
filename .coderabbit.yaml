@@ -1,0 +1,71 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# CatchEat 프론트엔드(Next.js/React/TS) 코드래빗 설정
+# 목표: 사소한 스타일 지적은 줄이고, 실제 버그·런타임 결함·상태/비동기 이슈에 집중
+
+language: ko-KR
+
+tone_instructions: >
+    실무 시니어 프론트엔드 리뷰어처럼, 실제로 문제가 될 수 있는 핵심 이슈만 지적한다.
+    스타일·포맷·네이밍·주석 취향 같은 사소한 지적은 하지 않는다(포매터/린터가 처리).
+    버그, 잠재적 런타임 에러, React 상태/비동기 흐름, 타입 안정성처럼 고치면 실질적으로
+    나아지는 것에 집중하고, 확신이 낮으면 단정하지 말고 질문 형태로 남긴다.
+
+reviews:
+    profile: chill # 덜 깐깐하게 (nitpick 억제)
+    request_changes_workflow: false
+    high_level_summary: true
+    review_status: true
+    poem: false
+    collapse_walkthrough: true
+    sequence_diagrams: false
+    changed_files_summary: true
+    assess_linked_issues: true
+
+    path_filters:
+        - '!**/node_modules/**'
+        - '!**/.next/**'
+        - '!**/dist/**'
+        - '!**/build/**'
+        - '!**/coverage/**'
+        - '!**/*.lock'
+        - '!**/package-lock.json'
+        - '!**/pnpm-lock.yaml'
+
+    path_instructions:
+        - path: '**/*.{ts,tsx}'
+          instructions: >
+              핵심 로직과 실제 결함 위주로만 리뷰한다. 아래에 집중한다:
+              (1) 명백한 버그 / 잠재적 런타임 에러 - undefined·null 접근, 옵셔널 체이닝 누락, 잘못된 타입 단언;
+              (2) React 훅 - useEffect 의존성 배열 오류/무한 루프, stale closure, 정리(cleanup) 누락, 불필요한 리렌더;
+              (3) 비동기/경합 - async 예외 처리 누락, fetch 중복·취소(race) 처리, setState-after-unmount, 로딩/에러 상태 누락;
+              (4) 상태·데이터 흐름 버그, 인증/라우팅 가드(AuthGate 등) 허점;
+              (5) 타입 안정성 중 실제 문제(any 남용으로 인한 런타임 위험).
+              스타일/포맷/네이밍/취향 지적은 하지 않는다. 사소한 개선 제안은 생략한다.
+        - path: '**/api.ts'
+          instructions: >
+              API 클라이언트: 에러/401 재시도 흐름, 응답 언래핑(ApiResponse), 요청 취소, 예외 전파만 중점적으로 본다.
+        - path: '**/*.test.{ts,tsx}'
+          instructions: >
+              테스트가 실제 동작을 검증하는지(거짓 통과, 단언 누락)만 본다. 스타일은 지적하지 않는다.
+
+    auto_review:
+        enabled: true
+        auto_incremental_review: true # PR에 새 커밋 push할 때마다 변경분 자동 재리뷰
+        drafts: false
+        base_branches:
+            - develop
+            - main
+
+    tools:
+        languagetool:
+            enabled: false
+
+chat:
+    auto_reply: true
+
+knowledge_base:
+    # 리뷰 시 웹 문서(공식 레퍼런스 등)를 검색해 근거로 활용
+    web_search:
+        enabled: true
+    learnings:
+        scope: local
