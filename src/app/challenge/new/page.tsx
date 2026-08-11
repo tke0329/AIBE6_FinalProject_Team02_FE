@@ -81,8 +81,14 @@ export default function ChallengeCreatePage() {
                             rewardBadgeId = (await createRewardBadge({ name: badge.name, imageKey: key })).badgeId
                         }
 
+                        // 대표 이미지 업로드(선택)
+                        const imageKey = challenge.coverFile
+                            ? (await uploadImageToS3(challenge.coverFile, 'challenge-cover.jpg')).key
+                            : null
+
                         await createChallenge({
                             name: challenge.title,
+                            imageKey,
                             description: challengeDraft.description.trim() || null, // 소개글(선택)
                             periodType: challengeDraft.periodType, // 상시 / 기간 한정
                             startsAt: null,

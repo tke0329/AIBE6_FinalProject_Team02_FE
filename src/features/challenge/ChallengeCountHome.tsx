@@ -252,13 +252,33 @@ export function ChallengeCountHome({
         </div>
     )
 }
+/** 챌린지 대표 사진 썸네일(없으면 트로피 아이콘) */
+function CoverThumb({ url, size = 44 }: { url?: string | null; size?: number }) {
+    if (url) {
+        return (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+                src={url}
+                alt=""
+                className="shrink-0 rounded-xl object-cover"
+                style={{ width: size, height: size }}
+            />
+        )
+    }
+    return (
+        <span
+            className="flex shrink-0 items-center justify-center rounded-xl bg-watermelon-50 text-watermelon-500"
+            style={{ width: size, height: size }}
+        >
+            <TrophyIcon size={Math.round(size / 2)} strokeWidth={1.75} aria-hidden />
+        </span>
+    )
+}
 function MyChallengeCard({ challenge, onOpen }: { challenge: ChallengeData; onOpen: () => void }) {
     return (
         <button onClick={onOpen} className="w-full rounded-2xl bg-white p-4 text-left shadow-soft">
             <div className="flex items-center gap-2">
-                <span className="text-watermelon-500">
-                    <TrophyIcon size={22} strokeWidth={1.75} aria-hidden />
-                </span>
+                <CoverThumb url={challenge.coverUrl} size={40} />
                 <span className="flex-1 font-display text-base text-neutral-900">{challenge.title}</span>
                 <Badge variant="dday">{challenge.dday}</Badge>
             </div>
@@ -315,7 +335,16 @@ function Podium({
                             className={`relative flex items-center justify-center rounded-2xl bg-white text-3xl shadow-soft ${rank === 1 ? 'h-20 w-20 ring-2 ring-amber-400' : 'h-16 w-16'}`}
                         >
                             {rank === 1 && <CrownIcon size={21} className="absolute -top-5 text-amber-500" />}
-                            <TrophyIcon size={30} strokeWidth={1.5} aria-hidden className="text-watermelon-500" />
+                            {challenge.coverUrl ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                    src={challenge.coverUrl}
+                                    alt=""
+                                    className="h-full w-full rounded-2xl object-cover"
+                                />
+                            ) : (
+                                <TrophyIcon size={30} strokeWidth={1.5} aria-hidden className="text-watermelon-500" />
+                            )}
                         </span>
                         <span className="mt-2 line-clamp-1 text-center text-xs font-bold text-neutral-900">
                             {challenge.title}
@@ -353,9 +382,7 @@ function ExploreCard({
         <div className="flex w-full items-center gap-3 rounded-2xl bg-white p-3 shadow-soft">
             <button onClick={onOpen} className="flex min-w-0 flex-1 items-center gap-3 text-left active:scale-[0.99]">
                 {rank && <span className="w-5 text-center font-display text-sm text-neutral-400">{rank}</span>}
-                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-watermelon-50 text-watermelon-500">
-                    <TrophyIcon size={22} strokeWidth={1.75} aria-hidden />
-                </span>
+                <CoverThumb url={challenge.coverUrl} size={44} />
                 <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-bold text-neutral-900">{challenge.title}</span>
                     <span className="mt-1 block text-xs text-neutral-800">{metric}</span>

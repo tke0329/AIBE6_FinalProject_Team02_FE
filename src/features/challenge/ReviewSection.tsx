@@ -2,6 +2,9 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { HeartIcon, LockIcon, PencilIcon, StarIcon, Trash2Icon } from 'lucide-react'
 import { Review, ReviewWritePayload, deleteReview, editReview, toggleReviewLike } from './api'
 import { ConfirmModal } from '@/shared/ui/molecules/ConfirmModal'
+import { ServerBadge } from '@/shared/ui/atoms/ServerBadge'
+import { useRouter } from 'next/navigation'
+import { ROUTES } from '@/shared/lib/routes'
 
 interface Props {
     load: () => Promise<Review[]>
@@ -49,6 +52,46 @@ function StarView({ value }: { value: number }) {
     )
 }
 
+/** 리뷰 작성자 프로필 사진(없으면 닉네임 첫 글자). 클릭 시 해당 유저 페이지로 이동 */
+function ReviewerAvatar({
+    nickname,
+    imageUrl,
+    onClick,
+    size = 32,
+}: {
+    nickname: string | null
+    imageUrl: string | null
+    onClick?: () => void
+    size?: number
+}) {
+    const cls =
+        'flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-watermelon-200 font-display text-xs text-watermelon-700'
+    const inner = imageUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={imageUrl} alt="" className="h-full w-full object-cover" />
+    ) : (
+        <span>{nickname?.charAt(0) || '?'}</span>
+    )
+    if (onClick) {
+        return (
+            <button
+                type="button"
+                onClick={onClick}
+                aria-label={`${nickname ?? '익명'}님 프로필 보기`}
+                className={`${cls} transition-opacity hover:opacity-80`}
+                style={{ width: size, height: size }}
+            >
+                {inner}
+            </button>
+        )
+    }
+    return (
+        <span className={cls} style={{ width: size, height: size }}>
+            {inner}
+        </span>
+    )
+}
+
 export function ReviewSection({
     load,
     write,
@@ -58,6 +101,8 @@ export function ReviewSection({
     preview = false,
     previewMessage = '더 보려면 잠금을 해제하세요',
 }: Props) {
+    const router = useRouter()
+
     const [reviews, setReviews] = useState<Review[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
@@ -196,8 +241,27 @@ export function ReviewSection({
                                 }`}
                                 aria-hidden={blurred}
                             >
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-bold text-neutral-900">{r.reviewerNickname ?? '익명'}</span>
+                                <div className="flex items-center justify-between gap-2">
+                                    <div className="flex min-w-0 items-center gap-2">
+                                        <ReviewerAvatar
+                                            nickname={r.reviewerNickname}
+                                            imageUrl={r.reviewerProfileImageUrl}
+                                            onClick={() => router.push(r.mine ? ROUTES.my : ROUTES.userProfile(r.reviewerId))}
+                                        />
+                                        <span className="flex min-w-0 items-center gap-1">
+                                            {r.reviewerEquippedBadge && (
+                                                <ServerBadge
+                                                    code={r.reviewerEquippedBadge.code}
+                                                    imageUrl={r.reviewerEquippedBadge.imageUrl}
+                                                    name={r.reviewerEquippedBadge.name}
+                                                    size={36}
+                                                />
+                                            )}
+                                            <span className="truncate text-sm font-bold text-neutral-900">
+                                                {r.reviewerNickname ?? '익명'}
+                                            </span>
+                                        </span>
+                                    </div>
                                     {r.rating ? <StarView value={r.rating} /> : null}
                                 </div>
 

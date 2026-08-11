@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import React, { useRef, useState } from 'react'
 import { ChallengeData, ChallengeTarget, RewardBadge } from './types'
+import { CoverPhotoStep } from './CoverPhotoStep'
 
 interface Props {
     createdThisMonth: number
@@ -37,11 +38,12 @@ const MIN_TARGETS = 5
 
 // 스텝 인덱스
 const TITLE = 0
-const PERIOD = 1
-const FOODS = 2
-const BADGE = 3
-const DONE = 4
-const STEP_LABEL = ['제목', '기한', '음식', '보상']
+const COVER = 1
+const PERIOD = 2
+const FOODS = 3
+const BADGE = 4
+const DONE = 5
+const STEP_LABEL = ['제목', '대표 사진', '기한', '음식', '보상']
 
 const variants = {
     enter: (dir: number) => ({ x: dir > 0 ? 48 : -48, opacity: 0 }),
@@ -82,6 +84,8 @@ export function ChallengeCreate({
     const [desc, setDesc] = useState('')
     const [targetFile, setTargetFile] = useState<File | null>(null)
     const [targetPreview, setTargetPreview] = useState('')
+    const [coverFile, setCoverFile] = useState<Blob | null>(null) // 대표 사진(정사각 크롭 Blob)
+    const [coverPreview, setCoverPreview] = useState('')
     const [targetPlace, setTargetPlace] = useState<LocationInput | null>(null)
     const [addressInput, setAddressInput] = useState('')
     const [addressError, setAddressError] = useState('')
@@ -159,6 +163,8 @@ export function ChallengeCreate({
             await onCreate({
                 id: `created-${Date.now()}`,
                 title: title.trim(),
+                coverFile,
+                coverUrl: coverPreview || undefined,
                 emoji: '🏆',
                 tag: '수집형',
                 dday: 'D-30',
@@ -204,11 +210,11 @@ export function ChallengeCreate({
                     <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-watermelon-100">
                         <motion.div
                             className="h-full rounded-full bg-watermelon-500"
-                            animate={{ width: `${((step + 1) / 4) * 100}%` }}
+                            animate={{ width: `${((step + 1) / 5) * 100}%` }}
                             transition={{ type: 'spring', stiffness: 220, damping: 30 }}
                         />
                     </div>
-                    <span className="text-xs font-bold text-watermelon-500">{step + 1}/4</span>
+                    <span className="text-xs font-bold text-watermelon-500">{step + 1}/5</span>
                 </header>
             )}
 
@@ -256,9 +262,23 @@ export function ChallengeCreate({
                             </div>
                         )}
 
+                        {step === COVER && (
+                            <CoverPhotoStep
+                                preview={coverPreview}
+                                onApply={(blob, url) => {
+                                    setCoverFile(blob)
+                                    setCoverPreview(url)
+                                }}
+                                onClear={() => {
+                                    setCoverFile(null)
+                                    setCoverPreview('')
+                                }}
+                            />
+                        )}
+
                         {step === PERIOD && (
                             <div>
-                                <p className="text-sm font-bold text-watermelon-500">{STEP_LABEL[1]}</p>
+                                <p className="text-sm font-bold text-watermelon-500">{STEP_LABEL[2]}</p>
                                 <h1 className="mt-1 font-display text-2xl leading-snug text-neutral-900">
                                     얼마 동안 진행하나요?
                                 </h1>
@@ -315,7 +335,7 @@ export function ChallengeCreate({
 
                         {step === FOODS && (
                             <div>
-                                <p className="text-sm font-bold text-watermelon-500">{STEP_LABEL[2]}</p>
+                                <p className="text-sm font-bold text-watermelon-500">{STEP_LABEL[3]}</p>
                                 <h1 className="mt-1 font-display text-2xl leading-snug text-neutral-900">
                                     어떤 음식을 모을까요?
                                 </h1>
@@ -473,7 +493,7 @@ export function ChallengeCreate({
 
                         {step === BADGE && (
                             <div>
-                                <p className="text-sm font-bold text-watermelon-500">{STEP_LABEL[3]}</p>
+                                <p className="text-sm font-bold text-watermelon-500">{STEP_LABEL[4]}</p>
                                 <h1 className="mt-1 font-display text-2xl leading-snug text-neutral-900">완주 보상 뱃지</h1>
                                 <p className="mt-2 text-sm text-neutral-400">프리셋을 고르거나 직접 만들어요.</p>
 

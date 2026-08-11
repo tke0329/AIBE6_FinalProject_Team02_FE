@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeftIcon, AwardIcon, MapPinIcon, PlusIcon, TrophyIcon, XIcon } from 'lucide-react'
 import { ProgressBar } from '@/shared/ui/atoms/ProgressBar'
 import { Badge } from '@/shared/ui/atoms/Badge'
@@ -34,14 +35,34 @@ export function ChallengeDetail({
     onUnlockCompleted,
     onLeave,
 }: Props) {
+    const router = useRouter()
+    const pathname = usePathname()
+    const searchParams = useSearchParams()
     const [activeTab, setActiveTab] = useState<DetailTab>('기록 도감')
     const joined = Boolean(challenge.joined)
     const ended = Boolean(challenge.ended)
     const targets = challenge.targetRestaurants ?? []
     const completed = new Set(challenge.completedTargetIds ?? [])
     const badge = challenge.rewardBadge
-    const [record, setRecord] = useState<ChallengeTarget | null>(null) // 해금 기록 모달
-    const [locked, setLocked] = useState<ChallengeTarget | null>(null) // 미해금 미리보기 모달
+    // 음식 상세(리뷰) 모달 열림 상태를 URL 쿼리로 관리한다.
+    // 리뷰의 프로필 → 유저 페이지로 갔다가 뒤로가기 하면 보던 음식 상세 모달로 복원된다.
+    const setModalUrl = (params: { food?: string; locked?: string }) => {
+        const sp = new URLSearchParams(Array.from(searchParams.entries()))
+        sp.delete('food')
+        sp.delete('locked')
+        if (params.food) sp.set('food', params.food)
+        if (params.locked) sp.set('locked', params.locked)
+        const qs = sp.toString()
+        router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+    }
+    const openRecord = (t: ChallengeTarget) => setModalUrl({ food: t.id })
+    const openLocked = (t: ChallengeTarget) => setModalUrl({ locked: t.id })
+    const closeModal = () => setModalUrl({})
+
+    const foodParam = searchParams.get('food')
+    const lockedParam = searchParams.get('locked')
+    const record = foodParam ? targets.find((t) => t.id === foodParam) ?? null : null // 해금 기록 모달
+    const locked = lockedParam ? targets.find((t) => t.id === lockedParam) ?? null : null // 미해금 미리보기 모달
 
     // 해금 위저드 (사진 → 위치 → 리뷰)
     const [certify, setCertify] = useState<ChallengeTarget | null>(null)
@@ -64,7 +85,15 @@ export function ChallengeDetail({
                 )}
             </header>
             <main className="no-scrollbar flex-1 overflow-y-auto px-5">
-                <section className="rounded-3xl bg-white p-4 shadow-soft">
+                {challenge.coverUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                        src={challenge.coverUrl}
+                        alt=""
+                        className="mt-4 aspect-[16/9] w-full rounded-3xl object-cover shadow-soft"
+                    />
+                )}
+                <section className="mt-4 rounded-3xl bg-white p-4 shadow-soft">
                     <div className="flex items-center gap-3">
                         <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-watermelon-50 text-watermelon-500">
                             <TrophyIcon size={26} strokeWidth={1.75} aria-hidden />
@@ -127,7 +156,7 @@ export function ChallengeDetail({
                                     const unlocked = completed.has(target.id)
                                     // 해금됨 → 내 기록 보기 / 미해금 → 미리보기(흑백+리뷰 일부). 미리보기 안에서 인증 진입
                                     const clickable = true
-                                    const onCardClick = unlocked ? () => setRecord(target) : () => setLocked(target)
+                                    const onCardClick = unlocked ? () => openRecord(target) : () => openLocked(target)
                                     return (
                                         // FoodCard가 <button>(잠금 시 disabled)이라 클릭을 먹음 →
                                         // 카드는 pointer-events-none로 통과시키고, 바깥 div가 클릭을 받는다
@@ -205,7 +234,7 @@ export function ChallengeDetail({
             {record && (
                 <div
                     className="absolute inset-0 z-20 flex items-end justify-center bg-black/40 p-4"
-                    onClick={() => setRecord(null)}
+                    onClick={closeModal}
                 >
                     <div
                         className="max-h-[85vh] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-5 shadow-pop"
@@ -213,7 +242,7 @@ export function ChallengeDetail({
                     >
                         <div className="mb-3 flex items-center justify-between">
                             <h3 className="font-display text-lg text-neutral-900">{record.name}</h3>
-                            <button onClick={() => setRecord(null)} aria-label="닫기">
+                            <button onClick={closeModal} aria-label="닫기">
                                 <XIcon size={20} className="text-neutral-400" />
                             </button>
                         </div>
@@ -254,7 +283,7 @@ export function ChallengeDetail({
             {locked && (
                 <div
                     className="absolute inset-0 z-20 flex items-end justify-center bg-black/40 p-4"
-                    onClick={() => setLocked(null)}
+                    onClick={closeModal}
                 >
                     <div
                         className="max-h-[85vh] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-5 shadow-pop"
@@ -262,7 +291,7 @@ export function ChallengeDetail({
                     >
                         <div className="mb-3 flex items-center justify-between">
                             <h3 className="font-display text-lg text-neutral-900">{locked.name}</h3>
-                            <button onClick={() => setLocked(null)} aria-label="닫기">
+                            <button onClick={closeModal} aria-label="닫기">
                                 <XIcon size={20} className="text-neutral-400" />
                             </button>
                         </div>
@@ -289,7 +318,7 @@ export function ChallengeDetail({
                                 type="button"
                                 onClick={() => {
                                     const t = locked
-                                    setLocked(null)
+                                    closeModal()
                                     openCertify(t)
                                 }}
                                 className="mt-3 h-cta w-full rounded-full bg-watermelon-500 font-display text-base text-white shadow-card"

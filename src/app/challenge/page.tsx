@@ -33,6 +33,7 @@ function toChallengeData(c: ChallengeSummary): ChallengeData {
         score: c.rankScore,
         joined: c.joined,
         owner: '',
+        coverUrl: c.imageUrl ?? undefined,
         target: total,
         mine: `나 ${unlocked}/${total}`,
         progress: total ? unlocked / total : 0, // ProgressBar는 0~1 비율

@@ -17,7 +17,7 @@ import { ROUTES } from '@/shared/lib/routes'
 import { uploadImageToS3 } from '@/shared/lib/upload'
 import { useAppState } from '@/shared/store/AppStateProvider'
 import { notFound, useParams, useRouter } from 'next/navigation'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { AlertModal } from '@/shared/ui/molecules/AlertModal'
 import { ConfirmModal } from '@/shared/ui/molecules/ConfirmModal'
 
@@ -41,6 +41,7 @@ function toChallengeData(d: ChallengeDetailData): ChallengeData {
         owner: '',
         joined: d.joined,
         completed: d.completed,
+        coverUrl: d.imageUrl ?? undefined,
         ended: d.periodType === 'LIMITED' && !!d.endsAt && new Date(d.endsAt).getTime() <= Date.now(),
         mine: `나 ${unlocked}/${total}`,
         progress: total ? unlocked / total : 0, // ProgressBar는 0~1 비율
@@ -60,7 +61,7 @@ function toChallengeData(d: ChallengeDetailData): ChallengeData {
 }
 
 /** `/challenge/[id]` 챌린지 상세 */
-export default function ChallengeDetailPage() {
+function ChallengeDetailPageInner() {
     const router = useRouter()
     const { id } = useParams<{ id: string }>()
     const { startRegistration } = useAppState()
@@ -123,7 +124,7 @@ export default function ChallengeDetailPage() {
         : challenge
 
     return (
-        <>
+        <div className="relative h-full">
             <ChallengeDetail
                 challenge={challengeWithReward}
                 onBack={() => {
@@ -187,6 +188,14 @@ export default function ChallengeDetailPage() {
                     }}
                 />
             )}
-        </>
+        </div>
+    )
+}
+
+export default function ChallengeDetailPage() {
+    return (
+        <Suspense fallback={null}>
+            <ChallengeDetailPageInner />
+        </Suspense>
     )
 }
