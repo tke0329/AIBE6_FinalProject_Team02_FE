@@ -1,4 +1,4 @@
-import { DexEntry, DEX_ENTRIES, FoodCategory } from '@/shared/data/dex'
+import { DEX_ENTRIES, DexEntry, normalizeCategory } from '@/shared/data/dex'
 import { apiFetch } from '@/shared/lib/api'
 import { getLocalDexIllustrationUrl } from '@/shared/lib/dexIllustrations'
 
@@ -18,24 +18,16 @@ interface MyBasicDexResponse {
     rank: number
     firstCollectedAt: string | null
     cardCount: number
+    /** 최근 첫 해금 — New 스티커. 서버 시각으로 판정된 값이다 */
+    recentlyUnlocked: boolean
+    /** 운영진 검토 대기 — 검토대기 스티커 */
+    awaitingReview: boolean
 }
 
 const DEFAULT_FOOD_ICON = '🍽️'
 
-const CATEGORY_LABELS: Record<string, FoodCategory> = {
-    '밥·죽·한그릇': '밥·죽·한 그릇',
-    '밥·죽·한 그릇': '밥·죽·한 그릇',
-    면: '면',
-    '국·탕·찌개': '국·탕·찌개',
-    '고기·구이·볶음': '고기 구이·볶음',
-    '고기 구이·볶음': '고기 구이·볶음',
-    '튀김·치킨·가스': '튀김·치킨·까스',
-    '튀김·치킨·까스': '튀김·치킨·까스',
-    '해산물·회': '해산물·회',
-    '분식·길거리': '분식·길거리',
-    '빵·버거·피자·브런치': '빵·버거·피자·브런치',
-    '디저트·음료': '디저트·음료',
-}
+/** 목록은 칸이 비면 안 되므로 모르는 카테고리도 어딘가에는 넣는다 */
+const FALLBACK_CATEGORY = '밥·죽·한 그릇'
 
 // 성공 응답을 세션 동안 재사용해 재요청을 막고, 동시 호출도 하나의 요청으로 묶는다.
 // 실패 시에는 캐시하지 않아 다음 호출에서 다시 시도할 수 있게 한다.
@@ -53,7 +45,7 @@ export async function fetchBasicDexEntries(): Promise<DexEntry[]> {
                         id: item.id,
                         name: item.name,
                         emoji: local?.emoji ?? DEFAULT_FOOD_ICON,
-                        category: CATEGORY_LABELS[item.category] ?? '밥·죽·한 그릇',
+                        category: normalizeCategory(item.category) ?? FALLBACK_CATEGORY,
                         collected: local?.collected ?? false,
                     }
                     return {
@@ -111,16 +103,25 @@ export async function fetchMyBasicDexEntries(): Promise<DexEntry[]> {
             id: item.id,
             name: item.name,
             emoji: local?.emoji ?? DEFAULT_FOOD_ICON,
-            category: CATEGORY_LABELS[item.category] ?? '밥·죽·한 그릇',
+            category: normalizeCategory(item.category) ?? FALLBACK_CATEGORY,
             collected: item.unlocked,
             stars: item.unlocked ? item.rank : undefined,
             firstDate: item.firstCollectedAt ? formatServerDate(item.firstCollectedAt) : undefined,
+            recentlyUnlocked: item.recentlyUnlocked,
+            awaitingReview: item.awaitingReview,
         }
         return {
             ...entry,
             illustrationUrl: item.illustrationUrl ?? local?.illustrationUrl ?? getLocalDexIllustrationUrl(entry),
         }
     })
+}
+
+/**
+ * New 스티커를 봤다고 서버에 알린다. 상세를 여는 순간 호출
+ */
+export async function markNewBadgeSeen(slotId: number): Promise<void> {
+    await apiFetch<void>(`/api/v1/dex/me/basic/${slotId}/new-badge-seen`, { method: 'PATCH' })
 }
 
 /**
@@ -135,7 +136,7 @@ export async function fetchMyBasicDexDetail(slotId: number): Promise<DexEntry> {
         id: item.id,
         name: item.name,
         emoji: local?.emoji ?? DEFAULT_FOOD_ICON,
-        category: CATEGORY_LABELS[item.category] ?? '밥·죽·한 그릇',
+        category: normalizeCategory(item.category) ?? FALLBACK_CATEGORY,
         collected: item.unlocked,
         stars: item.unlocked ? item.rank : undefined,
         firstDate: item.firstCollectedAt ? formatServerDate(item.firstCollectedAt) : undefined,

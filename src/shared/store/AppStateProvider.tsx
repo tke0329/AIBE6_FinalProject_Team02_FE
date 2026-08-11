@@ -3,7 +3,7 @@
 import { useAuth } from '@/features/auth/AuthContext'
 import { INITIAL_CHALLENGES } from '@/features/challenge/data'
 import { ChallengeData, ChallengeTarget, RewardBadge } from '@/features/challenge/types'
-import { fetchBasicDexEntries, fetchMyBasicDexEntries } from '@/features/dex/api'
+import { fetchBasicDexEntries, fetchMyBasicDexEntries, markNewBadgeSeen as postNewBadgeSeen } from '@/features/dex/api'
 import { MadeDexId, parseMadeDexId } from '@/features/made/types'
 import { fetchOnboardingStatus, postOnboardingComplete } from '@/features/onboarding/api'
 import { AI_CANDIDATES, DEX_ENTRIES, DexEntry } from '@/shared/data/dex'
@@ -31,8 +31,9 @@ export interface DexStore {
     refreshEntries: () => Promise<void>
     collectedIds: number[]
     collectedEntries: DexEntry[]
-    newlyUnlockedId: number | null
     findEntry: (id: number) => DexEntry | undefined
+    /** New 스티커 확인 — 화면에서 즉시 떼고 서버에도 알린다 */
+    markNewBadgeSeen: (id: number) => void
 }
 
 interface AppStore {
@@ -92,7 +93,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     const [entries, setEntries] = useState<DexEntry[]>(DEX_ENTRIES)
     // 실제 도감 데이터가 도착하기 전까지는 목업이 화면에 잠깐 노출되지 않도록 로딩 상태로 가린다.
     const [entriesLoading, setEntriesLoading] = useState(true)
-    const [newlyUnlockedId, setNewlyUnlockedId] = useState<number | null>(null)
     const [equippedBadge, setEquippedBadge] = useState<BadgeId>('silver-spoon')
     const [profilePhoto, setProfilePhoto] = useState('신')
     const [onboardingSeen, setOnboardingSeen] = useState<boolean | null>(null)
@@ -178,6 +178,18 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     const createdThisMonth = challenges.filter((challenge) => challenge.isCreator).length
 
     const findEntry = useCallback((id: number) => entries.find((entry) => entry.id === id), [entries])
+
+    // 서버 응답을 기다리지 않고 먼저 떼어 낸다 — 상세를 보고 돌아왔을 때 스티커가 남아 있으면
+    // "봤는데 왜 아직 New인가"로 읽힌다. 실패해도 되돌리지 않는다: 24시간이 지나면 어차피 사라지고,
+    // 다시 붙여 놓으면 사용자가 두 번 헷갈린다.
+    const markNewBadgeSeen = useCallback((id: number) => {
+        setEntries((current) =>
+            current.map((entry) => (entry.id === id ? { ...entry, recentlyUnlocked: false } : entry)),
+        )
+        postNewBadgeSeen(id).catch(() => {
+            // 다음 기회에 다시 표시되는 것으로 족하다
+        })
+    }, [])
     const findChallenge = useCallback((id: string) => challenges.find((challenge) => challenge.id === id), [challenges])
 
     const startRegistration = useCallback((source: RegistrationSource, contextId?: string) => {
@@ -227,6 +239,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
                 collected: true,
                 stars: 1,
                 firstDate: '2026.07.22',
+                recentlyUnlocked: true,
                 cards: [
                     {
                         photos: [selectedFood.illustrationUrl ?? selectedFood.emoji],
@@ -243,7 +256,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
                     ? current.map((entry) => (entry.id === savedEntry.id ? savedEntry : entry))
                     : [...current, savedEntry],
             )
-            setNewlyUnlockedId(savedEntry.id)
         },
         [recordDraft, registrationChallengeId, registrationSource, selectedFood, selectedTags],
     )
@@ -255,10 +267,10 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
             refreshEntries,
             collectedIds,
             collectedEntries,
-            newlyUnlockedId,
             findEntry,
+            markNewBadgeSeen,
         }),
-        [entries, entriesLoading, refreshEntries, collectedIds, collectedEntries, newlyUnlockedId, findEntry],
+        [entries, entriesLoading, refreshEntries, collectedIds, collectedEntries, findEntry, markNewBadgeSeen],
     )
 
     const value = useMemo<AppStore>(

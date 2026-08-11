@@ -60,7 +60,7 @@ export function LogitCalendar({ madeDexId, date, today, onSelect, onClose }: Pro
 
     return (
         // 손잡이에서만 끌어 닫는다. 휠을 굴릴 때 시트가 함께 끌려 내려가지 않으면서 두 화면 모두 끌어 닫힌다
-        <BottomSheet title="날짜 선택" showTitle={false} onClose={onClose} draggable dragHandleOnly>
+        <BottomSheet title="날짜 선택" showTitle={false} onClose={onClose}>
             <div className="px-5 pb-8 pt-2">
                 <div className="flex items-center justify-between">
                     <button

@@ -60,7 +60,8 @@ export function SlotEditSheet({ madeDexId, onClose, onChanged }: Props) {
     }
 
     return (
-        <BottomSheet title="구성 편집" onClose={onClose} maxHeightClass="max-h-[85%]">
+        // 끼니 추가·이름변경·순서 저장이 도는 중에는 닫지 않는다
+        <BottomSheet title="구성 편집" onClose={onClose} dismissible={!editor.busy} maxHeightClass="max-h-[85%]">
             <div className="no-scrollbar flex-1 overflow-y-auto px-5 pb-6 pt-3">
                 <p className="break-keep text-sm text-content-secondary">
                     참여자 누구나 이름과 순서를 편집할 수 있어요!

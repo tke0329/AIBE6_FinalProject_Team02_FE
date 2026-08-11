@@ -159,7 +159,12 @@ export function MadeDexCreateWizard({ onCreate, onExit }: Props) {
             </div>
 
             {confirmOpen && (
-                <BottomSheet title="이 설정으로 도감을 만들까요?" onClose={() => setConfirmOpen(false)}>
+                // 만드는 중에 닫히면 결과를 못 본다 (WithdrawConfirmSheet와 같은 이유)
+                <BottomSheet
+                    title="이 설정으로 도감을 만들까요?"
+                    onClose={() => setConfirmOpen(false)}
+                    dismissible={!submitting}
+                >
                     <div className="px-5 pb-8 pt-2">
                         <p className="text-sm text-content-secondary">설정한 내용은 나중에 바꿀 수 있어요.</p>
                         <div className="mt-6 grid grid-cols-2 gap-2">

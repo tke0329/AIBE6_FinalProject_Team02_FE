@@ -60,7 +60,15 @@ export function DexDetail({
         location: '',
     }
     const photos = currentCard.photos.length ? currentCard.photos : [fallbackImage]
-    const currentPhoto = photos[photoIndex]
+    /**
+     * 인덱스를 렌더 시점에 가둔다.
+     *
+     * 다른 도감으로 넘어가면 entry는 즉시 새 값인데 photoIndex를 0으로 되돌리는 effect는
+     * 렌더 뒤에 돈다. 사진 5장 카드에서 4번을 보다 1장짜리 카드로 넘어가면 photos[4]가
+     * undefined가 되어 아래 startsWith에서 렌더 중 TypeError가 났다.
+     */
+    const safePhotoIndex = Math.min(photoIndex, photos.length - 1)
+    const currentPhoto = photos[safePhotoIndex]
 
     // 해금된 도감끼리만 이동하되, 기본 도감에서 들어온 카테고리 안으로 범위를 제한한다.
     const scopedEntries =
@@ -96,8 +104,8 @@ export function DexDetail({
         setCardIndex(index)
         setPhotoIndex(0)
     }
-    const movePhoto = (direction: -1 | 1) =>
-        setPhotoIndex((index) => (index + direction + photos.length) % photos.length)
+    // 범위를 벗어난 값에서 넘기면 엉뚱한 장으로 튄다. 화면에 보이는 인덱스를 기준으로 센다
+    const movePhoto = (direction: -1 | 1) => setPhotoIndex((safePhotoIndex + direction + photos.length) % photos.length)
     // 카드 정보 영역 스와이프는 처음/마지막에서 순환 이동한다.
     const cycleCard = (direction: -1 | 1) => {
         if (cards.length < 2) return
@@ -228,7 +236,7 @@ export function DexDetail({
                         >
                             <AnimatePresence mode="wait">
                                 <motion.div
-                                    key={`${cardIndex}-${photoIndex}`}
+                                    key={`${cardIndex}-${safePhotoIndex}`}
                                     initial={{ opacity: 0, x: 18 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: -18 }}
@@ -248,7 +256,7 @@ export function DexDetail({
                                 </motion.div>
                             </AnimatePresence>
                             <span className="absolute right-3 top-3 rounded-full bg-black/50 px-2 py-0.5 text-xs font-medium text-white">
-                                {photoIndex + 1}/{photos.length}
+                                {safePhotoIndex + 1}/{photos.length}
                             </span>
 
                             <div className="absolute inset-x-0 bottom-0 flex justify-center">
@@ -261,7 +269,7 @@ export function DexDetail({
                                     >
                                         <span
                                             aria-hidden
-                                            className={`h-2 w-2 rounded-full ${index === photoIndex ? 'bg-orange-500' : 'bg-white/70'}`}
+                                            className={`h-2 w-2 rounded-full ${index === safePhotoIndex ? 'bg-orange-500' : 'bg-white/70'}`}
                                         />
                                     </button>
                                 ))}

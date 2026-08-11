@@ -16,7 +16,7 @@ function BasicDexContent() {
     const router = useRouter()
     const pathname = usePathname()
     const searchParams = useSearchParams()
-    const { entries, entriesLoading, collectedIds, newlyUnlockedId } = useDexState()
+    const { entries, entriesLoading, collectedIds } = useDexState()
     const { startRegistration } = useAppState()
     const category = searchParams.get('category')
     const initialCategory = isCategoryFilter(category) ? category : '전체'
@@ -38,7 +38,6 @@ function BasicDexContent() {
         <DexGrid
             entries={entries}
             collectedIds={collectedIds}
-            newlyUnlockedId={newlyUnlockedId}
             initialCategory={initialCategory}
             onBackToList={() => router.push(ROUTES.home)}
             onCategoryChange={(selectedCategory) => {

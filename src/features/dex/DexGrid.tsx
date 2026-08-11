@@ -16,7 +16,6 @@ import type { CategoryFilter } from './useDexFilter'
 interface DexGridProps {
     entries: DexEntry[]
     collectedIds: number[]
-    newlyUnlockedId?: number | null
     initialCategory?: CategoryFilter
     onBackToList: () => void
     onCategoryChange?: (category: CategoryFilter) => void
@@ -26,13 +25,28 @@ interface DexGridProps {
 }
 
 /**
+ * 카드 우측 상단 스티커. New와 검토대기가 같은 자리를 쓰며 동시에 뜨지 않는다 —
+ * 검토대기는 아직 안 열린 칸에만 붙기 때문이다.
+ */
+function CornerSticker({ label, tone }: { label: string; tone: 'new' | 'review' }) {
+    return (
+        <span
+            className={`absolute -right-2 -top-2 rounded-full px-2 py-1 text-xs font-bold leading-none text-white ${
+                tone === 'new' ? 'bg-blue-500' : 'bg-content-secondary'
+            }`}
+        >
+            {label}
+        </span>
+    )
+}
+
+/**
  * 기본 도감 (§6) — 200칸 고정, 미해금은 `?` 실루엣, 진행률 바 사용.
  * 그리드는 모바일 3열 기준(§2)이며 넓은 뷰포트에서만 열을 늘림.
  */
 export function DexGrid({
     entries,
     collectedIds,
-    newlyUnlockedId,
     initialCategory,
     onBackToList,
     onCategoryChange,
@@ -235,7 +249,9 @@ export function DexGrid({
                         <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10">
                             {visibleEntries.map((entry) => {
                                 const unlocked = collected.has(entry.id)
-                                const isNew = entry.id === newlyUnlockedId
+                                const isNew = unlocked && entry.recentlyUnlocked === true
+                                // 이미 열린 칸이면 검토대기를 알릴 이유가 없다 — 칸은 벌써 열려 있다
+                                const isAwaitingReview = !unlocked && entry.awaitingReview === true
                                 return (
                                     <FoodCard
                                         key={entry.id}
@@ -245,15 +261,19 @@ export function DexGrid({
                                         state={!unlocked ? 'locked' : isNew ? 'recent' : 'unlocked'}
                                         accessibleName={
                                             unlocked
-                                                ? `${entry.name}, 해금됨, 별 ${entry.stars ?? 1}개`
-                                                : `${entry.name}, 미해금 카드`
+                                                ? `${entry.name}, 해금됨, 별 ${entry.stars ?? 1}개${
+                                                      isNew ? ', 새로 해금' : ''
+                                                  }`
+                                                : isAwaitingReview
+                                                  ? `${entry.name}, 미해금 카드, 운영진 검토 대기 중`
+                                                  : `${entry.name}, 미해금 카드`
                                         }
                                         onClick={() => onOpenEntry(entry.id, activeCategory)}
                                         corner={
                                             isNew ? (
-                                                <span className="absolute -right-2 -top-2 rounded-full bg-blue-500 px-2 py-1 text-xs font-bold leading-none text-white">
-                                                    New
-                                                </span>
+                                                <CornerSticker label="New" tone="new" />
+                                            ) : isAwaitingReview ? (
+                                                <CornerSticker label="검토대기" tone="review" />
                                             ) : undefined
                                         }
                                         footer={

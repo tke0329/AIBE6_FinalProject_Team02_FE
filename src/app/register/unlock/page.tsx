@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import { RevealCard, UnlockReveal } from '@/features/register/UnlockReveal'
 import { useRegisterFlow } from '@/features/register/RegisterFlowContext'
 import { useRegistrationExitHref } from '@/features/register/useRegistrationExit'
-import { useDexState } from '@/shared/store/AppStateProvider'
+import { normalizeCategory } from '@/shared/data/dex'
+import { useAppState, useDexState } from '@/shared/store/AppStateProvider'
 import { ROUTES } from '@/shared/lib/routes'
 
 /** `/register/unlock` 등록 완료 — 시그니처 해금 연출 (§7) */
@@ -13,6 +14,7 @@ export default function RegisterUnlockPage() {
     const router = useRouter()
     const exitHref = useRegistrationExitHref()
     const { unlockResult } = useRegisterFlow()
+    const { registrationSource } = useAppState()
     const { findEntry } = useDexState()
 
     useEffect(() => {
@@ -34,13 +36,20 @@ export default function RegisterUnlockPage() {
         }
     })
 
+    // 기본 도감은 방금 등록한 음식이 있는 카테고리로 보낸다 — 홈으로 돌려보내면
+    // 새로 붙은 스티커를 사용자가 직접 찾아야 한다. 제작·챌린지는 시작한 곳으로 되돌아간다.
+    // 여러 칸을 한 번에 열었으면 첫 음식 기준이고, 전부 검토 대기여도 그 칸으로 데려간다
+    const firstSlot = unlockResult.unlocked[0] ?? unlockResult.awaitingReview[0]
+    const dexHref =
+        registrationSource === 'basic' && firstSlot ? ROUTES.basicDex(normalizeCategory(firstSlot.category)) : exitHref
+
     return (
         <UnlockReveal
             cards={cards}
             awaitingReview={unlockResult.awaitingReview.map((slot) => slot.slotName)}
             collectedCount={unlockResult.collectedCount}
             totalSlots={unlockResult.totalSlots}
-            onGoDex={() => router.push(exitHref)}
+            onGoDex={() => router.push(dexHref)}
         />
     )
 }
