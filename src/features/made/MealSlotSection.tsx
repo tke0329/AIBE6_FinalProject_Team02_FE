@@ -4,6 +4,8 @@ import type { LogitFeedCard, LogitFeedSlot } from './logitTypes'
 
 interface Props {
     slot: LogitFeedSlot
+    /** 오늘이 아니면 기록을 받지 않는다. 지난 날은 열람만 */
+    canRecord: boolean
     onOpen: (card: LogitFeedCard) => void
     onRecord: (slot: LogitFeedSlot) => void
 }
@@ -12,7 +14,7 @@ interface Props {
 const DOT_LIMIT = 6
 
 /** §2.1 세로축은 슬롯, 가로축은 사람. 이 축을 뒤집지 않는다 */
-export function MealSlotSection({ slot, onOpen, onRecord }: Props) {
+export function MealSlotSection({ slot, canRecord, onOpen, onRecord }: Props) {
     const trackRef = useRef<HTMLDivElement>(null)
     const [index, setIndex] = useState(0)
 
@@ -60,7 +62,7 @@ export function MealSlotSection({ slot, onOpen, onRecord }: Props) {
                     <MealRecordCard
                         key={card.userId}
                         card={card}
-                        readOnly={slot.hidden}
+                        readOnly={slot.hidden || !canRecord}
                         onOpen={() => onOpen(card)}
                         onRecord={() => onRecord(slot)}
                     />

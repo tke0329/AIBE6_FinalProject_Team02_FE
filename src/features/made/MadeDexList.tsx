@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { ChevronRightIcon, GlobeIcon, KeyRoundIcon, LockIcon, PlusIcon, UsersIcon, BookMarkedIcon } from 'lucide-react'
+import { ChevronRightIcon, KeyRoundIcon, PlusIcon, UsersIcon, BookMarkedIcon } from 'lucide-react'
 import { BottomNav, NavTab } from '@/shared/ui/molecules/BottomNav'
 import { MadeDexCodeSheet } from './MadeDexCodeSheet'
 import { DEFAULT_MADE_DEX_COVER, MadeDexId, MadeDexSummary } from './types'
@@ -71,19 +71,6 @@ export function MadeDexList({ dexes, loading, error, onCreateNew, onOpenDex, onE
                                         <span className="truncate font-display text-lg text-content-primary">
                                             {dex.name}
                                         </span>
-                                        {dex.visibility === 'PUBLIC' ? (
-                                            <GlobeIcon
-                                                size={14}
-                                                aria-label="공개 도감"
-                                                className="shrink-0 text-content-muted"
-                                            />
-                                        ) : (
-                                            <LockIcon
-                                                size={14}
-                                                aria-label="비공개 도감"
-                                                className="shrink-0 text-content-muted"
-                                            />
-                                        )}
                                     </span>
                                     {dex.description && (
                                         <span className="mt-1 block truncate text-xs text-content-secondary">

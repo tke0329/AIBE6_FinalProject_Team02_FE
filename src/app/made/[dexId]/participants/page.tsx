@@ -188,7 +188,7 @@ export default function MadeDexParticipantsPage() {
             membersFailed={membersFailed}
             memberBusy={memberBusy}
             memberError={memberError}
-            onBack={() => router.push(ROUTES.madeDex(dexId))}
+            onBack={() => router.push(ROUTES.madeInfo(dexId))}
             onIssue={() => void issue()}
             onRetry={() => void load(dexId)}
             onCopy={copyToClipboard}

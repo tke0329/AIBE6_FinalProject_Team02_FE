@@ -3,7 +3,7 @@
  * 서버는 유지할 id와 새 key를 나눠 받는다. 그 둘을 한 배열로 다루기 위한 형태다.
  */
 export type RecordPhoto =
-    | { id: string; kind: 'kept'; photoId: number; url: string; caption: string }
+    | { id: string; kind: 'kept'; photoId: number; url: string; caption: string; cropX: number; cropY: number }
     | {
           id: string
           kind: 'new'
@@ -11,6 +11,8 @@ export type RecordPhoto =
           file: File
           previewUrl: string
           caption: string
+          cropX: number
+          cropY: number
           key?: string
           error?: string
       }
@@ -44,20 +46,20 @@ function trimmed(caption: string): string | null {
 }
 
 /** 신규 기록용. 순서는 화면에 보이는 그대로다 */
-export function newPhotosOf(photos: RecordPhoto[]): Array<{ imageKey: string; caption: string | null }> {
+export function newPhotosOf(photos: RecordPhoto[]): Array<{ imageKey: string; caption: string | null; cropX: number; cropY: number }> {
     return photos.flatMap((photo) =>
-        photo.kind === 'new' && photo.key ? [{ imageKey: photo.key, caption: trimmed(photo.caption) }] : [],
+        photo.kind === 'new' && photo.key ? [{ imageKey: photo.key, caption: trimmed(photo.caption), cropX: photo.cropX, cropY: photo.cropY }] : [],
     )
 }
 
 /** 수정용. 서버는 keepPhotos 다음에 newPhotos 순서로 다시 붙인다 */
 export function updatePayloadOf(photos: RecordPhoto[]): {
-    keepPhotos: Array<{ photoId: number; caption: string | null }>
-    newPhotos: Array<{ imageKey: string; caption: string | null }>
+    keepPhotos: Array<{ photoId: number; caption: string | null; cropX: number; cropY: number }>
+    newPhotos: Array<{ imageKey: string; caption: string | null; cropX: number; cropY: number }>
 } {
     return {
         keepPhotos: photos.flatMap((photo) =>
-            photo.kind === 'kept' ? [{ photoId: photo.photoId, caption: trimmed(photo.caption) }] : [],
+            photo.kind === 'kept' ? [{ photoId: photo.photoId, caption: trimmed(photo.caption), cropX: photo.cropX, cropY: photo.cropY }] : [],
         ),
         newPhotos: newPhotosOf(photos),
     }

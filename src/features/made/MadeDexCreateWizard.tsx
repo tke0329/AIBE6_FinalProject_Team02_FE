@@ -1,24 +1,23 @@
 import React, { useState } from 'react'
-import { ArrowLeftIcon } from 'lucide-react'
+import { ArrowLeftIcon, LockIcon } from 'lucide-react'
 
 import { BottomSheet } from '@/shared/ui/molecules/BottomSheet'
 import { madeErrorMessage } from './errors'
-import { MadeDexBasicFields, MadeDexCoverPicker, MadeDexVisibilityPicker, useCoverPreview } from './MadeDexFormFields'
-import { DEFAULT_MADE_DEX_COVER, MadeDexVisibility } from './types'
+import { MadeDexBasicFields, MadeDexCoverPicker, useCoverPreview } from './MadeDexFormFields'
+import { DEFAULT_MADE_DEX_COVER } from './types'
 
 interface Props {
-    onCreate: (name: string, description: string, visibility: MadeDexVisibility, image: File | null) => Promise<void>
+    onCreate: (name: string, description: string, image: File | null) => Promise<void>
     /** 1단계에서 뒤로 가면 목록으로 나간다 */
     onExit: () => void
 }
 
-const STEPS = ['기본 정보', '공개 여부', '확인'] as const
+const STEPS = ['기본 정보', '확인'] as const
 
 export function MadeDexCreateWizard({ onCreate, onExit }: Props) {
     const [step, setStep] = useState(0)
     const [name, setName] = useState('')
     const [description, setDescription] = useState('')
-    const [visibility, setVisibility] = useState<MadeDexVisibility>('PRIVATE')
     const [image, setImage] = useState<File | null>(null)
     const [confirmOpen, setConfirmOpen] = useState(false)
     const [submitting, setSubmitting] = useState(false)
@@ -34,7 +33,7 @@ export function MadeDexCreateWizard({ onCreate, onExit }: Props) {
         setSubmitting(true)
         setError(null)
         try {
-            await onCreate(trimmedName, description.trim(), visibility, image)
+            await onCreate(trimmedName, description.trim(), image)
         } catch (failure) {
             setConfirmOpen(false)
             setError(madeErrorMessage(failure, '도감을 만들지 못했어요. 잠시 후 다시 시도해 주세요.'))
@@ -76,13 +75,6 @@ export function MadeDexCreateWizard({ onCreate, onExit }: Props) {
                     )}
                     {step === 1 && (
                         <>
-                            이 도감을
-                            <br />
-                            공개할까요?
-                        </>
-                    )}
-                    {step === 2 && (
-                        <>
                             설정한 내용을
                             <br />
                             마지막으로 확인해요
@@ -107,15 +99,6 @@ export function MadeDexCreateWizard({ onCreate, onExit }: Props) {
                 )}
 
                 {step === 1 && (
-                    <>
-                        <MadeDexVisibilityPicker visibility={visibility} onChange={setVisibility} />
-                        <p className="mt-3 px-1 text-xs text-content-muted">
-                            공개 설정은 만든 뒤에도 언제든 바꿀 수 있어요.
-                        </p>
-                    </>
-                )}
-
-                {step === 2 && (
                     <dl className="space-y-3">
                         <div className="flex justify-center pb-2">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -135,12 +118,10 @@ export function MadeDexCreateWizard({ onCreate, onExit }: Props) {
                                 {description.trim() || '없음'}
                             </dd>
                         </div>
-                        <div className="rounded-2xl bg-surface-card p-4 shadow-card">
-                            <dt className="text-xs text-content-secondary">공개 여부</dt>
-                            <dd className="mt-1 text-sm text-content-primary">
-                                {visibility === 'PUBLIC' ? '공개 도감' : '비공개 도감'}
-                            </dd>
-                        </div>
+                        <p className="flex items-center justify-center gap-1 pt-1 text-xs text-content-muted">
+                            <LockIcon size={13} aria-hidden />
+                            초대 코드를 받은 사람만 참여할 수 있어요
+                        </p>
                     </dl>
                 )}
 

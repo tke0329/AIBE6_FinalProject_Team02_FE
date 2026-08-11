@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { CameraIcon, GlobeIcon, LockIcon } from 'lucide-react'
+import { CameraIcon } from 'lucide-react'
 
 import { MADE_DEX_DESCRIPTION_MAX, MADE_DEX_NAME_MAX } from './api'
-import { DEFAULT_MADE_DEX_COVER, MadeDexVisibility } from './types'
+import { DEFAULT_MADE_DEX_COVER } from './types'
 
 /** 이미 올라가 있는 표지. 그대로 두면 key를 되돌려 보내고, 보여줄 땐 url을 쓴다 */
 export interface ExistingCover {
@@ -150,56 +150,5 @@ export function MadeDexBasicFields({ name, description, onNameChange, onDescript
                 {description.length}/{MADE_DEX_DESCRIPTION_MAX}
             </p>
         </>
-    )
-}
-
-const VISIBILITY_OPTIONS: Array<{
-    value: MadeDexVisibility
-    label: string
-    description: string
-    Icon: typeof LockIcon
-}> = [
-    {
-        value: 'PRIVATE',
-        label: '비공개 도감',
-        description: '초대 코드를 받은 사람만 열람하고 참여할 수 있어요',
-        Icon: LockIcon,
-    },
-    {
-        value: 'PUBLIC',
-        label: '공개 도감',
-        description: '누구나 열람할 수 있어요. 참여는 초대 코드로만 가능해요',
-        Icon: GlobeIcon,
-    },
-]
-
-interface VisibilityPickerProps {
-    visibility: MadeDexVisibility
-    onChange: (visibility: MadeDexVisibility) => void
-}
-
-export function MadeDexVisibilityPicker({ visibility, onChange }: VisibilityPickerProps) {
-    return (
-        <div className="space-y-3">
-            {VISIBILITY_OPTIONS.map(({ value, label, description, Icon }) => (
-                <button
-                    key={value}
-                    type="button"
-                    aria-pressed={visibility === value}
-                    onClick={() => onChange(value)}
-                    className={`flex w-full items-center gap-4 rounded-2xl p-4 text-left shadow-card ${
-                        visibility === value ? 'bg-surface-accent ring-2 ring-watermelon-400' : 'bg-surface-card'
-                    }`}
-                >
-                    <span className="min-w-0 flex-1">
-                        <span className="block font-display text-lg text-content-primary">{label}</span>
-                        <span className="mt-1 block text-xs leading-4 text-content-secondary">{description}</span>
-                    </span>
-                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-neutral-100">
-                        <Icon size={22} aria-hidden className="text-content-secondary" />
-                    </span>
-                </button>
-            ))}
-        </div>
     )
 }

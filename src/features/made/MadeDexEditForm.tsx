@@ -2,19 +2,13 @@ import React, { useState } from 'react'
 import { ArrowLeftIcon } from 'lucide-react'
 
 import { madeErrorMessage } from './errors'
-import {
-    CoverImage,
-    MadeDexBasicFields,
-    MadeDexCoverPicker,
-    MadeDexVisibilityPicker,
-    useCoverPreview,
-} from './MadeDexFormFields'
-import { MadeDexDetail, MadeDexVisibility } from './types'
+import { CoverImage, MadeDexBasicFields, MadeDexCoverPicker, useCoverPreview } from './MadeDexFormFields'
+import { MadeDexDetail } from './types'
 
 interface Props {
     detail: MadeDexDetail
     /** image가 File이면 새로 올리고, 문자열이면 그대로 두고, null이면 표지를 지운다 */
-    onSave: (name: string, description: string, visibility: MadeDexVisibility, image: CoverImage) => Promise<void>
+    onSave: (name: string, description: string, image: CoverImage) => Promise<void>
     onBack: () => void
 }
 
@@ -22,7 +16,6 @@ interface Props {
 export function MadeDexEditForm({ detail, onSave, onBack }: Props) {
     const [name, setName] = useState(detail.name)
     const [description, setDescription] = useState(detail.description ?? '')
-    const [visibility, setVisibility] = useState(detail.visibility)
     const [image, setImage] = useState<CoverImage>(
         detail.imageKey && detail.imageUrl ? { key: detail.imageKey, url: detail.imageUrl } : null,
     )
@@ -36,7 +29,7 @@ export function MadeDexEditForm({ detail, onSave, onBack }: Props) {
         setSubmitting(true)
         setError(null)
         try {
-            await onSave(trimmedName, description.trim(), visibility, image)
+            await onSave(trimmedName, description.trim(), image)
         } catch (failure) {
             setError(madeErrorMessage(failure, '수정하지 못했어요. 잠시 후 다시 시도해 주세요.'))
             setSubmitting(false)
@@ -62,11 +55,6 @@ export function MadeDexEditForm({ detail, onSave, onBack }: Props) {
                         onNameChange={setName}
                         onDescriptionChange={setDescription}
                     />
-                </div>
-
-                <p className="mt-8 text-sm font-bold text-content-primary">공개 여부</p>
-                <div className="mt-3">
-                    <MadeDexVisibilityPicker visibility={visibility} onChange={setVisibility} />
                 </div>
 
                 {error && <p className="mt-4 text-sm text-feedback-error">{error}</p>}

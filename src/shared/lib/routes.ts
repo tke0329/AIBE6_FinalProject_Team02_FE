@@ -24,7 +24,6 @@ export const ROUTES = {
     madeJoinWithCode: (code: string) => `/made/join?code=${encodeURIComponent(code)}`,
     madeDex: (dexId: MadeDexId) => `/made/${dexId}`,
     madeInfo: (dexId: MadeDexId) => `/made/${dexId}/info`,
-    madeManage: (dexId: MadeDexId) => `/made/${dexId}/manage`,
     madeEdit: (dexId: MadeDexId) => `/made/${dexId}/edit`,
     madeParticipants: (dexId: MadeDexId) => `/made/${dexId}/participants`,
     /** 식사 기록 화면(CATCHEAT-52). 날짜와 끼니를 채운 채로 연다 */

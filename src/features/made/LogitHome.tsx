@@ -32,6 +32,8 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
     const [openedRecordIds, setOpenedRecordIds] = useState<number[] | null>(null)
 
     const slots = feed.feed?.slots ?? []
+    // 로그잇은 오늘을 나누는 앱이다. 지난 날은 읽기만 한다
+    const canRecord = feed.today !== '' && feed.date === feed.today
 
     return (
         <div className="relative flex h-full flex-col bg-surface-app">
@@ -78,7 +80,7 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
                 {feed.loading && !feed.feed && (
                     <div className="space-y-3 pt-5" aria-hidden>
                         <div className="h-5 w-20 animate-pulse rounded-full bg-neutral-100" />
-                        <div className="aspect-[4/3] w-4/5 animate-pulse rounded-2xl bg-neutral-100" />
+                        <div className="aspect-square w-4/5 animate-pulse rounded-2xl bg-neutral-100" />
                     </div>
                 )}
 
@@ -89,6 +91,7 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
                                 key={slot.slotId}
                                 slot={slot}
                                 onOpen={(card) => setOpenedRecordIds(card.recordIds)}
+                                canRecord={canRecord}
                                 onRecord={(target) => onRecord(feed.date, target.slotId)}
                             />
                         ))}
@@ -116,14 +119,16 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
                         오늘의 냉장고 만들기
                     </button>
                 )}
-                <button
-                    type="button"
-                    onClick={() => onRecord(feed.date)}
-                    className="flex h-cta items-center justify-center gap-1 rounded-full bg-action-primary text-sm font-bold text-content-on-action shadow-card"
-                >
-                    <PlusIcon size={18} aria-hidden />
-                    식사 기록하기
-                </button>
+                {canRecord && (
+                    <button
+                        type="button"
+                        onClick={() => onRecord(feed.date)}
+                        className="flex h-cta items-center justify-center gap-1 rounded-full bg-action-primary text-sm font-bold text-content-on-action shadow-card"
+                    >
+                        <PlusIcon size={18} aria-hidden />
+                        식사 기록하기
+                    </button>
+                )}
             </div>
 
             <BottomNav active="제작" onTab={onTab} />
@@ -177,6 +182,7 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
                             madeDexId={dexId}
                             date={feed.date}
                             title={title}
+                            canRecord={canRecord}
                             onRecord={() => onRecord(feed.date)}
                         />
                     </main>

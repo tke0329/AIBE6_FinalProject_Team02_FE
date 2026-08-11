@@ -1,14 +1,12 @@
 /** 서버가 발급한 made_dex.id */
 export type MadeDexId = number
 
-export type MadeDexVisibility = 'PUBLIC' | 'PRIVATE'
 export type MadeDexRole = 'OWNER' | 'MEMBER'
 
 export interface MadeDexSummary {
     id: MadeDexId
     name: string
     description: string | null
-    visibility: MadeDexVisibility
     /** 표지를 안 고른 도감은 null. 목록은 이모지 표지로 대체한다 */
     imageUrl: string | null
     memberCount: number
@@ -19,14 +17,13 @@ export interface MadeDexDetail {
     madeDexId: MadeDexId
     name: string
     description: string | null
-    visibility: MadeDexVisibility
     imageUrl: string | null
     /** 표지를 그대로 두고 수정할 때 되돌려 보낸다 */
     imageKey: string | null
     memberCount: number
     maxMembers: number
-    /** 참여자가 아니면 null. 공개 도감은 참여 없이도 열람된다 */
-    myRole: MadeDexRole | null
+    /** 로그잇은 비공개 전용이라 멤버만 열람한다 */
+    myRole: MadeDexRole
     /** ISO 문자열 */
     createdAt: string
 }
