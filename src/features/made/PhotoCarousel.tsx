@@ -52,7 +52,7 @@ export function PhotoCarousel({ photos, className = '' }: Props) {
                                 key={photo.photoId}
                                 aria-hidden
                                 className={`h-1.5 w-1.5 rounded-full transition-colors ${
-                                    position === index ? 'bg-action-primary' : 'bg-cream-300'
+                                    position === index ? 'bg-action-primary' : 'bg-neutral-200'
                                 }`}
                             />
                         ))

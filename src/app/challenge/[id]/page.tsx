@@ -50,6 +50,7 @@ function toChallengeData(d: ChallengeDetailData): ChallengeData {
             name: s.foodName,
             emoji: '🍽️',
             imageUrl: s.imageUrl ?? undefined,
+            storeName: s.storeName ?? undefined,
             placeName: s.placeName,
             myImageUrl: s.myImageUrl,
             unlockedAt: s.unlockedAt,
@@ -101,8 +102,8 @@ export default function ChallengeDetailPage() {
     if (missing) notFound()
     if (!challenge) {
         return (
-            <div className="flex h-full items-center justify-center bg-cream-100">
-                <p className="text-sm text-brown-soft">불러오는 중…</p>
+            <div className="flex h-full items-center justify-center bg-surface-app">
+                <p className="text-sm text-neutral-800">불러오는 중…</p>
             </div>
         )
     }
@@ -114,7 +115,7 @@ export default function ChallengeDetailPage() {
               rewardBadge: {
                   emoji: '🏆',
                   name: rewardBadge.name,
-                  tone: 'bg-orange-100 text-orange-700',
+                  tone: 'bg-watermelon-100 text-watermelon-700',
                   code: rewardBadge.code ?? undefined,
                   customImage: resolveBadgeImage(rewardBadge.code, rewardBadge.imageUrl) ?? undefined,
               },

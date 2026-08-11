@@ -13,21 +13,21 @@ interface ConfirmDialogProps {
 export function ConfirmDialog({ title, message, actionText, onCancel, onConfirm }: ConfirmDialogProps) {
     return (
         <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/35 px-5">
-            <section role="dialog" aria-modal="true" className="w-full rounded-3xl bg-cream-50 p-5 shadow-pop">
-                <h2 className="font-display text-xl text-brown">{title}</h2>
-                <p className="mt-2 break-keep text-sm leading-5 text-brown-soft">{message}</p>
+            <section role="dialog" aria-modal="true" className="w-full rounded-3xl bg-white p-5 shadow-pop">
+                <h2 className="font-display text-xl text-neutral-900">{title}</h2>
+                <p className="mt-2 break-keep text-sm leading-5 text-neutral-800">{message}</p>
                 <div className="mt-5 grid grid-cols-2 gap-2">
                     <button
                         type="button"
                         onClick={onCancel}
-                        className="rounded-2xl bg-cream-200 py-3 text-sm font-bold text-brown-soft"
+                        className="rounded-2xl bg-neutral-100 py-3 text-sm font-bold text-neutral-800"
                     >
                         취소
                     </button>
                     <button
                         type="button"
                         onClick={onConfirm}
-                        className="rounded-2xl bg-orange-500 py-3 text-sm font-bold text-white"
+                        className="rounded-2xl bg-watermelon-500 py-3 text-sm font-bold text-white"
                     >
                         {actionText}
                     </button>

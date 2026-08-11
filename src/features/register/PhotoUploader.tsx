@@ -87,10 +87,10 @@ export function PhotoUploader() {
                     className={`mt-5 flex aspect-[4/3] w-full flex-col items-center justify-center rounded-3xl border-2 border-dashed transition-colors ${
                         dragging
                             ? 'border-edge-active bg-surface-accent'
-                            : 'border-orange-400/60 bg-orange-50/40 text-brown-muted'
+                            : 'border-watermelon-400/60 bg-watermelon-50/40 text-neutral-400'
                     }`}
                 >
-                    <UploadCloudIcon size={44} aria-hidden className="text-orange-400" />
+                    <UploadCloudIcon size={44} aria-hidden className="text-watermelon-400" />
                     <span className="mt-2 text-sm">사진을 여기에 올려 주세요</span>
                     <span className="text-xs">한 상 사진도 수집할 수 있어요</span>
                 </button>
@@ -127,7 +127,7 @@ export function PhotoUploader() {
                         type="button"
                         disabled={full}
                         onClick={() => pick(cameraInputRef.current)}
-                        className="flex min-h-touch items-center justify-center gap-2 rounded-2xl bg-orange-500 py-3.5 font-medium text-white shadow-card active:scale-[0.98] disabled:opacity-40"
+                        className="flex min-h-touch items-center justify-center gap-2 rounded-2xl bg-watermelon-500 py-3.5 font-medium text-white shadow-card active:scale-[0.98] disabled:opacity-40"
                     >
                         <CameraIcon size={18} aria-hidden />
                         촬영하기
@@ -137,7 +137,7 @@ export function PhotoUploader() {
                     type="button"
                     disabled={full}
                     onClick={() => pick(albumInputRef.current)}
-                    className="flex min-h-touch items-center justify-center gap-2 rounded-2xl border-2 border-orange-400 py-3.5 font-medium text-orange-600 active:scale-[0.98] disabled:opacity-40"
+                    className="flex min-h-touch items-center justify-center gap-2 rounded-2xl border-2 border-watermelon-400 py-3.5 font-medium text-watermelon-600 active:scale-[0.98] disabled:opacity-40"
                 >
                     <ImageIcon size={18} aria-hidden />
                     {touchDevice ? '앨범에서 선택' : '사진 선택'}
@@ -189,7 +189,9 @@ function PhotoThumb({ photo, isAnalysis, selectable, onSelect, onRemove, onRetry
                 className="h-full w-full bg-surface-card-locked"
             >
                 {previewBroken ? (
-                    <span className="flex h-full w-full items-center justify-center text-3xl">🖼️</span>
+                    <span className="flex h-full w-full items-center justify-center text-neutral-400">
+                        <ImageIcon size={30} strokeWidth={1.5} aria-hidden />
+                    </span>
                 ) : (
                     // eslint-disable-next-line @next/next/no-img-element -- blob: 미리보기라 next/image 최적화 대상이 아니다
                     <img
@@ -231,7 +233,7 @@ function PhotoThumb({ photo, isAnalysis, selectable, onSelect, onRemove, onRetry
                 type="button"
                 onClick={onRemove}
                 aria-label={`${photo.file.name} 빼기`}
-                className="absolute right-1 top-1 rounded-full bg-white/90 p-1 text-brown-muted shadow-soft"
+                className="absolute right-1 top-1 rounded-full bg-white/90 p-1 text-neutral-400 shadow-soft"
             >
                 <XIcon size={13} aria-hidden />
             </button>

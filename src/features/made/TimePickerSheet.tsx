@@ -45,7 +45,7 @@ export function TimePickerSheet({ value, onDone, onClose }: Props) {
     return (
         <BottomSheet title="언제 먹었나요?" onClose={onClose}>
             <div className="px-5 pb-8 pt-4">
-                <div className="mx-auto flex w-48 rounded-full bg-cream-200 p-1">
+                <div className="mx-auto flex w-48 rounded-full bg-neutral-100 p-1">
                     {(['오전', '오후'] as const).map((option) => (
                         <button
                             key={option}

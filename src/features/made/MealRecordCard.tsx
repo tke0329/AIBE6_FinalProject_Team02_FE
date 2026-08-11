@@ -30,7 +30,7 @@ export function MealRecordCard({ card, readOnly = false, onOpen, onRecord }: Pro
                     {card.me ? '나' : name}
                 </p>
                 {filled && (
-                    <span className="shrink-0 rounded-full bg-cream-200 px-2 py-1 text-xs font-bold text-content-secondary">
+                    <span className="shrink-0 rounded-full bg-neutral-100 px-2 py-1 text-xs font-bold text-content-secondary">
                         {card.recordCount}개
                     </span>
                 )}
@@ -41,9 +41,9 @@ export function MealRecordCard({ card, readOnly = false, onOpen, onRecord }: Pro
                     type="button"
                     onClick={onOpen}
                     aria-label={`${card.me ? '내' : `${name}님의`} 기록 ${card.recordCount}개 보기`}
-                    className="block w-full overflow-hidden rounded-2xl bg-cream-200 shadow-card transition-transform active:scale-[0.98]"
+                    className="block w-full overflow-hidden rounded-2xl bg-neutral-100 shadow-card transition-transform active:scale-[0.98]"
                 >
-                    <span className="relative block aspect-[4/3] w-full bg-cream-200">
+                    <span className="relative block aspect-[4/3] w-full bg-neutral-100">
                         {card.thumbnailUrl && (
                             // presigned URL이라 next/image의 도메인 설정 대상이 아니다
                             // eslint-disable-next-line @next/next/no-img-element
@@ -61,7 +61,7 @@ export function MealRecordCard({ card, readOnly = false, onOpen, onRecord }: Pro
                             {chips.map((food) => (
                                 <span
                                     key={food}
-                                    className="max-w-full truncate rounded-full bg-orange-100 px-2 py-1 text-xs font-bold text-orange-600"
+                                    className="max-w-full truncate rounded-full bg-watermelon-100 px-2 py-1 text-xs font-bold text-watermelon-600"
                                 >
                                     {food}
                                 </span>
@@ -74,13 +74,13 @@ export function MealRecordCard({ card, readOnly = false, onOpen, onRecord }: Pro
                 <button
                     type="button"
                     onClick={onRecord}
-                    className="flex aspect-[4/3] w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-edge-default bg-cream-50 transition-transform active:scale-[0.98]"
+                    className="flex aspect-[4/3] w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-edge-default bg-white transition-transform active:scale-[0.98]"
                 >
                     <PlusIcon size={22} aria-hidden className="text-content-link" />
                     <span className="text-sm font-bold text-content-link">기록하기</span>
                 </button>
             ) : (
-                <div className="flex aspect-[4/3] w-full items-center justify-center rounded-2xl border-2 border-dashed border-edge-default bg-cream-50 px-4">
+                <div className="flex aspect-[4/3] w-full items-center justify-center rounded-2xl border-2 border-dashed border-edge-default bg-white px-4">
                     <span className="break-keep text-center text-sm font-medium text-content-muted">
                         친구가 아직 기록하지 않았어요!
                     </span>

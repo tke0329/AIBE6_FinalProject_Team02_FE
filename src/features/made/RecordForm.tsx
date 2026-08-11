@@ -41,7 +41,7 @@ export function RecordForm({ madeDexId, recordId, slotId, date, onBack, onDone }
     }
 
     return (
-        <div className="relative flex h-full flex-col bg-cream-100">
+        <div className="relative flex h-full flex-col bg-surface-app">
             <header className="flex shrink-0 items-center gap-2 bg-surface-app px-5 pt-4">
                 <button type="button" onClick={onBack} aria-label="뒤로">
                     <ArrowLeftIcon size={21} aria-hidden />
@@ -77,7 +77,7 @@ export function RecordForm({ madeDexId, recordId, slotId, date, onBack, onDone }
                                     className={`min-h-touch rounded-full px-4 text-sm font-bold transition-colors ${
                                         selected
                                             ? 'bg-action-primary text-content-on-action shadow-card'
-                                            : 'bg-cream-200 text-content-secondary'
+                                            : 'bg-neutral-100 text-content-secondary'
                                     }`}
                                 >
                                     {slot.name}
@@ -93,7 +93,7 @@ export function RecordForm({ madeDexId, recordId, slotId, date, onBack, onDone }
                         <button
                             type="button"
                             onClick={() => setTimeOpen(true)}
-                            className="min-h-touch rounded-xl bg-cream-100 px-4 text-sm font-bold text-content-primary"
+                            className="min-h-touch rounded-xl bg-neutral-50 px-4 text-sm font-bold text-content-primary"
                         >
                             {form.loggedTime ? timeText(form.loggedTime) : '시간 입력'}
                         </button>

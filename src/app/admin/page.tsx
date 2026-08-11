@@ -21,8 +21,8 @@ export default function AdminPageRoute() {
     // 확인 중이거나 리다이렉트 대상이면 콘솔을 안 그린다(비관리자에게 잠깐 보이는 것 방지).
     if (loading || !isAdmin) {
         return (
-            <div className="flex h-full items-center justify-center bg-cream-100">
-                <p className="text-sm text-brown-soft">불러오는 중…</p>
+            <div className="flex h-full items-center justify-center bg-surface-app">
+                <p className="text-sm text-neutral-800">불러오는 중…</p>
             </div>
         )
     }

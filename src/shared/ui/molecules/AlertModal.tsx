@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
+import { AlertTriangle } from 'lucide-react'
 
 interface AlertModalProps {
     title?: string
@@ -75,21 +76,19 @@ export function AlertModal({ title = '알림', message, buttonText = '확인', o
                 initial={reduceMotion ? false : { opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={reduceMotion ? { duration: 0 } : { duration: 0.2, ease: 'easeOut' }}
-                className="relative z-10 w-full max-w-sm rounded-3xl bg-cream-100 p-6 shadow-modal outline-none flex flex-col items-center text-center border border-cream-200"
+                className="relative z-10 w-full max-w-sm rounded-3xl bg-surface-raised p-6 shadow-modal outline-none flex flex-col items-center text-center border border-neutral-100"
             >
-                <span className="text-3xl mb-3" aria-hidden="true">
-                    ⚠️
-                </span>
+                <AlertTriangle size={30} strokeWidth={2} className="mb-3 text-watermelon-500" aria-hidden="true" />
 
                 {title && (
-                    <h2 id="alert-title" className="font-display text-xl text-brown mb-2">
+                    <h2 id="alert-title" className="font-display text-xl text-neutral-900 mb-2">
                         {title}
                     </h2>
                 )}
 
                 <p
                     id="alert-message"
-                    className="text-sm font-medium text-brown-soft mb-6 whitespace-pre-wrap leading-relaxed"
+                    className="text-sm font-medium text-neutral-800 mb-6 whitespace-pre-wrap leading-relaxed"
                 >
                     {message}
                 </p>
@@ -97,7 +96,7 @@ export function AlertModal({ title = '알림', message, buttonText = '확인', o
                 <button
                     type="button"
                     onClick={onClose}
-                    className="h-cta w-full rounded-full bg-orange-500 font-display text-lg text-white shadow-card hover:bg-orange-600 active:scale-95 transition-all outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2"
+                    className="h-cta w-full rounded-full bg-watermelon-500 font-display text-lg text-white shadow-card hover:bg-watermelon-600 active:scale-95 transition-all outline-none focus:ring-2 focus:ring-watermelon-400 focus:ring-offset-2"
                 >
                     {buttonText}
                 </button>

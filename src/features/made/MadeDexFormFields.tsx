@@ -64,11 +64,11 @@ export function MadeDexCoverPicker({ preview, onPick, onClear }: CoverPickerProp
                     <img
                         src={preview ?? DEFAULT_MADE_DEX_COVER}
                         alt=""
-                        className="h-32 w-32 rounded-full bg-cream-200 object-cover"
+                        className="h-32 w-32 rounded-full bg-neutral-100 object-cover"
                     />
                     <span
                         aria-hidden
-                        className="absolute bottom-0 right-0 flex h-11 w-11 items-center justify-center rounded-full bg-content-primary text-cream-50 ring-4 ring-cream-100"
+                        className="absolute bottom-0 right-0 flex h-11 w-11 items-center justify-center rounded-full bg-content-primary text-white ring-4 ring-neutral-50"
                     >
                         <CameraIcon size={19} />
                     </span>
@@ -78,7 +78,7 @@ export function MadeDexCoverPicker({ preview, onPick, onClear }: CoverPickerProp
                     <button
                         type="button"
                         onClick={open}
-                        className="min-h-touch rounded-full bg-cream-200 px-4 text-sm font-bold text-content-primary"
+                        className="min-h-touch rounded-full bg-neutral-100 px-4 text-sm font-bold text-content-primary"
                     >
                         사진 {preview ? '바꾸기' : '고르기'}
                     </button>
@@ -130,7 +130,7 @@ export function MadeDexBasicFields({ name, description, onNameChange, onDescript
                 maxLength={MADE_DEX_NAME_MAX}
                 placeholder="예: 우리 동네 맛집 도감"
                 onChange={(event) => onNameChange(event.target.value)}
-                className="mt-2 w-full rounded-2xl bg-surface-card px-4 py-4 text-sm shadow-card outline-none focus:ring-2 focus:ring-orange-400"
+                className="mt-2 w-full rounded-2xl bg-surface-card px-4 py-4 text-sm shadow-card outline-none focus:ring-2 focus:ring-watermelon-400"
             />
 
             <label htmlFor="made-dex-description" className="mt-6 block text-sm font-bold text-content-primary">
@@ -144,7 +144,7 @@ export function MadeDexBasicFields({ name, description, onNameChange, onDescript
                 rows={4}
                 placeholder="어떤 도감인지 알려주면 참여자가 이해하기 쉬워요"
                 onChange={(event) => onDescriptionChange(event.target.value)}
-                className="mt-2 w-full resize-none rounded-2xl bg-surface-card px-4 py-4 text-sm shadow-card outline-none focus:ring-2 focus:ring-orange-400"
+                className="mt-2 w-full resize-none rounded-2xl bg-surface-card px-4 py-4 text-sm shadow-card outline-none focus:ring-2 focus:ring-watermelon-400"
             />
             <p className="mt-1 text-right text-xs text-content-muted">
                 {description.length}/{MADE_DEX_DESCRIPTION_MAX}
@@ -188,14 +188,14 @@ export function MadeDexVisibilityPicker({ visibility, onChange }: VisibilityPick
                     aria-pressed={visibility === value}
                     onClick={() => onChange(value)}
                     className={`flex w-full items-center gap-4 rounded-2xl p-4 text-left shadow-card ${
-                        visibility === value ? 'bg-surface-accent ring-2 ring-orange-400' : 'bg-surface-card'
+                        visibility === value ? 'bg-surface-accent ring-2 ring-watermelon-400' : 'bg-surface-card'
                     }`}
                 >
                     <span className="min-w-0 flex-1">
                         <span className="block font-display text-lg text-content-primary">{label}</span>
                         <span className="mt-1 block text-xs leading-4 text-content-secondary">{description}</span>
                     </span>
-                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-cream-200">
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-neutral-100">
                         <Icon size={22} aria-hidden className="text-content-secondary" />
                     </span>
                 </button>

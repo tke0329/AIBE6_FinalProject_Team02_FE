@@ -66,10 +66,10 @@ export const CATEGORY_META: Array<{
     total: number
 }> = [
     { category: '밥·죽·한 그릇', shortLabel: '밥·죽', dotClass: 'bg-amber-500', total: 25 },
-    { category: '면', shortLabel: '면', dotClass: 'bg-orange-500', total: 25 },
-    { category: '국·탕·찌개', shortLabel: '국·탕', dotClass: 'bg-blue-600', total: 30 },
+    { category: '면', shortLabel: '면', dotClass: 'bg-watermelon-500', total: 25 },
+    { category: '국·탕·찌개', shortLabel: '국·탕', dotClass: 'bg-lime-text', total: 30 },
     { category: '고기 구이·볶음', shortLabel: '고기', dotClass: 'bg-red-500', total: 25 },
-    { category: '튀김·치킨·까스', shortLabel: '튀김·치킨', dotClass: 'bg-orange-400', total: 15 },
+    { category: '튀김·치킨·까스', shortLabel: '튀김·치킨', dotClass: 'bg-watermelon-400', total: 15 },
     { category: '해산물·회', shortLabel: '해산물', dotClass: 'bg-teal-500', total: 25 },
     { category: '분식·길거리', shortLabel: '분식', dotClass: 'bg-rose-500', total: 20 },
     { category: '빵·버거·피자·브런치', shortLabel: '브런치', dotClass: 'bg-red-400', total: 20 },

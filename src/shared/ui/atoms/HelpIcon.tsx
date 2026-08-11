@@ -21,7 +21,7 @@ export function HelpIcon({ label, onClick, className = '' }: HelpIconProps) {
         >
             <span
                 aria-hidden
-                className="flex h-6 w-6 items-center justify-center rounded-full bg-cream-200 text-xs font-bold"
+                className="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-100 text-xs font-bold"
             >
                 ?
             </span>

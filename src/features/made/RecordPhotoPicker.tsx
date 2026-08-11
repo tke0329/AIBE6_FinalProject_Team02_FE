@@ -113,7 +113,7 @@ export function RecordPhotoPicker({ photos, onAdd, onCaption, onCover, onRemove,
                                 key={photo.id}
                                 aria-hidden
                                 className={`h-1.5 w-1.5 rounded-full transition-colors ${
-                                    position === index ? 'bg-action-primary' : 'bg-cream-300'
+                                    position === index ? 'bg-action-primary' : 'bg-neutral-200'
                                 }`}
                             />
                         ))
@@ -134,7 +134,7 @@ export function RecordPhotoPicker({ photos, onAdd, onCaption, onCover, onRemove,
                     maxLength={CAPTION_MAX}
                     placeholder="이 사진에 한마디"
                     aria-label={`${index + 1}번째 사진에 붙일 글`}
-                    className="mt-3 min-h-touch w-full rounded-xl bg-cream-100 px-3 text-sm text-content-primary"
+                    className="mt-3 min-h-touch w-full rounded-xl bg-neutral-50 px-3 text-sm text-content-primary"
                 />
             )}
 

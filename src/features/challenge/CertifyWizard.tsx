@@ -104,30 +104,30 @@ export function CertifyWizard({ name, placeName, onUnlock, onSubmitReview, onClo
             <header className="flex items-center gap-3 px-5 py-4">
                 {step === LOCATION && !busy ? (
                     <button onClick={() => go(PHOTO)} aria-label="이전">
-                        <ArrowLeftIcon size={22} className="text-brown" />
+                        <ArrowLeftIcon size={22} className="text-neutral-900" />
                     </button>
                 ) : (
                     <span className="w-[22px]" />
                 )}
-                <span className="font-display text-lg text-brown">{name}</span>
+                <span className="font-display text-lg text-neutral-900">{name}</span>
                 <button
                     onClick={() => onClose(completed)}
                     disabled={busy}
                     aria-label="닫기"
                     className="ml-auto disabled:opacity-40"
                 >
-                    <XIcon size={22} className="text-brown-muted" />
+                    <XIcon size={22} className="text-neutral-400" />
                 </button>
             </header>
 
-            <div className="mx-5 h-1.5 overflow-hidden rounded-full bg-cream-200">
+            <div className="mx-5 h-1.5 overflow-hidden rounded-full bg-neutral-100">
                 <motion.div
-                    className="h-full rounded-full bg-orange-500"
+                    className="h-full rounded-full bg-watermelon-500"
                     animate={{ width: `${((step + 1) / 3) * 100}%` }}
                     transition={{ type: 'spring', stiffness: 220, damping: 30 }}
                 />
             </div>
-            <p className="mt-2 px-5 text-xs font-bold text-brown-soft">
+            <p className="mt-2 px-5 text-xs font-bold text-neutral-800">
                 {step + 1} / 3 · {titles[step]}
             </p>
 
@@ -145,12 +145,12 @@ export function CertifyWizard({ name, placeName, onUnlock, onSubmitReview, onClo
                     >
                         {step === PHOTO && (
                             <div>
-                                <h1 className="font-display text-2xl text-brown">사진으로 인증해요</h1>
-                                <p className="mt-1 text-sm text-brown-soft">먹은 음식 사진을 한 장 올려주세요.</p>
+                                <h1 className="font-display text-2xl text-neutral-900">사진으로 인증해요</h1>
+                                <p className="mt-1 text-sm text-neutral-800">먹은 음식 사진을 한 장 올려주세요.</p>
                                 <button
                                     type="button"
                                     onClick={() => fileRef.current?.click()}
-                                    className="mt-4 flex aspect-square w-full items-center justify-center overflow-hidden rounded-3xl bg-cream-100 text-sm text-brown-muted"
+                                    className="mt-4 flex aspect-square w-full items-center justify-center overflow-hidden rounded-3xl bg-neutral-50 text-sm text-neutral-400"
                                 >
                                     {preview ? (
                                         <img src={preview} alt="" className="h-full w-full object-cover" />
@@ -173,15 +173,15 @@ export function CertifyWizard({ name, placeName, onUnlock, onSubmitReview, onClo
 
                         {step === LOCATION && (
                             <div>
-                                <h1 className="font-display text-2xl text-brown">위치를 확인해요</h1>
-                                <p className="mt-1 text-sm text-brown-soft">지정 장소 근처에서만 인증할 수 있어요.</p>
-                                <div className="mt-4 rounded-3xl bg-cream-50 p-4">
-                                    <p className="flex items-center gap-1 text-sm font-bold text-brown-soft">
+                                <h1 className="font-display text-2xl text-neutral-900">위치를 확인해요</h1>
+                                <p className="mt-1 text-sm text-neutral-800">지정 장소 근처에서만 인증할 수 있어요.</p>
+                                <div className="mt-4 rounded-3xl bg-white p-4">
+                                    <p className="flex items-center gap-1 text-sm font-bold text-neutral-800">
                                         <MapPinIcon size={16} /> {placeName ?? '지정 위치'}
                                     </p>
                                     <div className="mt-3">
                                         {coords ? (
-                                            <p className="flex items-center gap-1 text-sm font-bold text-green-600">
+                                            <p className="flex items-center gap-1 text-sm font-bold text-lime-text">
                                                 <CheckCircleIcon size={16} /> 현재 위치 확인됨
                                             </p>
                                         ) : (
@@ -189,7 +189,7 @@ export function CertifyWizard({ name, placeName, onUnlock, onSubmitReview, onClo
                                                 type="button"
                                                 onClick={captureLocation}
                                                 disabled={locating}
-                                                className="w-full rounded-xl bg-brown py-2.5 text-sm font-bold text-white disabled:opacity-60"
+                                                className="w-full rounded-xl bg-neutral-900 py-2.5 text-sm font-bold text-white disabled:opacity-60"
                                             >
                                                 {locating ? '위치 확인 중…' : '현재 위치 확인'}
                                             </button>
@@ -205,12 +205,12 @@ export function CertifyWizard({ name, placeName, onUnlock, onSubmitReview, onClo
                                     initial={{ scale: 0 }}
                                     animate={{ scale: 1 }}
                                     transition={{ type: 'spring', stiffness: 260, damping: 18 }}
-                                    className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-orange-100 text-orange-500"
+                                    className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-watermelon-100 text-watermelon-500"
                                 >
                                     <CheckCircleIcon size={36} />
                                 </motion.div>
-                                <h1 className="mt-3 text-center font-display text-2xl text-brown">인증 완료! 🎉</h1>
-                                <p className="mt-1 text-center text-sm text-brown-soft">
+                                <h1 className="mt-3 text-center font-display text-2xl text-neutral-900">인증 완료!</h1>
+                                <p className="mt-1 text-center text-sm text-neutral-800">
                                     방금 다녀온 곳, 한 줄 남겨줄래요?
                                 </p>
 
@@ -222,7 +222,7 @@ export function CertifyWizard({ name, placeName, onUnlock, onSubmitReview, onClo
                                                 type="button"
                                                 onClick={() => setRating(rating === n ? 0 : n)}
                                                 aria-label={`별점 ${n}`}
-                                                className={n <= rating ? 'text-orange-500' : 'text-cream-300'}
+                                                className={n <= rating ? 'text-watermelon-500' : 'text-neutral-200'}
                                             >
                                                 <StarIcon size={34} fill={n <= rating ? 'currentColor' : 'none'} />
                                             </button>
@@ -236,7 +236,7 @@ export function CertifyWizard({ name, placeName, onUnlock, onSubmitReview, onClo
                                     rows={3}
                                     maxLength={500}
                                     placeholder="맛·분위기·팁을 자유롭게 적어주세요 (선택)"
-                                    className="mt-4 w-full resize-none rounded-2xl bg-cream-50 px-4 py-3 text-sm outline-none"
+                                    className="mt-4 w-full resize-none rounded-2xl bg-white px-4 py-3 text-sm outline-none"
                                 />
                             </div>
                         )}
@@ -246,13 +246,13 @@ export function CertifyWizard({ name, placeName, onUnlock, onSubmitReview, onClo
 
             {error && <p className="px-5 pb-1 text-xs font-medium text-red-500">{error}</p>}
 
-            <div className="border-t border-cream-200 bg-cream-50 px-5 py-4">
+            <div className="border-t border-neutral-100 bg-white px-5 py-4">
                 {step === PHOTO && (
                     <button
                         type="button"
                         onClick={() => go(LOCATION)}
                         disabled={!file}
-                        className="h-cta w-full rounded-full bg-orange-500 font-display text-lg text-white shadow-card disabled:bg-action-disabled-bg disabled:text-action-disabled-text disabled:shadow-none"
+                        className="h-cta w-full rounded-full bg-watermelon-500 font-display text-lg text-white shadow-card disabled:bg-action-disabled-bg disabled:text-action-disabled-text disabled:shadow-none"
                     >
                         다음
                     </button>
@@ -262,7 +262,7 @@ export function CertifyWizard({ name, placeName, onUnlock, onSubmitReview, onClo
                         type="button"
                         onClick={submitUnlock}
                         disabled={!coords || busy}
-                        className="h-cta w-full rounded-full bg-orange-500 font-display text-lg text-white shadow-card disabled:bg-action-disabled-bg disabled:text-action-disabled-text disabled:shadow-none"
+                        className="h-cta w-full rounded-full bg-watermelon-500 font-display text-lg text-white shadow-card disabled:bg-action-disabled-bg disabled:text-action-disabled-text disabled:shadow-none"
                     >
                         {busy ? '인증 중…' : '인증하기'}
                     </button>
@@ -273,7 +273,7 @@ export function CertifyWizard({ name, placeName, onUnlock, onSubmitReview, onClo
                             type="button"
                             onClick={submitReview}
                             disabled={busy}
-                            className="h-cta w-full rounded-full bg-orange-500 font-display text-lg text-white shadow-card disabled:opacity-60"
+                            className="h-cta w-full rounded-full bg-watermelon-500 font-display text-lg text-white shadow-card disabled:opacity-60"
                         >
                             {busy ? '등록 중…' : '리뷰 등록'}
                         </button>
@@ -281,7 +281,7 @@ export function CertifyWizard({ name, placeName, onUnlock, onSubmitReview, onClo
                             type="button"
                             onClick={() => onClose(completed)}
                             disabled={busy}
-                            className="text-xs font-medium text-brown-muted underline underline-offset-2 disabled:opacity-40"
+                            className="text-xs font-medium text-neutral-400 underline underline-offset-2 disabled:opacity-40"
                         >
                             건너뛰기
                         </button>

@@ -90,7 +90,7 @@ export function RecordDetailSheet({ madeDexId, recordIds, onClose, onEdit, onDel
                 )}
 
                 {loading && !error && (
-                    <div className="aspect-[4/3] w-full animate-pulse rounded-2xl bg-cream-200" aria-hidden />
+                    <div className="aspect-[4/3] w-full animate-pulse rounded-2xl bg-neutral-100" aria-hidden />
                 )}
 
                 {record && !loading && !error && (
@@ -101,7 +101,7 @@ export function RecordDetailSheet({ madeDexId, recordIds, onClose, onEdit, onDel
                             {record.foodNames.map((food) => (
                                 <span
                                     key={food}
-                                    className="rounded-full bg-orange-100 px-2 py-1 text-xs font-bold text-orange-600"
+                                    className="rounded-full bg-watermelon-100 px-2 py-1 text-xs font-bold text-watermelon-600"
                                 >
                                     {food}
                                 </span>
@@ -125,7 +125,7 @@ export function RecordDetailSheet({ madeDexId, recordIds, onClose, onEdit, onDel
                                 <button
                                     type="button"
                                     onClick={() => onEdit(record.recordId)}
-                                    className="min-h-touch rounded-2xl bg-cream-200 text-sm font-bold text-content-secondary"
+                                    className="min-h-touch rounded-2xl bg-neutral-100 text-sm font-bold text-content-secondary"
                                 >
                                     수정하기
                                 </button>

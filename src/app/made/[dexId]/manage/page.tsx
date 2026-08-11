@@ -38,7 +38,7 @@ export default function MadeDexManagePage() {
     ]
 
     return (
-        <div className="flex h-full flex-col bg-cream-100">
+        <div className="flex h-full flex-col bg-surface-app">
             <header className="flex items-center gap-3 px-5 py-4">
                 <button
                     type="button"
@@ -60,7 +60,7 @@ export default function MadeDexManagePage() {
                                 onClick={() => router.push(href)}
                                 className="flex w-full items-center gap-3 rounded-2xl bg-surface-card p-4 text-left shadow-card active:scale-[0.99]"
                             >
-                                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cream-200">
+                                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-neutral-100">
                                     <Icon size={18} aria-hidden className="text-content-secondary" />
                                 </span>
                                 <span className="min-w-0 flex-1">

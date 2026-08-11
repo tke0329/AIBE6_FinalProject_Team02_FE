@@ -83,7 +83,7 @@ export function LogitCalendar({ madeDexId, date, today, onSelect, onClose }: Pro
                             <button
                                 type="button"
                                 onClick={() => onSelect(today)}
-                                className="min-h-touch rounded-full bg-cream-200 px-3 text-xs font-bold text-content-secondary"
+                                className="min-h-touch rounded-full bg-neutral-100 px-3 text-xs font-bold text-content-secondary"
                             >
                                 오늘
                             </button>

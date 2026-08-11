@@ -18,8 +18,8 @@ export default function DexHomePage() {
 
     if (entriesLoading) {
         return (
-            <div className="flex h-full items-center justify-center bg-cream-100">
-                <p className="text-sm text-brown-soft">불러오는 중…</p>
+            <div className="flex h-full items-center justify-center bg-surface-app">
+                <p className="text-sm text-neutral-800">불러오는 중…</p>
             </div>
         )
     }

@@ -8,47 +8,53 @@ const config: Config = {
     theme: {
         extend: {
             colors: {
-                /* --- Primitive (DESIGN.md §1.1) --- */
-                cream: {
-                    DEFAULT: token('cream-50'),
-                    50: token('cream-50'),
-                    100: token('cream-100'),
-                    200: token('cream-200'),
-                    300: token('cream-300'),
+                /* --- Primitive (DESIGN.md §1.1) — Watermelon Splash ---
+                   값은 globals.css의 CSS 변수에서 정의. 신규 코드는 이 이름을 쓴다. */
+                watermelon: {
+                    DEFAULT: token('watermelon-500'),
+                    50: token('watermelon-50'),
+                    100: token('watermelon-100'),
+                    200: token('watermelon-200'),
+                    300: token('watermelon-300'),
+                    400: token('watermelon-400'),
+                    500: token('watermelon-500'),
+                    600: token('watermelon-600'),
+                    700: token('watermelon-700'),
+                    800: token('watermelon-800'),
+                    900: token('watermelon-900'),
                 },
-                brown: {
-                    DEFAULT: token('brown-900'),
-                    300: token('brown-300'),
-                    500: token('brown-500'),
-                    600: token('brown-600'),
-                    800: token('brown-800'),
-                    900: token('brown-900'),
-                    /* 레거시 별칭 — 기존 컴포넌트 클래스명 유지용 */
-                    soft: token('brown-800'),
-                    muted: token('brown-300'),
+                neutral: {
+                    DEFAULT: token('neutral-900'),
+                    50: token('neutral-50'),
+                    100: token('neutral-100'),
+                    200: token('neutral-200'),
+                    300: token('neutral-300'),
+                    400: token('neutral-400'),
+                    500: token('neutral-500'),
+                    600: token('neutral-600'),
+                    700: token('neutral-700'),
+                    800: token('neutral-800'),
+                    900: token('neutral-900'),
                 },
-                orange: {
-                    DEFAULT: token('orange-500'),
-                    50: token('orange-50'),
-                    100: token('orange-100'),
-                    400: token('orange-400'),
-                    500: token('orange-500'),
-                    600: token('orange-600'),
+                lime: {
+                    DEFAULT: token('lime-500'),
+                    500: token('lime-500'),
+                    soft: token('lime-soft'),
+                    text: token('lime-text'),
                 },
-                blue: {
-                    300: token('blue-300'),
-                    400: token('blue-300'),
-                    500: token('blue-500'),
+                mint: {
+                    DEFAULT: token('mint-500'),
+                    500: token('mint-500'),
+                    soft: token('mint-soft'),
+                    border: token('mint-border'),
+                    ink: token('mint-ink'),
                 },
                 red: {
                     400: token('red-500'),
                     500: token('red-500'),
                 },
-                green: {
-                    500: token('green-500'),
-                },
 
-                /* --- Semantic (DESIGN.md §1.2) — 신규 코드는 이쪽을 사용 --- */
+                /* --- Semantic (DESIGN.md §1.2) — 신규 코드 권장 --- */
                 surface: {
                     app: token('surface-app'),
                     card: token('surface-card'),
@@ -76,7 +82,7 @@ const config: Config = {
                 },
                 feedback: {
                     error: token('red-500'),
-                    success: token('green-500'),
+                    success: token('lime-text'),
                 },
             },
 
@@ -111,10 +117,10 @@ const config: Config = {
 
             /* §1.5 그림자 — 2단계만. soft/pop은 레거시 별칭 */
             boxShadow: {
-                card: '0 2px 8px rgba(62, 45, 24, 0.06)',
-                modal: '0 8px 32px rgba(62, 45, 24, 0.16)',
-                soft: '0 2px 8px rgba(62, 45, 24, 0.06)',
-                pop: '0 8px 32px rgba(62, 45, 24, 0.16)',
+                card: '0 2px 8px rgba(0, 0, 0, 0.06)',
+                modal: '0 8px 32px rgba(0, 0, 0, 0.16)',
+                soft: '0 2px 8px rgba(0, 0, 0, 0.06)',
+                pop: '0 8px 32px rgba(0, 0, 0, 0.16)',
             },
 
             /* §5 최소 터치 타깃 / §2 고정 CTA 높이 */

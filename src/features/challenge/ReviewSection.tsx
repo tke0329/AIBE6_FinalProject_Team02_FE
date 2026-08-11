@@ -25,7 +25,7 @@ function StarPicker({ value, onChange, size = 24 }: { value: number; onChange: (
                     type="button"
                     onClick={() => onChange(value === n ? 0 : n)}
                     aria-label={`별점 ${n}`}
-                    className={n <= value ? 'text-orange-500' : 'text-cream-300'}
+                    className={n <= value ? 'text-watermelon-500' : 'text-neutral-200'}
                 >
                     <StarIcon size={size} fill={n <= value ? 'currentColor' : 'none'} />
                 </button>
@@ -41,7 +41,7 @@ function StarView({ value }: { value: number }) {
                 <StarIcon
                     key={n}
                     size={14}
-                    className={n <= value ? 'text-orange-500' : 'text-cream-300'}
+                    className={n <= value ? 'text-watermelon-500' : 'text-neutral-200'}
                     fill={n <= value ? 'currentColor' : 'none'}
                 />
             ))}
@@ -150,8 +150,8 @@ export function ReviewSection({
     return (
         <div className="space-y-3">
             {canWrite && !mineExists && (
-                <div className="rounded-2xl bg-cream-50 p-3">
-                    <p className="mb-1 text-xs font-bold text-brown-soft">별점</p>
+                <div className="rounded-2xl bg-white p-3">
+                    <p className="mb-1 text-xs font-bold text-neutral-800">별점</p>
                     <StarPicker value={rating} onChange={setRating} />
                     <textarea
                         value={content}
@@ -165,7 +165,7 @@ export function ReviewSection({
                         type="button"
                         onClick={submit}
                         disabled={submitting}
-                        className="mt-2 w-full rounded-full bg-orange-500 py-2 text-sm font-bold text-white disabled:opacity-60"
+                        className="mt-2 w-full rounded-full bg-watermelon-500 py-2 text-sm font-bold text-white disabled:opacity-60"
                     >
                         {submitting ? '등록 중…' : '리뷰 등록'}
                     </button>
@@ -173,7 +173,7 @@ export function ReviewSection({
             )}
 
             {!canWrite && (
-                <p className="flex items-center gap-1 rounded-2xl bg-cream-50 p-3 text-xs text-brown-muted">
+                <p className="flex items-center gap-1 rounded-2xl bg-white p-3 text-xs text-neutral-400">
                     <LockIcon size={13} /> {lockedReason}
                 </p>
             )}
@@ -181,9 +181,9 @@ export function ReviewSection({
             {error && <p className="text-xs font-medium text-red-500">{error}</p>}
 
             {loading ? (
-                <p className="py-4 text-center text-sm text-brown-muted">불러오는 중…</p>
+                <p className="py-4 text-center text-sm text-neutral-400">불러오는 중…</p>
             ) : sorted.length === 0 ? (
-                <p className="py-4 text-center text-sm text-brown-muted">아직 리뷰가 없어요</p>
+                <p className="py-4 text-center text-sm text-neutral-400">아직 리뷰가 없어요</p>
             ) : (
                 <ul className="space-y-2">
                     {sorted.map((r, idx) => {
@@ -197,7 +197,7 @@ export function ReviewSection({
                                 aria-hidden={blurred}
                             >
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-bold text-brown">{r.reviewerNickname ?? '익명'}</span>
+                                    <span className="text-sm font-bold text-neutral-900">{r.reviewerNickname ?? '익명'}</span>
                                     {r.rating ? <StarView value={r.rating} /> : null}
                                 </div>
 
@@ -209,20 +209,20 @@ export function ReviewSection({
                                             onChange={(e) => setEditContent(e.target.value)}
                                             rows={2}
                                             maxLength={500}
-                                            className="mt-2 w-full resize-none rounded-xl bg-cream-50 px-3 py-2 text-sm outline-none"
+                                            className="mt-2 w-full resize-none rounded-xl bg-white px-3 py-2 text-sm outline-none"
                                         />
                                         <div className="mt-2 flex gap-2">
                                             <button
                                                 type="button"
                                                 onClick={() => saveEdit(r.id)}
-                                                className="flex-1 rounded-full bg-orange-500 py-1.5 text-xs font-bold text-white"
+                                                className="flex-1 rounded-full bg-watermelon-500 py-1.5 text-xs font-bold text-white"
                                             >
                                                 저장
                                             </button>
                                             <button
                                                 type="button"
                                                 onClick={() => setEditingId(null)}
-                                                className="flex-1 rounded-full bg-cream-200 py-1.5 text-xs font-bold text-brown-soft"
+                                                className="flex-1 rounded-full bg-neutral-100 py-1.5 text-xs font-bold text-neutral-800"
                                             >
                                                 취소
                                             </button>
@@ -230,20 +230,20 @@ export function ReviewSection({
                                     </div>
                                 ) : (
                                     <>
-                                        {r.content && <p className="mt-1 text-sm text-brown">{r.content}</p>}
+                                        {r.content && <p className="mt-1 text-sm text-neutral-900">{r.content}</p>}
                                         <div className="mt-2 flex items-center justify-between">
                                             <button
                                                 type="button"
                                                 onClick={() => like(r.id)}
                                                 className={`flex items-center gap-1 text-xs font-medium ${
-                                                    r.likedByMe ? 'text-orange-500' : 'text-brown-muted'
+                                                    r.likedByMe ? 'text-watermelon-500' : 'text-neutral-400'
                                                 }`}
                                             >
                                                 <HeartIcon size={14} fill={r.likedByMe ? 'currentColor' : 'none'} />
                                                 {r.likeCount}
                                             </button>
                                             {r.mine && (
-                                                <div className="flex gap-3 text-brown-muted">
+                                                <div className="flex gap-3 text-neutral-400">
                                                     <button
                                                         type="button"
                                                         onClick={() => startEdit(r)}
@@ -270,7 +270,7 @@ export function ReviewSection({
             )}
 
             {preview && sorted.length > PREVIEW_VISIBLE && (
-                <p className="flex items-center justify-center gap-1 rounded-2xl bg-cream-50 py-2 text-xs font-medium text-brown-muted">
+                <p className="flex items-center justify-center gap-1 rounded-2xl bg-white py-2 text-xs font-medium text-neutral-400">
                     <LockIcon size={13} /> {previewMessage}
                 </p>
             )}

@@ -47,16 +47,16 @@ export function NicknameEdit({
     }
 
     return (
-        <div className="flex h-full flex-col bg-cream-100">
+        <div className="flex h-full flex-col bg-surface-app">
             <header className="flex items-center gap-3 px-5 py-4">
                 <button onClick={onBack} aria-label="뒤로가기" className="min-h-touch">
-                    <ArrowLeftIcon size={21} className="text-brown" />
+                    <ArrowLeftIcon size={21} className="text-neutral-900" />
                 </button>
-                <h1 className="font-display text-lg text-brown">닉네임 수정</h1>
+                <h1 className="font-display text-lg text-neutral-900">닉네임 수정</h1>
             </header>
 
             <div className="flex flex-1 flex-col px-8 pt-4">
-                <p className="text-sm text-brown-soft">
+                <p className="text-sm text-neutral-800">
                     닉네임은 한 달에 한 번만 바꿀 수 있어요. 2~8자, 한글·영문·숫자·밑줄.
                 </p>
 
@@ -67,11 +67,11 @@ export function NicknameEdit({
                     maxLength={NICKNAME_MAX}
                     disabled={!changeable || submitting}
                     aria-label="닉네임"
-                    className="mt-6 h-cta w-full rounded-2xl border-2 border-cream-300 bg-white px-4 font-display text-lg text-brown outline-none focus:border-orange-400 disabled:bg-cream-200 disabled:text-brown-muted"
+                    className="mt-6 h-cta w-full rounded-2xl border-2 border-neutral-200 bg-white px-4 font-display text-lg text-neutral-900 outline-none focus:border-watermelon-400 disabled:bg-neutral-100 disabled:text-neutral-400"
                 />
 
                 {/* 우선순위: 변경 불가 안내 → 형식 안내 → 서버 에러 */}
-                <p className="mt-2 min-h-[1.25rem] text-sm text-orange-600">
+                <p className="mt-2 min-h-[1.25rem] text-sm text-watermelon-600">
                     {!changeable && changeableAt
                         ? `${formatDate(changeableAt)}부터 바꿀 수 있어요.`
                         : showFormatHint
@@ -84,7 +84,7 @@ export function NicknameEdit({
                 <button
                     onClick={submit}
                     disabled={!canSubmit}
-                    className="h-cta w-full rounded-full bg-orange-500 font-display text-lg text-white shadow-card transition active:scale-[0.98] disabled:bg-cream-300 disabled:text-brown-muted disabled:shadow-none"
+                    className="h-cta w-full rounded-full bg-watermelon-500 font-display text-lg text-white shadow-card transition active:scale-[0.98] disabled:bg-neutral-200 disabled:text-neutral-400 disabled:shadow-none"
                 >
                     {submitting ? '저장 중…' : '변경하기'}
                 </button>

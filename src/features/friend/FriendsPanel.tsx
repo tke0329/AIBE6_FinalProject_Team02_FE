@@ -66,12 +66,12 @@ export function FriendsPanel({ onBack, onOpenUser }: Props) {
             .catch(() => {})
 
     return (
-        <div className="flex h-full flex-col bg-cream-100">
+        <div className="flex h-full flex-col bg-surface-app">
             <header className="flex items-center gap-3 px-5 pt-4">
                 <button onClick={onBack} aria-label="뒤로가기">
                     <ArrowLeftIcon size={21} />
                 </button>
-                <span className="font-display text-lg text-brown">친구</span>
+                <span className="font-display text-lg text-neutral-900">친구</span>
             </header>
 
             {/* 검색창 — 상단 항상 고정 */}
@@ -81,9 +81,9 @@ export function FriendsPanel({ onBack, onOpenUser }: Props) {
                         e.preventDefault()
                         runSearch()
                     }}
-                    className="flex items-center gap-2 rounded-2xl border border-cream-300 bg-white px-3"
+                    className="flex items-center gap-2 rounded-2xl border border-neutral-200 bg-white px-3"
                 >
-                    <SearchIcon size={16} className="text-brown-muted" aria-hidden />
+                    <SearchIcon size={16} className="text-neutral-400" aria-hidden />
                     <input
                         value={kw}
                         onChange={(e) => {
@@ -92,14 +92,14 @@ export function FriendsPanel({ onBack, onOpenUser }: Props) {
                             if (!v.trim()) setSearchResults(null)
                         }}
                         placeholder="닉네임으로 친구 검색"
-                        className="min-h-touch flex-1 bg-transparent text-sm text-brown outline-none"
+                        className="min-h-touch flex-1 bg-transparent text-sm text-neutral-900 outline-none"
                     />
                     {kw && (
                         <button
                             type="button"
                             aria-label="검색 지우기"
                             onClick={clearSearch}
-                            className="p-1 text-brown-muted"
+                            className="p-1 text-neutral-400"
                         >
                             <XIcon size={16} />
                         </button>
@@ -110,7 +110,7 @@ export function FriendsPanel({ onBack, onOpenUser }: Props) {
             {searchResults !== null ? (
                 // 검색 결과 화면
                 <main className="no-scrollbar flex-1 overflow-y-auto px-5 py-4">
-                    <p className="mb-2 text-xs text-brown-soft">검색 결과</p>
+                    <p className="mb-2 text-xs text-neutral-800">검색 결과</p>
                     {searchResults.length === 0 ? (
                         <Empty text="일치하는 유저가 없어요" />
                     ) : (
@@ -125,13 +125,13 @@ export function FriendsPanel({ onBack, onOpenUser }: Props) {
                                         onOpenUser={onOpenUser}
                                         right={
                                             isFriend ? (
-                                                <span className="px-2 text-xs text-brown-soft">친구</span>
+                                                <span className="px-2 text-xs text-neutral-800">친구</span>
                                             ) : already ? (
-                                                <span className="px-2 text-xs text-brown-soft">요청됨</span>
+                                                <span className="px-2 text-xs text-neutral-800">요청됨</span>
                                             ) : (
                                                 <button
                                                     onClick={() => onSendRequest(user.userId)}
-                                                    className="flex items-center gap-1 rounded-full border-2 border-orange-400 px-3 py-1.5 text-xs font-medium text-orange-600"
+                                                    className="flex items-center gap-1 rounded-full border-2 border-watermelon-400 px-3 py-1.5 text-xs font-medium text-watermelon-600"
                                                 >
                                                     <UserPlusIcon size={14} /> 친구 추가
                                                 </button>
@@ -199,7 +199,7 @@ export function FriendsPanel({ onBack, onOpenUser }: Props) {
 function Avatar({ user, size = 44 }: { user: UserBrief; size?: number }) {
     return (
         <span
-            className="flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-orange-200 font-display text-orange-700"
+            className="flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-watermelon-200 font-display text-watermelon-700"
             style={{ width: size, height: size }}
         >
             {user.profileImageUrl ? (
@@ -237,7 +237,7 @@ function Row({
                             size={28}
                         />
                     )}
-                    <span className="truncate font-medium text-brown">{user.nickname}</span>
+                    <span className="truncate font-medium text-neutral-900">{user.nickname}</span>
                 </span>
             </button>
             {right}
@@ -268,7 +268,7 @@ function FriendList({
                             onClick={() => {
                                 if (confirm(`${u.nickname}님을 친구에서 삭제할까요?`)) onRemove(u.userId)
                             }}
-                            className="rounded-full p-2 text-brown-muted"
+                            className="rounded-full p-2 text-neutral-400"
                         >
                             <Trash2Icon size={18} />
                         </button>
@@ -303,14 +303,14 @@ function RequestList({
                             <button
                                 aria-label="수락"
                                 onClick={() => onAccept(r.requestId)}
-                                className="rounded-full bg-orange-500 p-2 text-white"
+                                className="rounded-full bg-watermelon-500 p-2 text-white"
                             >
                                 <CheckIcon size={16} />
                             </button>
                             <button
                                 aria-label="거절"
                                 onClick={() => onReject(r.requestId)}
-                                className="rounded-full bg-cream-200 p-2 text-brown-soft"
+                                className="rounded-full bg-neutral-100 p-2 text-neutral-800"
                             >
                                 <XIcon size={16} />
                             </button>
@@ -323,5 +323,5 @@ function RequestList({
 }
 
 function Empty({ text }: { text: string }) {
-    return <p className="py-16 text-center text-sm text-brown-soft">{text}</p>
+    return <p className="py-16 text-center text-sm text-neutral-800">{text}</p>
 }

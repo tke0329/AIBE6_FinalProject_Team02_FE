@@ -34,7 +34,7 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
     const slots = feed.feed?.slots ?? []
 
     return (
-        <div className="relative flex h-full flex-col bg-cream-100">
+        <div className="relative flex h-full flex-col bg-surface-app">
             <header className="shrink-0 bg-surface-app px-5 pt-4">
                 <div className="flex items-center gap-2">
                     <button type="button" onClick={onBack} aria-label="로그잇 목록으로">
@@ -68,7 +68,7 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
                         <button
                             type="button"
                             onClick={feed.reload}
-                            className="mt-3 min-h-touch rounded-full bg-cream-200 px-5 text-sm font-bold text-content-secondary"
+                            className="mt-3 min-h-touch rounded-full bg-neutral-100 px-5 text-sm font-bold text-content-secondary"
                         >
                             다시 시도
                         </button>
@@ -77,8 +77,8 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
 
                 {feed.loading && !feed.feed && (
                     <div className="space-y-3 pt-5" aria-hidden>
-                        <div className="h-5 w-20 animate-pulse rounded-full bg-cream-200" />
-                        <div className="aspect-[4/3] w-4/5 animate-pulse rounded-2xl bg-cream-200" />
+                        <div className="h-5 w-20 animate-pulse rounded-full bg-neutral-100" />
+                        <div className="aspect-[4/3] w-4/5 animate-pulse rounded-2xl bg-neutral-100" />
                     </div>
                 )}
 
@@ -161,7 +161,7 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
             )}
 
             {dayCardOpen && (
-                <div className="absolute inset-0 z-20 flex flex-col bg-cream-100">
+                <div className="absolute inset-0 z-20 flex flex-col bg-surface-app">
                     <div className="shrink-0 bg-surface-app px-5 pt-4">
                         <button
                             type="button"

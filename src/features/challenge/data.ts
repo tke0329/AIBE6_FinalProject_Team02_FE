@@ -23,7 +23,7 @@ export const INITIAL_CHALLENGES: ChallengeData[] = [
             { id: 'ramen-5', name: '망원 라멘집', emoji: '🍜' },
         ],
         completedTargetIds: ['ramen-1', 'ramen-2', 'ramen-3'],
-        rewardBadge: { emoji: '🍜', name: '라면 완주자', tone: 'bg-orange-100 text-orange-700' },
+        rewardBadge: { emoji: '🍜', name: '라면 완주자', tone: 'bg-watermelon-100 text-watermelon-700' },
     },
     {
         id: 'naengmyeon',

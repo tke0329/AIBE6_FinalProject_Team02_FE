@@ -32,17 +32,17 @@ export function ConfirmModal({
                 initial={reduceMotion ? false : { opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={reduceMotion ? { duration: 0 } : { duration: 0.2, ease: 'easeOut' }}
-                className="relative z-10 flex w-full max-w-sm flex-col items-center rounded-3xl border border-cream-200 bg-cream-100 p-6 text-center shadow-modal"
+                className="relative z-10 flex w-full max-w-sm flex-col items-center rounded-3xl border border-neutral-100 bg-surface-raised p-6 text-center shadow-modal"
             >
-                {title && <h2 className="mb-2 font-display text-xl text-brown">{title}</h2>}
-                <p className="mb-6 whitespace-pre-wrap text-sm font-medium leading-relaxed text-brown-soft">
+                {title && <h2 className="mb-2 font-display text-xl text-neutral-900">{title}</h2>}
+                <p className="mb-6 whitespace-pre-wrap text-sm font-medium leading-relaxed text-neutral-800">
                     {message}
                 </p>
                 <div className="flex w-full gap-2">
                     <button
                         type="button"
                         onClick={onCancel}
-                        className="h-cta flex-1 rounded-full bg-cream-200 font-display text-base text-brown-soft active:scale-95"
+                        className="h-cta flex-1 rounded-full bg-neutral-100 font-display text-base text-neutral-800 active:scale-95"
                     >
                         {cancelText}
                     </button>
@@ -50,7 +50,7 @@ export function ConfirmModal({
                         type="button"
                         onClick={onConfirm}
                         className={`h-cta flex-1 rounded-full font-display text-base text-white shadow-card active:scale-95 ${
-                            danger ? 'bg-red-500 hover:bg-red-600' : 'bg-orange-500 hover:bg-orange-600'
+                            danger ? 'bg-red-500 hover:bg-red-600' : 'bg-watermelon-500 hover:bg-watermelon-600'
                         }`}
                     >
                         {confirmText}

@@ -24,10 +24,10 @@ export function NicknameSetup({ onSubmit, submitting, error }: Props) {
     }
 
     return (
-        <div className="flex h-full flex-col bg-cream-100">
+        <div className="flex h-full flex-col bg-surface-app">
             <div className="flex flex-1 flex-col justify-center px-8">
-                <h1 className="font-display text-2xl text-brown">닉네임을 정해주세요</h1>
-                <p className="mt-2 text-sm text-brown-soft">
+                <h1 className="font-display text-2xl text-neutral-900">닉네임을 정해주세요</h1>
+                <p className="mt-2 text-sm text-neutral-800">
                     도감에서 사용할 이름이에요. 2~8자, 한글·영문·숫자·밑줄을 쓸 수 있어요.
                 </p>
 
@@ -39,11 +39,11 @@ export function NicknameSetup({ onSubmit, submitting, error }: Props) {
                     placeholder="예) 먹킷냥이"
                     autoFocus
                     aria-label="닉네임"
-                    className="mt-8 h-cta w-full rounded-2xl border-2 border-cream-300 bg-white px-4 font-display text-lg text-brown outline-none focus:border-orange-400"
+                    className="mt-8 h-cta w-full rounded-2xl border-2 border-neutral-200 bg-white px-4 font-display text-lg text-neutral-900 outline-none focus:border-watermelon-400"
                 />
 
                 {/* 클라 형식 안내 → 서버 에러 순으로 노출 (한 줄만) */}
-                <p className="mt-2 min-h-[1.25rem] text-sm text-orange-600">
+                <p className="mt-2 min-h-[1.25rem] text-sm text-watermelon-600">
                     {showHint ? NICKNAME_HINT : (error ?? '')}
                 </p>
             </div>
@@ -52,7 +52,7 @@ export function NicknameSetup({ onSubmit, submitting, error }: Props) {
                 <button
                     onClick={submit}
                     disabled={!valid || submitting}
-                    className="h-cta w-full rounded-full bg-orange-500 font-display text-lg text-white shadow-card transition active:scale-[0.98] disabled:bg-cream-300 disabled:text-brown-muted disabled:shadow-none"
+                    className="h-cta w-full rounded-full bg-watermelon-500 font-display text-lg text-white shadow-card transition active:scale-[0.98] disabled:bg-neutral-200 disabled:text-neutral-400 disabled:shadow-none"
                 >
                     {submitting ? '저장 중…' : '시작하기'}
                 </button>

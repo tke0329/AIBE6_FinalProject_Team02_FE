@@ -77,7 +77,7 @@ export default function MadeDexInfoPage() {
 
     if (loading || !detail) {
         return (
-            <div className="flex h-full items-center justify-center bg-cream-100">
+            <div className="flex h-full items-center justify-center bg-surface-app">
                 <p className="text-sm text-content-secondary">{error ?? '도감 정보를 불러오는 중…'}</p>
             </div>
         )

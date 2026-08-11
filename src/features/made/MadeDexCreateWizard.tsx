@@ -43,7 +43,7 @@ export function MadeDexCreateWizard({ onCreate, onExit }: Props) {
     }
 
     return (
-        <div className="relative flex h-full flex-col bg-cream-100">
+        <div className="relative flex h-full flex-col bg-surface-app">
             <header className="px-5 pb-2 pt-4">
                 <button type="button" onClick={back} aria-label="뒤로가기" className="min-h-touch">
                     <ArrowLeftIcon size={22} className="text-content-primary" />
@@ -57,7 +57,7 @@ export function MadeDexCreateWizard({ onCreate, onExit }: Props) {
                             className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${
                                 index === step
                                     ? 'bg-action-primary text-content-on-action'
-                                    : 'bg-cream-200 text-content-muted'
+                                    : 'bg-neutral-100 text-content-muted'
                             }`}
                         >
                             <span className="sr-only">{label} </span>
@@ -122,7 +122,7 @@ export function MadeDexCreateWizard({ onCreate, onExit }: Props) {
                             <img
                                 src={imagePreview ?? DEFAULT_MADE_DEX_COVER}
                                 alt=""
-                                className="h-28 w-28 rounded-full bg-cream-200 object-cover"
+                                className="h-28 w-28 rounded-full bg-neutral-100 object-cover"
                             />
                         </div>
                         <div className="rounded-2xl bg-surface-card p-4 shadow-card">

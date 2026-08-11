@@ -33,7 +33,7 @@ export function DayCardShare({ dayCard, title }: Props) {
                     aria-label={`${dayCard.date} 하루 카드`}
                     className="block w-full"
                 />
-                {status === 'preparing' && <div className="absolute inset-0 animate-pulse bg-cream-200" aria-hidden />}
+                {status === 'preparing' && <div className="absolute inset-0 animate-pulse bg-neutral-100" aria-hidden />}
             </div>
 
             {status === 'idle' && (
@@ -41,7 +41,7 @@ export function DayCardShare({ dayCard, title }: Props) {
                     <button
                         type="button"
                         onClick={replay}
-                        className="min-h-touch rounded-full bg-cream-200 px-4 text-sm font-bold text-content-secondary"
+                        className="min-h-touch rounded-full bg-neutral-100 px-4 text-sm font-bold text-content-secondary"
                     >
                         다시 보기
                     </button>
@@ -59,7 +59,7 @@ export function DayCardShare({ dayCard, title }: Props) {
                         <button
                             type="button"
                             onClick={handleShare}
-                            className="min-h-touch rounded-full bg-orange-500 px-5 text-sm font-bold text-white"
+                            className="min-h-touch rounded-full bg-watermelon-500 px-5 text-sm font-bold text-white"
                         >
                             {isVideo ? '영상 공유하기' : '사진 공유하기'}
                         </button>

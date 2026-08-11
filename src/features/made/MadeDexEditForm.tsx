@@ -44,7 +44,7 @@ export function MadeDexEditForm({ detail, onSave, onBack }: Props) {
     }
 
     return (
-        <div className="flex h-full flex-col bg-cream-100">
+        <div className="flex h-full flex-col bg-surface-app">
             <header className="flex items-center gap-3 px-5 py-4">
                 <button type="button" onClick={onBack} aria-label="뒤로가기" className="min-h-touch">
                     <ArrowLeftIcon size={22} className="text-content-primary" />

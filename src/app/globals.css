@@ -7,74 +7,84 @@
 @tailwind utilities;
 
 /* ===========================================================================
-   DESIGN.md §1 디자인 토큰
-   Primitive → Semantic 2계층. 컴포넌트는 Semantic만 참조.
+   DESIGN.md §1 디자인 토큰 — Watermelon Splash
+   Primitive → Semantic 2계층. 컴포넌트는 Semantic만 참조(권장).
    Tailwind alpha modifier(bg-white/70)를 쓰려면 rgb 채널값이어야 하므로
-   hex 대신 채널 triplet으로 저장함. 주석의 hex가 DESIGN.md 원본값.
+   hex 대신 채널 triplet으로 저장함. 주석의 hex가 원본값.
+
+   Primitive 이름: watermelon(주 액션) / neutral(배경·텍스트 그레이) / lime·mint(accent).
+   과거 이름(orange/cream/brown/blue/green)은 tailwind.config에서 deprecated
+   별칭으로만 유지된다(마이그레이션 안전망). 신규 코드는 새 이름을 쓴다.
    =========================================================================== */
 
 :root {
-    /* --- 1.1 Primitive: Cream (배경 계열) --- */
-    --cream-50: 251 247 240; /* #FBF7F0 앱 기본 배경 */
-    --cream-100: 245 238 223; /* #F5EEDF 카드 그리드 배경 */
-    --cream-200: 239 227 204; /* #EFE3CC 구분선, 비활성 배경 */
-    --cream-300: 229 213 184; /* #E5D5B8 */
+    /* --- 1.1 Primitive: Watermelon (주 액션 계열, 워터멜론 핑크) --- */
+    --watermelon-50: 255 240 243; /* #FFF0F3 primary-soft (pill/라디오 배경) */
+    --watermelon-100: 255 224 231; /* #FFE0E7 */
+    --watermelon-200: 255 179 194; /* #FFB3C2 primary-border (점선 추가 영역) */
+    --watermelon-300: 255 157 176; /* #FF9DB0 */
+    --watermelon-400: 255 128 149; /* #FF8095 밝은 primary */
+    --watermelon-500: 252 108 133; /* #FC6C85 주 액션(PRIMARY) */
+    --watermelon-600: 228 83 109; /* #E4536D primary-pressed / 링크 hover */
+    --watermelon-700: 198 69 91; /* #C6455B 진한 핑크(연한 배경 위 텍스트 대비용) */
+    --watermelon-800: 165 56 75; /* #A5384B */
+    --watermelon-900: 126 42 57; /* #7E2A39 */
 
-    /* --- 1.1 Primitive: Brown (텍스트/포인트 계열) --- */
-    --brown-300: 201 168 124; /* #C9A87C */
-    --brown-500: 176 125 63; /* #B07D3F */
-    --brown-600: 154 106 50; /* #9A6A32 */
-    --brown-800: 92 67 38; /* #5C4326 본문 텍스트 */
-    --brown-900: 62 45 24; /* #3E2D18 헤드라인 */
+    /* --- 1.1 Primitive: Neutral (배경 + 텍스트 그레이 램프) --- */
+    --neutral-50: 245 245 246; /* #F5F5F6 카드 그리드/검색바/세그먼트 트랙 */
+    --neutral-100: 241 241 242; /* #F1F1F2 비활성 배경, 연한 구분 면, 카드 테두리 */
+    --neutral-200: 229 229 234; /* #E5E5EA 진행 바 트랙 */
+    --neutral-300: 198 198 203; /* #C6C6CB chevron, 빈 별 근처 */
+    --neutral-400: 181 181 186; /* #B5B5BA 보조 텍스트/비활성(muted) */
+    --neutral-500: 142 142 147; /* #8E8E93 아이콘 보조 */
+    --neutral-600: 74 74 74; /* #4A4A4A 본문 강조, 미해금 면 */
+    --neutral-700: 58 58 60; /* #3A3A3C */
+    --neutral-800: 42 42 42; /* #2A2A2A 리스트 항목 텍스트(body) */
+    --neutral-900: 26 26 26; /* #1A1A1A 제목(headline) */
 
-    /* --- 1.1 Primitive: Orange (액션 계열) --- */
-    --orange-400: 232 162 76; /* #E8A24C */
-    --orange-500: 217 142 51; /* #D98E33 주 액션 */
-    --orange-600: 199 123 34; /* #C77B22 */
+    /* --- 1.1 Primitive: Accent Lime (달성/완료 진행 바, 성공, 섹션 도트) --- */
+    --lime-500: 137 243 54; /* #89F336 라임 면(진행 바) */
+    --lime-soft: 242 252 234; /* #F2FCEA 인증 완료 아이콘 배경 */
+    --lime-text: 78 156 24; /* #4E9C18 성공 텍스트/아이콘 (흰 배경 대비 확보) */
 
-    /* Primitive 확장 (DESIGN.md 미정의 — §1.2 절차대로 Primitive에 추가함)
-     용도: 액션색 위에 얹는 연한 배경(칩, 아이콘 슬롯). orange-400 tint. */
-    --orange-50: 253 243 230; /* #FDF3E6 */
-    --orange-100: 248 227 196; /* #F8E3C4 */
+    /* --- 1.1 Primitive: Accent Mint (공유 카드, 끼니 모아보기 카드) --- */
+    --mint-500: 173 235 179; /* #ADEBB3 공유 카드 배경 면 */
+    --mint-soft: 243 251 245; /* #F3FBF5 보상 뱃지/끼니 카드 배경 */
+    --mint-border: 217 243 223; /* #D9F3DF */
+    --mint-ink: 31 61 38; /* #1F3D26 민트 면 위 텍스트 */
 
     /* --- 1.1 Primitive: Utility --- */
-    --white: 255 255 255; /* #FFFFFF */
+    --white: 255 255 255; /* #FFFFFF 앱/카드 배경 */
     --red-500: 217 83 79; /* #D9534F 에러/삭제 */
-    --green-500: 90 158 111; /* #5A9E6F 성공/완료 */
-    --blue-300: 168 203 232; /* #A8CBE8 최근 해금 강조 */
-
-    /* Primitive 확장: blue-300은 흰 텍스트 대비 1.7:1로 부족해
-     'New' 칩 배경용 진한 변형을 추가 (대비 4.6:1). */
-    --blue-500: 62 118 163; /* #3E76A3 */
 
     /* --- 1.2 Semantic: Surface --- */
-    --surface-app: var(--cream-50);
+    --surface-app: var(--white); /* 화이트 배경 */
     --surface-card: var(--white);
-    --surface-card-locked: var(--cream-200);
+    --surface-card-locked: var(--neutral-100);
     --surface-raised: var(--white);
-    --surface-accent: var(--orange-400);
+    --surface-accent: var(--watermelon-500);
 
     /* --- 1.2 Semantic: Text --- */
-    --text-primary: var(--brown-900);
-    --text-secondary: var(--brown-800);
-    --text-muted: var(--brown-300);
+    --text-primary: var(--neutral-900);
+    --text-secondary: var(--neutral-800);
+    --text-muted: var(--neutral-400);
     --text-on-action: var(--white);
-    --text-link: var(--orange-600);
+    --text-link: var(--watermelon-600);
 
     /* --- 1.2 Semantic: Action --- */
-    --action-primary: var(--orange-500);
-    --action-primary-hover: var(--orange-600);
-    --action-disabled-bg: var(--cream-200);
-    --action-disabled-text: var(--brown-300);
+    --action-primary: var(--watermelon-500);
+    --action-primary-hover: var(--watermelon-600);
+    --action-disabled-bg: var(--neutral-100);
+    --action-disabled-text: var(--neutral-400);
 
     /* --- 1.2 Semantic: Border --- */
-    --border-default: var(--cream-200);
-    --border-active: var(--orange-500);
-    --border-recent: var(--blue-300);
+    --border-default: var(--neutral-100);
+    --border-active: var(--watermelon-500);
+    --border-recent: var(--lime-500);
 
     /* --- 1.2 Semantic: Feedback --- */
     --feedback-error: var(--red-500);
-    --feedback-success: var(--green-500);
+    --feedback-success: var(--lime-text);
 
     /* --- 1.3 Spacing (4pt 스케일) --- */
     --space-1: 4px;
@@ -96,9 +106,9 @@
     /* --- 2 Layout --- */
     --layout-touch-min: 44px; /* §5 최소 터치 타깃 */
     --layout-cta-height: 52px; /* §2 고정 CTA */
-    /* 앱 셸 최대 폭. 100% = 뷰포트 전체.
-     데스크톱에서 모바일 폭으로 가두려면 이 값만 바꾸면 됨 (예: 480px) */
-    --layout-max: 100%;
+    /* 앱 셸 최대 폭. 핸드오프(390px 폰 프레임)에 맞춰 데스크톱에서도
+     모바일 폭 컬럼으로 가둔다. 전체 폭으로 되돌리려면 100%로. */
+    --layout-max: 430px;
 }
 
 /* ===========================================================================
@@ -132,17 +142,27 @@ body {
 /* 앱 셸 — 뷰포트 전체를 채움 (모바일 목업 제거).
    자식(화면 컴포넌트 루트)이 셸 높이를 그대로 상속하도록 h-full 전제 유지 */
 .app-shell {
-    display: flex;
-    justify-content: center;
+    /* block + margin-auto 중앙 정렬 (flex 아이템 max-width 이슈 회피, 더 안정적) */
     width: 100%;
     height: 100dvh;
     overflow: hidden;
-    background: rgb(var(--surface-app));
+    /* 데스크톱 등 넓은 화면에서 폰 폭 컬럼 양옆(레터박스)을 회색으로 두어
+       폰 프레임처럼 경계가 보이게 한다. 폰 폭(≤--layout-max)에서는 컬럼이
+       화면을 꽉 채워 이 회색은 보이지 않는다. */
+    background: rgb(var(--neutral-200));
 }
 .app-shell > * {
     width: 100%;
     max-width: var(--layout-max);
     height: 100%;
+    margin-inline: auto; /* 폰 폭 컬럼을 가운데로 */
+    /* 폰 폭 화이트 컬럼 — 회색 레터박스 위에서 떠 보이도록 그림자 */
+    background: rgb(var(--surface-app));
+    box-shadow: 0 0 24px rgba(0, 0, 0, 0.1);
+    /* fixed 모달·바텀시트가 뷰포트가 아닌 이 폰 폭 컬럼 기준으로 배치되도록
+       컨테이닝 블록을 만든다 (데스크톱에서도 오버레이가 폰 폭 안에 갇힘) */
+    position: relative;
+    transform: translate(0);
 }
 
 /* §2 스크롤 영역 마지막 요소가 고정 CTA에 가리지 않도록 */

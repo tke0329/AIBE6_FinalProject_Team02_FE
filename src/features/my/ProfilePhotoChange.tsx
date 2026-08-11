@@ -122,12 +122,12 @@ export function ProfilePhotoChange({
     const base = nat ? V / Math.min(nat.w, nat.h) : 1
 
     return (
-        <div className="flex h-full flex-col bg-cream-100">
+        <div className="flex h-full flex-col bg-surface-app">
             <header className="flex items-center gap-3 px-5 py-4">
                 <button onClick={onBack} aria-label="뒤로가기">
-                    <ArrowLeftIcon size={21} className="text-brown" />
+                    <ArrowLeftIcon size={21} className="text-neutral-900" />
                 </button>
-                <h1 className="font-display text-xl text-brown">프로필 사진</h1>
+                <h1 className="font-display text-xl text-neutral-900">프로필 사진</h1>
             </header>
 
             <main className="flex flex-1 flex-col items-center px-6 pt-4">
@@ -138,7 +138,7 @@ export function ProfilePhotoChange({
                             onPointerDown={onPointerDown}
                             onPointerMove={onPointerMove}
                             onPointerUp={onPointerUp}
-                            className="relative touch-none overflow-hidden rounded-full bg-cream-200 shadow-inner"
+                            className="relative touch-none overflow-hidden rounded-full bg-neutral-100 shadow-inner"
                             style={{ width: V, height: V, cursor: 'grab' }}
                         >
                             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -163,7 +163,7 @@ export function ProfilePhotoChange({
                             />
                             <span className="pointer-events-none absolute inset-0 rounded-full ring-2 ring-white/70" />
                         </div>
-                        <p className="mt-3 text-xs text-brown-muted">
+                        <p className="mt-3 text-xs text-neutral-400">
                             드래그로 위치, 아래 슬라이더로 확대를 조절하세요.
                         </p>
                         <input
@@ -174,22 +174,22 @@ export function ProfilePhotoChange({
                             value={zoom}
                             onChange={(e) => changeZoom(Number(e.target.value))}
                             aria-label="확대"
-                            className="mt-4 w-full max-w-xs accent-orange-500"
+                            className="mt-4 w-full max-w-xs accent-watermelon-500"
                         />
                     </>
                 ) : (
                     // 선택 전: 현재 프로필 미리보기
-                    <div className="flex h-64 w-64 items-center justify-center overflow-hidden rounded-full bg-orange-100">
+                    <div className="flex h-64 w-64 items-center justify-center overflow-hidden rounded-full bg-watermelon-100">
                         {currentImageUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={currentImageUrl} alt="현재 프로필" className="h-full w-full object-cover" />
                         ) : (
-                            <span className="font-display text-6xl text-orange-700">{letter}</span>
+                            <span className="font-display text-6xl text-watermelon-700">{letter}</span>
                         )}
                     </div>
                 )}
 
-                {error && <p className="mt-3 text-sm text-orange-600">{error}</p>}
+                {error && <p className="mt-3 text-sm text-watermelon-600">{error}</p>}
                 {/* 숨은 파일 입력 */}
                 <input
                     ref={fileRef}
@@ -205,7 +205,7 @@ export function ProfilePhotoChange({
                     <button
                         onClick={apply}
                         disabled={submitting}
-                        className="h-cta w-full rounded-full bg-orange-500 font-display text-lg text-white shadow-card transition active:scale-[0.98] disabled:bg-cream-300 disabled:text-brown-muted"
+                        className="h-cta w-full rounded-full bg-watermelon-500 font-display text-lg text-white shadow-card transition active:scale-[0.98] disabled:bg-neutral-200 disabled:text-neutral-400"
                     >
                         {submitting ? '저장 중…' : '이 사진으로 등록'}
                     </button>
@@ -213,7 +213,7 @@ export function ProfilePhotoChange({
                     <button
                         onClick={() => fileRef.current?.click()}
                         disabled={submitting}
-                        className="flex h-cta w-full items-center justify-center gap-2 rounded-full bg-orange-500 font-display text-lg text-white shadow-card transition active:scale-[0.98] disabled:opacity-60"
+                        className="flex h-cta w-full items-center justify-center gap-2 rounded-full bg-watermelon-500 font-display text-lg text-white shadow-card transition active:scale-[0.98] disabled:opacity-60"
                     >
                         <ImageIcon size={20} /> 앨범에서 선택
                     </button>
@@ -223,7 +223,7 @@ export function ProfilePhotoChange({
                     <button
                         onClick={onRemove}
                         disabled={submitting}
-                        className="min-h-touch w-full text-center text-sm text-brown-soft disabled:opacity-60"
+                        className="min-h-touch w-full text-center text-sm text-neutral-800 disabled:opacity-60"
                     >
                         기본 이미지로 변경
                     </button>
@@ -232,7 +232,7 @@ export function ProfilePhotoChange({
                     <button
                         onClick={() => fileRef.current?.click()}
                         disabled={submitting}
-                        className="min-h-touch w-full text-center text-sm text-brown-soft disabled:opacity-60"
+                        className="min-h-touch w-full text-center text-sm text-neutral-800 disabled:opacity-60"
                     >
                         다른 사진 선택
                     </button>

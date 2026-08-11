@@ -9,7 +9,7 @@ interface Props {
 }
 
 const sizeClass = {
-    sm: 'h-6 w-6 text-[10px]',
+    sm: 'h-6 w-6 text-xs',
     md: 'h-9 w-9 text-sm',
 }
 
@@ -27,7 +27,7 @@ export function LogitAvatar({ name, imageUrl, size = 'md', className = '' }: Pro
     return (
         <span
             aria-hidden
-            className={`${sizeClass[size]} flex shrink-0 items-center justify-center rounded-full bg-cream-200 font-bold text-content-secondary ${className}`}
+            className={`${sizeClass[size]} flex shrink-0 items-center justify-center rounded-full bg-neutral-100 font-bold text-content-secondary ${className}`}
         >
             {name.charAt(0)}
         </span>

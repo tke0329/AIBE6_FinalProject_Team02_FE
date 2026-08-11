@@ -38,7 +38,7 @@ export function MealSlotSection({ slot, onOpen, onRecord }: Props) {
                                 <span
                                     key={card.userId}
                                     className={`h-1.5 w-1.5 rounded-full ${
-                                        position === index ? 'bg-action-primary' : 'bg-cream-300'
+                                        position === index ? 'bg-action-primary' : 'bg-neutral-200'
                                     }`}
                                 />
                             ))}

@@ -45,7 +45,7 @@ export function MadeDexInfo({
     }
 
     return (
-        <div className="relative flex h-full flex-col bg-cream-100">
+        <div className="relative flex h-full flex-col bg-surface-app">
             <header className="flex items-center justify-between gap-3 px-5 py-4">
                 <button type="button" onClick={onBack} aria-label="뒤로가기" className="min-h-touch">
                     <ArrowLeftIcon size={22} className="text-content-primary" />
@@ -77,7 +77,7 @@ export function MadeDexInfo({
                 <section className="rounded-3xl bg-surface-card p-5 shadow-card">
                     <div className="flex items-center justify-between">
                         <h1 className="font-display text-lg text-content-primary">도감 정보</h1>
-                        <span className="inline-flex items-center gap-1 rounded-full bg-cream-200 px-3 py-1.5 text-xs font-bold text-content-secondary">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-3 py-1.5 text-xs font-bold text-content-secondary">
                             <VisibilityIcon size={13} aria-hidden />
                             {isPublic ? '공개' : '비공개'}
                         </span>
@@ -89,7 +89,7 @@ export function MadeDexInfo({
                         <img
                             src={detail.imageUrl ?? DEFAULT_MADE_DEX_COVER}
                             alt=""
-                            className="h-28 w-28 rounded-full bg-cream-200 object-cover"
+                            className="h-28 w-28 rounded-full bg-neutral-100 object-cover"
                         />
 
                         <h2 className="mt-4 font-display text-xl text-content-primary">{detail.name}</h2>
@@ -113,7 +113,7 @@ export function MadeDexInfo({
                     <button
                         type="button"
                         onClick={() => void copy()}
-                        className="mt-4 flex min-h-touch w-full items-center justify-center gap-2 rounded-2xl border border-orange-400 bg-surface-card py-4 text-sm font-bold text-content-link"
+                        className="mt-4 flex min-h-touch w-full items-center justify-center gap-2 rounded-2xl border border-watermelon-400 bg-surface-card py-4 text-sm font-bold text-content-link"
                     >
                         {copied ? <CheckIcon size={17} aria-hidden /> : <LinkIcon size={17} aria-hidden />}
                         {copied ? '초대 링크를 복사했어요' : '초대 링크 복사'}

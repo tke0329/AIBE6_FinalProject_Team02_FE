@@ -102,7 +102,7 @@ export function SlotEditSheet({ madeDexId, onClose, onChanged }: Props) {
                         placeholder="예: 야식, 간식"
                         aria-label="새 끼니 이름"
                         disabled={full}
-                        className="min-h-touch min-w-0 flex-1 rounded-xl bg-cream-100 px-3 text-sm text-content-primary disabled:text-action-disabled-text"
+                        className="min-h-touch min-w-0 flex-1 rounded-xl bg-neutral-50 px-3 text-sm text-content-primary disabled:text-action-disabled-text"
                     />
                     <button
                         type="submit"
@@ -228,7 +228,7 @@ function SlotRow({ slot, busy, canRemove, onRename, onRemove, onMove, onDropped 
                         onBlur={submit}
                         maxLength={SLOT_NAME_MAX}
                         aria-label="끼니 이름"
-                        className="min-h-touch min-w-0 flex-1 rounded-xl bg-cream-100 px-3 text-sm text-content-primary"
+                        className="min-h-touch min-w-0 flex-1 rounded-xl bg-neutral-50 px-3 text-sm text-content-primary"
                     />
                     <button
                         type="submit"

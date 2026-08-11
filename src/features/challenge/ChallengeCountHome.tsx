@@ -6,7 +6,7 @@ import { ProgressBar } from '@/shared/ui/atoms/ProgressBar'
 import { BottomNav, NavTab } from '@/shared/ui/molecules/BottomNav'
 import { DexHelpSheet } from '@/shared/ui/molecules/DexHelpSheet'
 import { TabBar } from '@/shared/ui/molecules/TabBar'
-import { CrownIcon, MedalIcon, PlusIcon } from 'lucide-react'
+import { CrownIcon, MedalIcon, PlusIcon, TrophyIcon } from 'lucide-react'
 import { useState } from 'react'
 import { ChallengeSort } from './api'
 import { ChallengeData } from './types'
@@ -114,10 +114,10 @@ export function ChallengeCountHome({
     const isRanking = !ended && exploreSort !== 'LATEST'
     const podium = isRanking ? exploreItems.slice(0, 3) : []
     return (
-        <div className="relative flex h-full flex-col bg-cream-100">
+        <div className="relative flex h-full flex-col bg-surface-app">
             <header className="px-5 pt-4">
                 <div className="flex items-center gap-1">
-                    <h1 className="font-display text-xl text-brown">챌린지 도감</h1>
+                    <h1 className="font-display text-xl text-neutral-900">챌린지 도감</h1>
                     <HelpIcon label="챌린지 도감" onClick={() => setHelpOpen(true)} />
                 </div>
                 <TabBar
@@ -142,7 +142,7 @@ export function ChallengeCountHome({
                             />
                             <button
                                 onClick={onCreateChallenge}
-                                className="ml-auto flex min-h-touch items-center gap-1 rounded-full bg-orange-500 px-4 text-xs font-bold text-white"
+                                className="ml-auto flex min-h-touch items-center gap-1 rounded-full bg-watermelon-500 px-4 text-xs font-bold text-white"
                             >
                                 <PlusIcon size={14} />
                                 개설 {createdThisMonth}/3
@@ -159,10 +159,10 @@ export function ChallengeCountHome({
                                 ))
                             ) : (
                                 <div className="rounded-2xl bg-white p-6 text-center shadow-soft">
-                                    <p className="text-sm font-bold text-brown">아직 이 상태의 챌린지가 없어요</p>
+                                    <p className="text-sm font-bold text-neutral-900">아직 이 상태의 챌린지가 없어요</p>
                                     <button
                                         onClick={onCreateChallenge}
-                                        className="mt-3 min-h-touch rounded-full bg-orange-500 px-5 text-sm font-bold text-white"
+                                        className="mt-3 min-h-touch rounded-full bg-watermelon-500 px-5 text-sm font-bold text-white"
                                     >
                                         챌린지 개설하기
                                     </button>
@@ -173,7 +173,7 @@ export function ChallengeCountHome({
                 ) : (
                     <>
                         <div className="flex items-center justify-between">
-                            <p className="text-sm font-bold text-brown">전체 챌린지</p>
+                            <p className="text-sm font-bold text-neutral-900">전체 챌린지</p>
                             <TabBar
                                 label="진행 상태"
                                 variant="pill"
@@ -183,7 +183,7 @@ export function ChallengeCountHome({
                             />
                         </div>
                         {ended ? (
-                            <p className="mt-3 text-xs text-brown-muted">최근 완료순</p>
+                            <p className="mt-3 text-xs text-neutral-400">최근 완료순</p>
                         ) : (
                             <>
                                 <TabBar
@@ -194,7 +194,7 @@ export function ChallengeCountHome({
                                     onChange={onExploreSortChange}
                                     className="mt-3"
                                 />
-                                {isRanking && <p className="mt-2 text-xs text-brown-muted">최근 7일 기준 랭킹</p>}
+                                {isRanking && <p className="mt-2 text-xs text-neutral-400">최근 7일 기준 랭킹</p>}
                                 {isRanking && podium.length > 0 && (
                                     <Podium sort={exploreSort} challenges={podium} onOpen={onOpenChallenge} />
                                 )}
@@ -219,17 +219,17 @@ export function ChallengeCountHome({
                                 ))
                             ) : exploreError ? (
                                 <div className="rounded-2xl bg-white p-6 text-center shadow-soft">
-                                    <p className="text-sm font-bold text-brown">목록을 불러오지 못했어요</p>
+                                    <p className="text-sm font-bold text-neutral-900">목록을 불러오지 못했어요</p>
                                     <button
                                         onClick={onExploreRetry}
-                                        className="mt-3 min-h-touch rounded-full bg-orange-500 px-5 text-sm font-bold text-white"
+                                        className="mt-3 min-h-touch rounded-full bg-watermelon-500 px-5 text-sm font-bold text-white"
                                     >
                                         다시 시도
                                     </button>
                                 </div>
                             ) : (
                                 <div className="rounded-2xl bg-white p-6 text-center shadow-soft">
-                                    <p className="text-sm font-bold text-brown">
+                                    <p className="text-sm font-bold text-neutral-900">
                                         {ended ? '종료된 챌린지가 없어요' : '아직 진행 중인 챌린지가 없어요'}
                                     </p>
                                 </div>
@@ -239,7 +239,7 @@ export function ChallengeCountHome({
                             <button
                                 onClick={onExploreLoadMore}
                                 disabled={exploreLoading}
-                                className="mt-4 min-h-touch w-full rounded-full border border-cream-300 bg-white text-sm font-bold text-brown disabled:opacity-60"
+                                className="mt-4 min-h-touch w-full rounded-full border border-neutral-200 bg-white text-sm font-bold text-neutral-900 disabled:opacity-60"
                             >
                                 {exploreLoading ? '불러오는 중…' : '더 보기'}
                             </button>
@@ -256,11 +256,13 @@ function MyChallengeCard({ challenge, onOpen }: { challenge: ChallengeData; onOp
     return (
         <button onClick={onOpen} className="w-full rounded-2xl bg-white p-4 text-left shadow-soft">
             <div className="flex items-center gap-2">
-                <span className="text-2xl">{challenge.emoji}</span>
-                <span className="flex-1 font-display text-base text-brown">{challenge.title}</span>
+                <span className="text-watermelon-500">
+                    <TrophyIcon size={22} strokeWidth={1.75} aria-hidden />
+                </span>
+                <span className="flex-1 font-display text-base text-neutral-900">{challenge.title}</span>
                 <Badge variant="dday">{challenge.dday}</Badge>
             </div>
-            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-brown-soft">
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-neutral-800">
                 <Badge variant="type">{challenge.tag}</Badge>
                 <span>목표 {challenge.target ?? 0}곳</span>
                 <span>{challenge.participants}명 참가 중</span>
@@ -273,8 +275,8 @@ function MyChallengeCard({ challenge, onOpen }: { challenge: ChallengeData; onOp
             ) : (
                 <>
                     <div className="mt-3 flex justify-between text-sm">
-                        <span className="font-bold text-brown">{challenge.mine}</span>
-                        <span className="text-brown-soft">진행 중</span>
+                        <span className="font-bold text-neutral-900">{challenge.mine}</span>
+                        <span className="text-neutral-800">진행 중</span>
                     </div>
                     <div className="mt-2">
                         <ProgressBar
@@ -313,14 +315,14 @@ function Podium({
                             className={`relative flex items-center justify-center rounded-2xl bg-white text-3xl shadow-soft ${rank === 1 ? 'h-20 w-20 ring-2 ring-amber-400' : 'h-16 w-16'}`}
                         >
                             {rank === 1 && <CrownIcon size={21} className="absolute -top-5 text-amber-500" />}
-                            {challenge.emoji}
+                            <TrophyIcon size={30} strokeWidth={1.5} aria-hidden className="text-watermelon-500" />
                         </span>
-                        <span className="mt-2 line-clamp-1 text-center text-xs font-bold text-brown">
+                        <span className="mt-2 line-clamp-1 text-center text-xs font-bold text-neutral-900">
                             {challenge.title}
                         </span>
-                        <span className="text-xs text-brown-soft">{scoreText(sort, challenge)}</span>
+                        <span className="text-xs text-neutral-800">{scoreText(sort, challenge)}</span>
                         <span
-                            className={`mt-1 flex w-full items-center justify-center rounded-t-lg py-1 text-xs font-bold ${rank === 1 ? 'h-10 bg-amber-400 text-white' : rank === 2 ? 'bg-slate-300 text-white' : 'bg-orange-200 text-orange-700'}`}
+                            className={`mt-1 flex w-full items-center justify-center rounded-t-lg py-1 text-xs font-bold ${rank === 1 ? 'h-10 bg-amber-400 text-white' : rank === 2 ? 'bg-slate-300 text-white' : 'bg-watermelon-200 text-watermelon-700'}`}
                         >
                             {rank}위
                         </span>
@@ -350,27 +352,27 @@ function ExploreCard({
         // 우측 버튼 = 실제 참여
         <div className="flex w-full items-center gap-3 rounded-2xl bg-white p-3 shadow-soft">
             <button onClick={onOpen} className="flex min-w-0 flex-1 items-center gap-3 text-left active:scale-[0.99]">
-                {rank && <span className="w-5 text-center font-display text-sm text-brown-muted">{rank}</span>}
-                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-50 text-2xl">
-                    {challenge.emoji}
+                {rank && <span className="w-5 text-center font-display text-sm text-neutral-400">{rank}</span>}
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-watermelon-50 text-watermelon-500">
+                    <TrophyIcon size={22} strokeWidth={1.75} aria-hidden />
                 </span>
                 <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-bold text-brown">{challenge.title}</span>
-                    <span className="mt-1 block text-xs text-brown-soft">{metric}</span>
+                    <span className="block truncate text-sm font-bold text-neutral-900">{challenge.title}</span>
+                    <span className="mt-1 block text-xs text-neutral-800">{metric}</span>
                 </span>
             </button>
             {ended ? (
-                <span className="shrink-0 rounded-full bg-cream-200 px-3 py-2 text-xs font-bold text-brown-muted">
+                <span className="shrink-0 rounded-full bg-neutral-100 px-3 py-2 text-xs font-bold text-neutral-400">
                     종료
                 </span>
             ) : challenge.joined ? (
-                <span className="shrink-0 rounded-full bg-cream-200 px-3 py-2 text-xs font-bold text-brown-soft">
+                <span className="shrink-0 rounded-full bg-neutral-100 px-3 py-2 text-xs font-bold text-neutral-800">
                     참여 중
                 </span>
             ) : (
                 <button
                     onClick={onJoin}
-                    className="min-h-touch shrink-0 rounded-full bg-orange-500 px-3 text-xs font-bold text-white active:scale-[0.98]"
+                    className="min-h-touch shrink-0 rounded-full bg-watermelon-500 px-3 text-xs font-bold text-white active:scale-[0.98]"
                 >
                     참여하기
                 </button>

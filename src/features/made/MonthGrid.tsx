@@ -57,7 +57,7 @@ export function MonthGrid({ month, maxMonth, onPick }: Props) {
                             className={`min-h-touch rounded-2xl text-sm font-bold transition-colors ${
                                 selected
                                     ? 'bg-action-primary text-content-on-action shadow-card'
-                                    : 'bg-cream-100 text-content-primary disabled:bg-transparent disabled:text-action-disabled-text'
+                                    : 'bg-neutral-50 text-content-primary disabled:bg-transparent disabled:text-action-disabled-text'
                             }`}
                         >
                             {index + 1}월

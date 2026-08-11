@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
 import {
     ArrowLeftIcon,
+    BookMarkedIcon,
     CheckIcon,
     ClipboardIcon,
     CopyIcon,
     CrownIcon,
+    HandshakeIcon,
     LinkIcon,
     LogOutIcon,
     RefreshCwIcon,
@@ -95,29 +97,29 @@ export function MadeDexInvite({
     const daysLeft = expiresAt ? inviteDaysLeft(expiresAt) : 0
 
     return (
-        <div className="flex h-full flex-col bg-cream-100">
+        <div className="flex h-full flex-col bg-surface-app">
             <header className="flex items-center gap-3 px-5 py-4">
                 <button onClick={onBack} aria-label="뒤로가기">
                     <ArrowLeftIcon size={22} />
                 </button>
-                <span className="font-display text-lg text-brown">참여자 관리</span>
+                <span className="font-display text-lg text-neutral-900">참여자 관리</span>
             </header>
 
             <main className="no-scrollbar flex-1 overflow-y-auto px-5">
-                <section className="rounded-3xl bg-orange-500 p-5 text-center text-white shadow-card">
-                    <p className="text-sm font-medium text-orange-100">{dexTitle} 전용 초대 코드</p>
+                <section className="rounded-3xl bg-watermelon-500 p-5 text-center text-white shadow-card">
+                    <p className="text-sm font-medium text-watermelon-100">{dexTitle} 전용 초대 코드</p>
 
                     {loading ? (
-                        <p className="mt-4 text-sm text-orange-50">코드를 불러오는 중…</p>
+                        <p className="mt-4 text-sm text-watermelon-50">코드를 불러오는 중…</p>
                     ) : loadFailed ? (
                         // 코드가 있는지 모르는 상태다. 여기서 발급을 권하면 살아 있는 코드를 죽일 수 있다
-                        <p className="mt-4 text-sm leading-5 text-orange-50">
+                        <p className="mt-4 text-sm leading-5 text-watermelon-50">
                             코드를 불러오지 못했어요.
                             <br />
                             연결을 확인하고 다시 시도해 주세요.
                         </p>
                     ) : !canManage ? (
-                        <p className="mt-4 text-sm leading-5 text-orange-50">
+                        <p className="mt-4 text-sm leading-5 text-watermelon-50">
                             초대 코드는 그룹장이 관리해요.
                             <br />
                             친구를 부르고 싶다면 그룹장에게 코드를 요청해 주세요.
@@ -128,7 +130,7 @@ export function MadeDexInvite({
                             <div className="mt-4 flex flex-wrap justify-center gap-2">
                                 <button
                                     onClick={() => void copy('code', code)}
-                                    className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-bold text-orange-600"
+                                    className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-bold text-watermelon-600"
                                 >
                                     {copied === 'code' ? <CheckIcon size={16} /> : <CopyIcon size={16} />}
                                     {copied === 'code' ? '복사했어요' : '코드 복사'}
@@ -136,21 +138,21 @@ export function MadeDexInvite({
                                 {inviteLink && (
                                     <button
                                         onClick={() => void copy('link', inviteLink)}
-                                        className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-bold text-orange-600"
+                                        className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-bold text-watermelon-600"
                                     >
                                         {copied === 'link' ? <CheckIcon size={16} /> : <LinkIcon size={16} />}
                                         {copied === 'link' ? '복사했어요' : '링크 복사'}
                                     </button>
                                 )}
                             </div>
-                            <p className="mt-3 text-xs text-orange-50">
+                            <p className="mt-3 text-xs text-watermelon-50">
                                 {daysLeft > 0
                                     ? `${daysLeft}일 뒤 만료돼요. 카톡이나 문자로 전달해 보세요.`
                                     : '오늘 만료돼요. 새 코드를 발급해 주세요.'}
                             </p>
                         </>
                     ) : (
-                        <p className="mt-4 text-sm text-orange-50">아직 유효한 코드가 없어요. 새로 발급해 주세요.</p>
+                        <p className="mt-4 text-sm text-watermelon-50">아직 유효한 코드가 없어요. 새로 발급해 주세요.</p>
                     )}
 
                     {/* 조회에 실패했으면 발급이 아니라 재조회만 준다 */}
@@ -176,14 +178,14 @@ export function MadeDexInvite({
                                 {issuing ? '발급 중…' : code ? '코드 새로 발급' : '초대 코드 만들기'}
                             </button>
                             {code && (
-                                <p className="mt-2 text-xs text-orange-50">
+                                <p className="mt-2 text-xs text-watermelon-50">
                                     새로 발급하면 이전에 공유한 코드는 쓸 수 없게 돼요.
                                 </p>
                             )}
                         </>
                     )}
                     {copyFailed && (
-                        <p className="mt-3 text-sm text-orange-50">
+                        <p className="mt-3 text-sm text-watermelon-50">
                             복사하지 못했어요. 코드를 길게 눌러 복사해 주세요.
                         </p>
                     )}
@@ -192,20 +194,20 @@ export function MadeDexInvite({
 
                 <section className="mt-5">
                     <div className="flex items-center gap-2">
-                        <UsersIcon size={18} className="text-orange-500" />
-                        <h2 className="font-display text-lg text-brown">
+                        <UsersIcon size={18} className="text-watermelon-500" />
+                        <h2 className="font-display text-lg text-neutral-900">
                             참여자 {members.length}/{maxMembers}명
                         </h2>
                     </div>
 
                     {membersLoading ? (
-                        <p className="mt-3 text-sm text-brown-muted">참여자를 불러오는 중…</p>
+                        <p className="mt-3 text-sm text-neutral-400">참여자를 불러오는 중…</p>
                     ) : membersFailed ? (
                         <div className="mt-3 rounded-2xl bg-white p-4 shadow-soft">
-                            <p className="text-sm text-brown-soft">참여자를 불러오지 못했어요.</p>
+                            <p className="text-sm text-neutral-800">참여자를 불러오지 못했어요.</p>
                             <button
                                 onClick={onRetry}
-                                className="mt-3 inline-flex items-center gap-2 rounded-full bg-cream-200 px-4 py-2 text-xs font-bold text-brown-soft"
+                                className="mt-3 inline-flex items-center gap-2 rounded-full bg-neutral-100 px-4 py-2 text-xs font-bold text-neutral-800"
                             >
                                 <RefreshCwIcon size={14} />
                                 다시 시도
@@ -220,12 +222,12 @@ export function MadeDexInvite({
                                 >
                                     <MemberAvatar member={member} />
                                     <div className="flex-1 min-w-0">
-                                        <p className="truncate text-sm font-bold text-brown">
+                                        <p className="truncate text-sm font-bold text-neutral-900">
                                             {memberName(member)}
-                                            {member.me && <span className="ml-1 text-xs text-brown-muted">(나)</span>}
+                                            {member.me && <span className="ml-1 text-xs text-neutral-400">(나)</span>}
                                         </p>
                                         {member.role === 'OWNER' && (
-                                            <span className="mt-0.5 inline-flex items-center gap-1 text-xs font-bold text-orange-600">
+                                            <span className="mt-0.5 inline-flex items-center gap-1 text-xs font-bold text-watermelon-600">
                                                 <CrownIcon size={12} aria-hidden />
                                                 그룹장
                                             </span>
@@ -236,14 +238,14 @@ export function MadeDexInvite({
                                             <button
                                                 disabled={memberBusy}
                                                 onClick={() => setConfirm({ kind: 'transfer', member })}
-                                                className="min-h-touch rounded-full bg-cream-200 px-3 text-xs font-bold text-brown-soft disabled:opacity-40"
+                                                className="min-h-touch rounded-full bg-neutral-100 px-3 text-xs font-bold text-neutral-800 disabled:opacity-40"
                                             >
                                                 위임
                                             </button>
                                             <button
                                                 disabled={memberBusy}
                                                 onClick={() => setConfirm({ kind: 'kick', member })}
-                                                className="min-h-touch rounded-full bg-cream-200 px-3 text-xs font-bold text-brown-soft disabled:opacity-40"
+                                                className="min-h-touch rounded-full bg-neutral-100 px-3 text-xs font-bold text-neutral-800 disabled:opacity-40"
                                             >
                                                 내보내기
                                             </button>
@@ -273,9 +275,9 @@ export function MadeDexInvite({
 
                 {/* 코드를 뿌리는 방법 안내라 그룹장에게만 의미가 있다 */}
                 {canManage && (
-                    <section className="mt-5 rounded-2xl bg-white p-4 text-sm text-brown-soft shadow-soft">
-                        <ClipboardIcon size={18} className="mb-2 text-orange-500" />
-                        코드를 받은 친구는 제작 도감 목록 위쪽 <strong className="text-brown">초대코드</strong>를 눌러{' '}
+                    <section className="mt-5 rounded-2xl bg-white p-4 text-sm text-neutral-800 shadow-soft">
+                        <ClipboardIcon size={18} className="mb-2 text-watermelon-500" />
+                        코드를 받은 친구는 제작 도감 목록 위쪽 <strong className="text-neutral-900">초대코드</strong>를 눌러{' '}
                         {INVITE_CODE_LENGTH}
                         자리 코드를 입력하면 돼요. 링크를 보냈다면 누르는 것만으로 코드가 채워져요.
                     </section>
@@ -317,7 +319,7 @@ function MemberAvatar({ member }: { member: MadeDexMember }) {
     return (
         <span
             aria-hidden
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cream-200 text-sm font-bold text-brown"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-sm font-bold text-neutral-900"
         >
             {memberInitial(member)}
         </span>
@@ -419,25 +421,29 @@ export function MadeDexCodeEntry({
     onSubmit,
 }: CodeEntryProps) {
     return (
-        <div className="flex h-full flex-col bg-cream-100">
+        <div className="flex h-full flex-col bg-surface-app">
             <header className="flex items-center gap-3 px-5 py-4">
                 <button onClick={onBack} aria-label="뒤로가기">
                     <ArrowLeftIcon size={22} />
                 </button>
-                <span className="font-display text-lg text-brown">초대 코드로 참여</span>
+                <span className="font-display text-lg text-neutral-900">초대 코드로 참여</span>
             </header>
 
             <main className="flex-1 px-5 pt-8">
                 <div className="rounded-3xl bg-white p-5 text-center shadow-soft">
-                    <span className="text-4xl">{alreadyJoined ? '📔' : '🤝'}</span>
-                    <h1 className="mt-3 font-display text-xl text-brown">
+                    {alreadyJoined ? (
+                        <BookMarkedIcon size={44} strokeWidth={1.5} aria-hidden className="mx-auto text-watermelon-500" />
+                    ) : (
+                        <HandshakeIcon size={44} strokeWidth={1.5} aria-hidden className="mx-auto text-watermelon-500" />
+                    )}
+                    <h1 className="mt-3 font-display text-xl text-neutral-900">
                         {alreadyJoined
                             ? '이미 참여하고 있는 도감이에요'
                             : groupName
                               ? `${groupName}에 참여할까요?`
                               : '친구의 제작 도감에 참여해요'}
                     </h1>
-                    <p className="mt-2 text-sm leading-5 text-brown-muted">
+                    <p className="mt-2 text-sm leading-5 text-neutral-400">
                         {alreadyJoined ? (
                             <>
                                 {groupName ? `${groupName}은 ` : '이 도감은 '}
@@ -459,7 +465,7 @@ export function MadeDexCodeEntry({
                             value={code}
                             onChange={(event) => onCodeChange(event.target.value)}
                             placeholder="ABC123"
-                            className="mt-6 w-full rounded-2xl border-2 border-cream-300 bg-cream-50 px-4 py-4 text-center font-display text-2xl uppercase tracking-[0.22em] outline-none focus:border-orange-400"
+                            className="mt-6 w-full rounded-2xl border-2 border-neutral-200 bg-white px-4 py-4 text-center font-display text-2xl uppercase tracking-[0.22em] outline-none focus:border-watermelon-400"
                         />
                     )}
                     {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
@@ -470,7 +476,7 @@ export function MadeDexCodeEntry({
                 <button
                     disabled={!alreadyJoined && (code.length !== INVITE_CODE_LENGTH || submitting)}
                     onClick={onSubmit}
-                    className="w-full rounded-2xl bg-orange-500 py-4 font-display text-lg text-white shadow-card disabled:opacity-40"
+                    className="w-full rounded-2xl bg-watermelon-500 py-4 font-display text-lg text-white shadow-card disabled:opacity-40"
                 >
                     {alreadyJoined ? '도감 열기' : submitting ? '참여하는 중…' : '도감 참여하기'}
                 </button>
