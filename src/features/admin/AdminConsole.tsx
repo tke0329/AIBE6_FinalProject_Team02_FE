@@ -88,9 +88,9 @@ export function AdminConsole() {
     const isPendingReports = tab === 'reports' && reportStatus === 'PENDING'
 
     return (
-        <div className="flex h-full flex-col bg-cream-100">
+        <div className="flex h-full flex-col bg-surface-app">
             <header className="px-5 py-4">
-                <h1 className="font-display text-xl text-brown">관리자 콘솔</h1>
+                <h1 className="font-display text-xl text-neutral-900">관리자 콘솔</h1>
             </header>
 
             {/* 상단 탭 */}
@@ -119,7 +119,7 @@ export function AdminConsole() {
             )}
 
             <main className="no-scrollbar flex-1 overflow-y-auto px-5 pb-6 pt-4">
-                {loading && <p className="py-10 text-center text-sm text-brown-soft">불러오는 중…</p>}
+                {loading && <p className="py-10 text-center text-sm text-neutral-800">불러오는 중…</p>}
                 {error && !loading && <p className="py-10 text-center text-sm text-red-500">{error}</p>}
 
                 {!loading &&
@@ -143,11 +143,11 @@ export function AdminConsole() {
                                             />
                                         )}
                                         <div className="min-w-0 flex-1">
-                                            <p className="font-medium text-brown">{r.description}</p>
+                                            <p className="font-medium text-neutral-900">{r.description}</p>
                                             {r.failureReason && (
-                                                <p className="mt-0.5 text-xs text-brown-soft">AI: {r.failureReason}</p>
+                                                <p className="mt-0.5 text-xs text-neutral-800">AI: {r.failureReason}</p>
                                             )}
-                                            <p className="mt-0.5 text-xs text-brown-muted">{formatDate(r.createdAt)}</p>
+                                            <p className="mt-0.5 text-xs text-neutral-400">{formatDate(r.createdAt)}</p>
                                         </div>
                                     </div>
                                     <div className="mt-3 flex gap-2">
@@ -179,8 +179,8 @@ export function AdminConsole() {
                         <ul className="flex flex-col gap-3">
                             {reports.map((r) => (
                                 <li key={r.id} className="rounded-2xl bg-white p-4 shadow-soft">
-                                    <p className="font-medium text-brown">{r.description}</p>
-                                    <p className="mt-0.5 text-xs text-brown-muted">
+                                    <p className="font-medium text-neutral-900">{r.description}</p>
+                                    <p className="mt-0.5 text-xs text-neutral-400">
                                         {r.reporterName ?? '알 수 없음'} · {formatDate(r.createdAt)}
                                     </p>
                                     {isPendingReports ? (
@@ -200,7 +200,7 @@ export function AdminConsole() {
                                             </GhostBtn>
                                         </div>
                                     ) : (
-                                        <p className="mt-2 text-xs font-medium text-brown-soft">
+                                        <p className="mt-2 text-xs font-medium text-neutral-800">
                                             {reportStatus === 'ACCEPTED' ? '채택됨' : '반려됨'}
                                         </p>
                                     )}
@@ -220,8 +220,8 @@ export function AdminConsole() {
                         className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-pop"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <h2 className="font-display text-lg text-brown">반려 사유</h2>
-                        <p className="mt-1 text-xs text-brown-soft">왜 반려하는지 적어주세요.</p>
+                        <h2 className="font-display text-lg text-neutral-900">반려 사유</h2>
+                        <p className="mt-1 text-xs text-neutral-800">왜 반려하는지 적어주세요.</p>
                         <textarea
                             autoFocus
                             value={reason}
@@ -229,14 +229,14 @@ export function AdminConsole() {
                             rows={3}
                             maxLength={200}
                             placeholder="예: 도감에 이미 있는 음식이에요"
-                            className="mt-3 w-full resize-none rounded-xl border border-cream-200 p-3 text-sm text-brown outline-none focus:border-orange-400"
+                            className="mt-3 w-full resize-none rounded-xl border border-neutral-100 p-3 text-sm text-neutral-900 outline-none focus:border-watermelon-400"
                         />
                         <div className="mt-4 flex gap-2">
                             <GhostBtn onClick={closeReject}>취소</GhostBtn>
                             <button
                                 onClick={confirmReject}
                                 disabled={submitting || !reason.trim()}
-                                className="min-h-touch flex-1 rounded-xl bg-orange-500 text-sm font-medium text-white disabled:opacity-50"
+                                className="min-h-touch flex-1 rounded-xl bg-watermelon-500 text-sm font-medium text-white disabled:opacity-50"
                             >
                                 {submitting ? '반려 중…' : '반려하기'}
                             </button>
@@ -253,7 +253,7 @@ function TabButton({ active, onClick, children }: { active: boolean; onClick: ()
         <button
             onClick={onClick}
             className={`min-h-touch rounded-full px-4 text-sm font-medium transition ${
-                active ? 'bg-orange-500 text-white' : 'bg-white text-brown-soft shadow-soft'
+                active ? 'bg-watermelon-500 text-white' : 'bg-white text-neutral-800 shadow-soft'
             }`}
         >
             {children}
@@ -274,7 +274,7 @@ function FilterChip({
         <button
             onClick={onClick}
             className={`min-h-touch rounded-full px-3 text-xs font-medium transition ${
-                active ? 'bg-brown text-white' : 'bg-white text-brown-soft shadow-soft'
+                active ? 'bg-neutral-900 text-white' : 'bg-white text-neutral-800 shadow-soft'
             }`}
         >
             {children}
@@ -286,7 +286,7 @@ function PrimaryBtn({ onClick, children }: { onClick: () => void; children: Reac
     return (
         <button
             onClick={onClick}
-            className="min-h-touch flex-1 rounded-xl bg-orange-500 text-sm font-medium text-white"
+            className="min-h-touch flex-1 rounded-xl bg-watermelon-500 text-sm font-medium text-white"
         >
             {children}
         </button>
@@ -297,7 +297,7 @@ function GhostBtn({ onClick, children }: { onClick: () => void; children: React.
     return (
         <button
             onClick={onClick}
-            className="min-h-touch flex-1 rounded-xl bg-cream-200 text-sm font-medium text-brown-soft"
+            className="min-h-touch flex-1 rounded-xl bg-neutral-100 text-sm font-medium text-neutral-800"
         >
             {children}
         </button>
@@ -305,7 +305,7 @@ function GhostBtn({ onClick, children }: { onClick: () => void; children: React.
 }
 
 function Empty({ label }: { label: string }) {
-    return <p className="py-16 text-center text-sm text-brown-soft">{label}</p>
+    return <p className="py-16 text-center text-sm text-neutral-800">{label}</p>
 }
 
 function formatDate(iso: string) {

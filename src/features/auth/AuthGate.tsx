@@ -6,8 +6,10 @@ import { useAppState } from '@/shared/store/AppStateProvider'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 
-// 인증이 필요 없는 공개 경로 (로그인 화면 · OAuth 도착지)
-const PUBLIC_PATHS: string[] = [ROUTES.login, ROUTES.oauthCallback]
+// 인증이 필요 없는 공개 경로 (로그인 화면 · OAuth 도착지 · 공통 UI 갤러리)
+// `/ui-check`는 로그인 없이 열려야 한다 — 공통 컴포넌트를 눈으로 대조하는 화면이라
+// 로그인을 요구하면 확인 자체가 번거로워진다. 서비스 데이터를 읽지 않는다
+const PUBLIC_PATHS: string[] = [ROUTES.login, ROUTES.oauthCallback, '/ui-check']
 
 /**
  * 앱 전역 인증/온보딩 라우팅 가드

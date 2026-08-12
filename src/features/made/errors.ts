@@ -44,6 +44,19 @@ export function isSlotNameTaken(failure: unknown): boolean {
     return hasCode(failure, 'MADE_DEX_SLOT_NAME_DUPLICATED')
 }
 
+/**
+ * 폼을 열어 둔 사이 자정을 넘겼다. 문구만 띄우면 사용자는 여전히 어제 화면에 갇힌다 —
+ * 화면이 기준일을 다시 받아 오늘로 옮겨 줘야 한다.
+ */
+export function isPastDate(failure: unknown): boolean {
+    return hasCode(failure, 'MADE_DEX_RECORD_PAST_DATE')
+}
+
+/** 그 끼니는 이미 찼다. 문구와 함께 어떤 끼니가 남았는지 다시 읽어야 한다 */
+export function isSlotTaken(failure: unknown): boolean {
+    return hasCode(failure, 'MADE_DEX_RECORD_SLOT_TAKEN')
+}
+
 /** 남이 나를 내보냈거나 그룹이 사라졌다. 이 화면에 머무를 수 없다 */
 export function isNotMember(failure: unknown): boolean {
     return hasCode(failure, 'MADE_DEX_NOT_MEMBER') || hasCode(failure, 'MADE_DEX_NOT_FOUND')

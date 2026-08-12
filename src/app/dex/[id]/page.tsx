@@ -19,7 +19,7 @@ export default function DexDetailPage() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const { id } = useParams<{ id: string }>()
-    const { entries, findEntry, collectedEntries } = useDexState()
+    const { entries, findEntry, collectedEntries, markNewBadgeSeen } = useDexState()
     const { startRegistration, setSelectedFoodId } = useAppState()
     const [detailEntry, setDetailEntry] = useState<DexEntry | null>(null)
     const [detailLoading, setDetailLoading] = useState(true)
@@ -47,12 +47,19 @@ export default function DexDetailPage() {
         }
     }, [id])
 
+    // 상세를 연 것이 "봤다"의 신호다. 붙어 있지도 않았으면 서버를 부르지 않는다.
+    // 낙관적 갱신으로 recentlyUnlocked가 곧 false가 되므로 이 effect는 한 번만 실행된다.
+    const badgeVisible = listEntry?.recentlyUnlocked === true
+    useEffect(() => {
+        if (badgeVisible) markNewBadgeSeen(Number(id))
+    }, [badgeVisible, id, markNewBadgeSeen])
+
     if (!listEntry) notFound()
 
     if (detailLoading) {
         return (
-            <div className="flex h-full items-center justify-center bg-cream-100">
-                <p className="text-sm text-brown-soft">불러오는 중…</p>
+            <div className="flex h-full items-center justify-center bg-surface-app">
+                <p className="text-sm text-neutral-800">불러오는 중…</p>
             </div>
         )
     }

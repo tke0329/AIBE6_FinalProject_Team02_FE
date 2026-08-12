@@ -84,12 +84,12 @@ export function RegisterAnalyze({ onBack, onProceed }: Props) {
 
     return (
         // break-keep은 상속된다 — 이 화면 전체에서 한글이 단어 중간에 끊기지 않는다
-        <div className="flex h-full flex-col break-keep bg-cream-100">
+        <div className="flex h-full flex-col break-keep bg-surface-app">
             <header className="flex shrink-0 items-center gap-3 px-5 py-4">
                 <button type="button" onClick={onBack} aria-label="뒤로가기">
-                    <ArrowLeftIcon size={22} aria-hidden className="text-brown" />
+                    <ArrowLeftIcon size={22} aria-hidden className="text-neutral-900" />
                 </button>
-                <span className="font-display text-lg text-brown">음식 확인</span>
+                <span className="font-display text-lg text-neutral-900">음식 확인</span>
             </header>
 
             {phase === 'verifying' && <Verifying slow={slow} />}
@@ -178,7 +178,7 @@ export function RegisterAnalyze({ onBack, onProceed }: Props) {
                             <button
                                 type="button"
                                 onClick={() => proceedWith(passed)}
-                                className="min-h-touch w-full rounded-2xl border-2 border-orange-400 px-4 py-2.5 text-center font-medium text-orange-600"
+                                className="min-h-touch w-full rounded-2xl border-2 border-watermelon-400 px-4 py-2.5 text-center font-medium text-watermelon-600"
                             >
                                 확인된 {passed.length}개만 등록하기
                             </button>
@@ -188,7 +188,7 @@ export function RegisterAnalyze({ onBack, onProceed }: Props) {
                             <button
                                 type="button"
                                 onClick={onBack}
-                                className="flex min-h-touch w-full items-center justify-center gap-1.5 rounded-2xl border-2 border-orange-400 px-4 py-2.5 text-center font-medium text-orange-600"
+                                className="flex min-h-touch w-full items-center justify-center gap-1.5 rounded-2xl border-2 border-watermelon-400 px-4 py-2.5 text-center font-medium text-watermelon-600"
                             >
                                 <RotateCwIcon size={16} aria-hidden className="shrink-0" />
                                 재분석 요청하기 ({result.retriesLeft}번 남음)

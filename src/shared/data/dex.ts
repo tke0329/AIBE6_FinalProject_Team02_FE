@@ -27,6 +27,36 @@ export interface DexEntry {
     stars?: number
     firstDate?: string
     cards?: DexCard[]
+    /** 최근에 처음 열린 칸 — 그리드에 New 스티커가 붙는다. 판정은 서버가 한다 */
+    recentlyUnlocked?: boolean
+    /** 운영진 검토를 기다리는 칸 — New와 같은 자리에 검토대기 스티커가 붙는다 */
+    awaitingReview?: boolean
+}
+
+/**
+ * 서버 카테고리 표기 → 화면 표기
+ */
+const SERVER_CATEGORY_LABELS: Record<string, FoodCategory> = {
+    '밥·죽·한그릇': '밥·죽·한 그릇',
+    '밥·죽·한 그릇': '밥·죽·한 그릇',
+    면: '면',
+    '국·탕·찌개': '국·탕·찌개',
+    '고기·구이·볶음': '고기 구이·볶음',
+    '고기 구이·볶음': '고기 구이·볶음',
+    '튀김·치킨·가스': '튀김·치킨·까스',
+    '튀김·치킨·까스': '튀김·치킨·까스',
+    '해산물·회': '해산물·회',
+    '분식·길거리': '분식·길거리',
+    '빵·버거·피자·브런치': '빵·버거·피자·브런치',
+    '디저트·음료': '디저트·음료',
+}
+
+/**
+ * 모르는 표기면 undefined. 목록 렌더는 기본값으로 메워도 되지만
+ * 라우팅은 엉뚱한 탭으로 보내느니 전체 탭으로 두는 편이 낫다
+ */
+export function normalizeCategory(serverCategory: string): FoodCategory | undefined {
+    return SERVER_CATEGORY_LABELS[serverCategory]
 }
 
 export const CATEGORY_META: Array<{
@@ -36,10 +66,10 @@ export const CATEGORY_META: Array<{
     total: number
 }> = [
     { category: '밥·죽·한 그릇', shortLabel: '밥·죽', dotClass: 'bg-amber-500', total: 25 },
-    { category: '면', shortLabel: '면', dotClass: 'bg-orange-500', total: 25 },
-    { category: '국·탕·찌개', shortLabel: '국·탕', dotClass: 'bg-blue-600', total: 30 },
+    { category: '면', shortLabel: '면', dotClass: 'bg-watermelon-500', total: 25 },
+    { category: '국·탕·찌개', shortLabel: '국·탕', dotClass: 'bg-lime-text', total: 30 },
     { category: '고기 구이·볶음', shortLabel: '고기', dotClass: 'bg-red-500', total: 25 },
-    { category: '튀김·치킨·까스', shortLabel: '튀김·치킨', dotClass: 'bg-orange-400', total: 15 },
+    { category: '튀김·치킨·까스', shortLabel: '튀김·치킨', dotClass: 'bg-watermelon-400', total: 15 },
     { category: '해산물·회', shortLabel: '해산물', dotClass: 'bg-teal-500', total: 25 },
     { category: '분식·길거리', shortLabel: '분식', dotClass: 'bg-rose-500', total: 20 },
     { category: '빵·버거·피자·브런치', shortLabel: '브런치', dotClass: 'bg-red-400', total: 20 },

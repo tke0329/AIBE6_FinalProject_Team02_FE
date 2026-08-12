@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react'
+import { DexEntry } from '@/shared/data/dex'
+import { getLocalDexIllustrationUrl } from '@/shared/lib/dexIllustrations'
+import { BottomNav, NavTab, StarRank } from '@/shared/ui'
 import { AnimatePresence, motion } from 'framer-motion'
-import Image from 'next/image'
 import {
     ArrowLeftIcon,
     ChevronDownIcon,
@@ -10,10 +11,8 @@ import {
     MapPinIcon,
     PlusIcon,
 } from 'lucide-react'
-import { DexEntry } from '@/shared/data/dex'
-import { getLocalDexIllustrationUrl } from '@/shared/lib/dexIllustrations'
-import { BottomNav, NavTab } from '@/shared/ui/molecules/BottomNav'
-import { StarRank } from '@/shared/ui/atoms/StarRank'
+import Image from 'next/image'
+import { useEffect, useState } from 'react'
 import type { CategoryFilter } from './useDexFilter'
 
 interface Props {
@@ -28,7 +27,7 @@ interface Props {
     onTab: (tab: NavTab) => void
 }
 
-/** 위/아래로 스와이프해 다음·이전 "해금된" 도감으로 건너뛸 때 보여줄 안내 */
+/** 위/아래로 스와이프해 다음·이전"해금된" 도감으로 건너뛸 때 보여줄 안내 */
 interface SkipTeaser {
     kind: 'skipped' | 'complete'
     direction: 'next' | 'prev'
@@ -60,7 +59,15 @@ export function DexDetail({
         location: '',
     }
     const photos = currentCard.photos.length ? currentCard.photos : [fallbackImage]
-    const currentPhoto = photos[photoIndex]
+    /**
+     * 인덱스를 렌더 시점에 가둔다.
+     *
+     * 다른 도감으로 넘어가면 entry는 즉시 새 값인데 photoIndex를 0으로 되돌리는 effect는
+     * 렌더 뒤에 돈다. 사진 5장 카드에서 4번을 보다 1장짜리 카드로 넘어가면 photos[4]가
+     * undefined가 되어 아래 startsWith에서 렌더 중 TypeError가 났다.
+     */
+    const safePhotoIndex = Math.min(photoIndex, photos.length - 1)
+    const currentPhoto = photos[safePhotoIndex]
 
     // 해금된 도감끼리만 이동하되, 기본 도감에서 들어온 카테고리 안으로 범위를 제한한다.
     const scopedEntries =
@@ -96,8 +103,8 @@ export function DexDetail({
         setCardIndex(index)
         setPhotoIndex(0)
     }
-    const movePhoto = (direction: -1 | 1) =>
-        setPhotoIndex((index) => (index + direction + photos.length) % photos.length)
+    // 범위를 벗어난 값에서 넘기면 엉뚱한 장으로 튄다. 화면에 보이는 인덱스를 기준으로 센다
+    const movePhoto = (direction: -1 | 1) => setPhotoIndex((safePhotoIndex + direction + photos.length) % photos.length)
     // 카드 정보 영역 스와이프는 처음/마지막에서 순환 이동한다.
     const cycleCard = (direction: -1 | 1) => {
         if (cards.length < 2) return
@@ -134,7 +141,7 @@ export function DexDetail({
 
     return (
         <div
-            className="relative flex h-full flex-col bg-cream-100"
+            className="relative flex h-full flex-col bg-surface-app"
             onTouchStart={(event) => setTouchStartY(event.touches[0].clientY)}
             onTouchEnd={(event) => {
                 if (touchStartY !== null) {
@@ -150,15 +157,15 @@ export function DexDetail({
                     type="button"
                     onClick={onBack}
                     aria-label="뒤로가기"
-                    className="flex h-11 w-11 items-center justify-center rounded-full text-brown transition-colors hover:bg-cream-200 active:scale-[0.98]"
+                    className="flex h-11 w-11 items-center justify-center rounded-full text-neutral-900 transition-colors hover:bg-neutral-100 active:scale-[0.98]"
                 >
                     <ArrowLeftIcon size={22} aria-hidden />
                 </button>
-                <h1 className="min-w-0 truncate text-center font-display text-xl text-brown">{entry.name}</h1>
+                <h1 className="min-w-0 truncate text-center font-display text-xl text-neutral-900">{entry.name}</h1>
                 <button
                     type="button"
                     onClick={onRegister}
-                    className="flex h-10 min-w-0 items-center justify-center gap-1.5 rounded-full bg-orange-500 px-3 text-sm font-bold text-white shadow-soft transition-colors hover:bg-orange-600 active:scale-[0.98]"
+                    className="flex h-10 min-w-0 items-center justify-center gap-1.5 rounded-full bg-watermelon-500 px-3 text-sm font-bold text-white shadow-soft transition-colors hover:bg-watermelon-600 active:scale-[0.98]"
                 >
                     <PlusIcon size={15} strokeWidth={2.75} aria-hidden />
                     <span className="whitespace-nowrap">등록하기</span>
@@ -166,21 +173,21 @@ export function DexDetail({
             </header>
             <button
                 onClick={movePrev}
-                className="flex min-h-touch w-full items-center justify-center gap-1 pt-1 text-xs text-brown-soft md:hidden"
+                className="flex min-h-touch w-full items-center justify-center gap-1 pt-1 text-xs text-neutral-800"
             >
                 <ChevronDownIcon size={16} aria-hidden />
                 아래로 스와이프하면 이전 도감으로
             </button>
             {cards.length > 1 && (
-                <div className="border-y border-cream-200 bg-cream-50 px-5 py-2.5">
+                <div className="border-y border-neutral-100 bg-white px-5 py-2.5">
                     <div className="mx-auto max-w-3xl">
-                        <p className="mb-2 text-xs font-medium text-brown-soft">등록 카드</p>
+                        <p className="mb-2 text-xs font-medium text-neutral-800">등록 카드</p>
                         <div className="flex gap-2" aria-label="등록 카드 선택">
                             {cards.map((card, index) => (
                                 <button
                                     key={`${card.date}-${index}`}
                                     onClick={() => selectCard(index)}
-                                    className={`min-h-touch flex-1 rounded-full border px-2 text-center transition ${cardIndex === index ? 'border-orange-500 bg-orange-500 text-white' : 'border-cream-300 bg-white text-brown-soft'}`}
+                                    className={`min-h-touch flex-1 rounded-full border px-2 text-center transition ${cardIndex === index ? 'border-watermelon-500 bg-watermelon-500 text-white' : 'border-neutral-200 bg-white text-neutral-800'}`}
                                 >
                                     <span className="text-xs font-bold">
                                         {index + 1} · {formatCardDate(card.date)}
@@ -191,22 +198,22 @@ export function DexDetail({
                     </div>
                 </div>
             )}
-            <main className="no-scrollbar flex-1 overflow-y-auto md:px-6 md:pb-6">
-                <div className="md:mx-auto md:grid md:max-w-6xl md:grid-cols-[144px_minmax(0,768px)_144px] md:items-center md:gap-6">
-                    <div className="hidden md:flex md:justify-end">
+            <main className="no-scrollbar flex-1 overflow-y-auto">
+                <div className="">
+                    <div className="hidden">
                         <button
                             type="button"
                             disabled={!prevEntry}
                             onClick={movePrev}
-                            className="flex min-h-[76px] w-36 items-center gap-2 rounded-2xl border border-cream-300 bg-white px-3 text-left shadow-soft transition-colors hover:bg-cream-50 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+                            className="flex min-h-[76px] w-36 items-center gap-2 rounded-2xl border border-neutral-200 bg-white px-3 text-left shadow-soft transition-colors hover:bg-white active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
                         >
-                            <ChevronLeftIcon size={18} aria-hidden className="shrink-0 text-brown-muted" />
+                            <ChevronLeftIcon size={18} aria-hidden className="shrink-0 text-neutral-400" />
                             <span className="min-w-0">
-                                <span className="block text-[11px] font-bold text-brown-muted">이전</span>
-                                <span className="block truncate text-sm font-bold text-brown">
+                                <span className="block text-xs font-bold text-neutral-400">이전</span>
+                                <span className="block truncate text-sm font-bold text-neutral-900">
                                     {prevEntry?.name ?? '이전 도감'}
                                 </span>
-                                <span className="block truncate text-[11px] text-brown-muted">
+                                <span className="block truncate text-xs text-neutral-400">
                                     {prevEntry?.firstDate ?? '수집일 없음'}
                                 </span>
                             </span>
@@ -214,7 +221,7 @@ export function DexDetail({
                     </div>
                     <div>
                         <div
-                            className="relative aspect-[4/3] w-full bg-orange-50 md:mt-1 md:overflow-hidden md:rounded-3xl md:shadow-card lg:aspect-[16/10]"
+                            className="relative aspect-[4/3] w-full bg-watermelon-50"
                             onTouchStart={(event) => setPhotoTouchStartX(event.touches[0].clientX)}
                             onTouchEnd={(event) => {
                                 if (photoTouchStartX === null) return
@@ -228,7 +235,7 @@ export function DexDetail({
                         >
                             <AnimatePresence mode="wait">
                                 <motion.div
-                                    key={`${cardIndex}-${photoIndex}`}
+                                    key={`${cardIndex}-${safePhotoIndex}`}
                                     initial={{ opacity: 0, x: 18 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: -18 }}
@@ -248,7 +255,7 @@ export function DexDetail({
                                 </motion.div>
                             </AnimatePresence>
                             <span className="absolute right-3 top-3 rounded-full bg-black/50 px-2 py-0.5 text-xs font-medium text-white">
-                                {photoIndex + 1}/{photos.length}
+                                {safePhotoIndex + 1}/{photos.length}
                             </span>
 
                             <div className="absolute inset-x-0 bottom-0 flex justify-center">
@@ -261,22 +268,22 @@ export function DexDetail({
                                     >
                                         <span
                                             aria-hidden
-                                            className={`h-2 w-2 rounded-full ${index === photoIndex ? 'bg-orange-500' : 'bg-white/70'}`}
+                                            className={`h-2 w-2 rounded-full ${index === photoIndex ? 'bg-watermelon-500' : 'bg-white/70'}`}
                                         />
                                     </button>
                                 ))}
                             </div>
                         </div>
-                        <p className="mt-3 hidden text-center text-xs font-medium text-brown-muted md:block">
+                        <p className="mt-3 hidden text-center text-xs font-medium text-neutral-400">
                             {activeCategory === '전체' ? '전체' : activeCategory} ·{' '}
                             {currentIndex >= 0 ? currentIndex + 1 : 0}/{scopedCollectedEntries.length}
                         </p>
                         {photos.length > 1 && (
-                            <div className="mt-2 hidden justify-end gap-2 px-5 md:flex md:px-0">
+                            <div className="mt-2 hidden justify-end gap-2 px-5">
                                 <button
                                     type="button"
                                     onClick={() => movePhoto(-1)}
-                                    className="flex h-8 items-center gap-1 rounded-full border border-cream-300 bg-white px-3 text-xs font-bold text-brown-soft shadow-soft transition-colors hover:bg-cream-50 active:scale-[0.98]"
+                                    className="flex h-8 items-center gap-1 rounded-full border border-neutral-200 bg-white px-3 text-xs font-bold text-neutral-800 shadow-soft transition-colors hover:bg-white active:scale-[0.98]"
                                 >
                                     <ChevronLeftIcon size={14} aria-hidden />
                                     이전 사진
@@ -284,7 +291,7 @@ export function DexDetail({
                                 <button
                                     type="button"
                                     onClick={() => movePhoto(1)}
-                                    className="flex h-8 items-center gap-1 rounded-full bg-orange-500 px-3 text-xs font-bold text-white shadow-soft transition-colors hover:bg-orange-600 active:scale-[0.98]"
+                                    className="flex h-8 items-center gap-1 rounded-full bg-watermelon-500 px-3 text-xs font-bold text-white shadow-soft transition-colors hover:bg-watermelon-600 active:scale-[0.98]"
                                 >
                                     다음 사진
                                     <ChevronRightIcon size={14} aria-hidden />
@@ -292,29 +299,29 @@ export function DexDetail({
                             </div>
                         )}
                     </div>
-                    <div className="hidden md:flex md:justify-start">
+                    <div className="hidden">
                         <button
                             type="button"
                             disabled={!nextEntry}
                             onClick={moveNext}
-                            className="flex min-h-[76px] w-36 items-center gap-2 rounded-2xl bg-orange-500 px-3 text-left text-white shadow-soft transition-colors hover:bg-orange-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+                            className="flex min-h-[76px] w-36 items-center gap-2 rounded-2xl bg-watermelon-500 px-3 text-left text-white shadow-soft transition-colors hover:bg-watermelon-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
                         >
                             <span className="min-w-0 flex-1">
-                                <span className="block text-[11px] font-bold text-orange-100">다음</span>
+                                <span className="block text-xs font-bold text-watermelon-100">다음</span>
                                 <span className="block truncate text-sm font-bold">
                                     {nextEntry?.name ?? '다음 도감'}
                                 </span>
-                                <span className="block truncate text-[11px] text-orange-100">
+                                <span className="block truncate text-xs text-watermelon-100">
                                     {nextEntry?.firstDate ?? '수집일 없음'}
                                 </span>
                             </span>
-                            <ChevronRightIcon size={18} aria-hidden className="shrink-0 text-orange-100" />
+                            <ChevronRightIcon size={18} aria-hidden className="shrink-0 text-watermelon-100" />
                         </button>
                     </div>
                 </div>
-                <div className="md:mx-auto md:grid md:max-w-6xl md:grid-cols-[144px_minmax(0,768px)_144px] md:gap-6">
+                <div className="">
                     <div
-                        className="md:col-start-2"
+                        className=""
                         onTouchStart={
                             cards.length > 1 ? (event) => setCardTouchStartX(event.touches[0].clientX) : undefined
                         }
@@ -330,34 +337,36 @@ export function DexDetail({
                                 : undefined
                         }
                     >
-                        <div className="px-5 py-3 md:px-0">
-                            <span className="text-xs text-brown-soft">
+                        <div className="px-5 py-3">
+                            <span className="text-xs text-neutral-800">
                                 카드 {cardIndex + 1}의 사진 {photos.length}장
                                 {cards.length > 1 && (
                                     <>
-                                        <span className="md:hidden"> · 좌우로 스와이프해 카드 넘기기</span>
-                                        <span className="hidden md:inline"> · 위 카드 버튼으로 기록 선택</span>
+                                        <span className=""> · 좌우로 스와이프해 카드 넘기기</span>
+                                        <span className="hidden"> · 위 카드 버튼으로 기록 선택</span>
                                     </>
                                 )}
                             </span>
                         </div>
-                        <div className="mx-5 rounded-2xl bg-white p-4 shadow-soft md:mx-0">
-                            <p className="flex items-center gap-1.5 text-sm text-brown-soft">
-                                <MapPinIcon size={15} className="text-orange-500" />
+                        <div className="mx-5 rounded-2xl bg-white p-4 shadow-soft">
+                            <p className="flex items-center gap-1.5 text-sm text-neutral-800">
+                                <MapPinIcon size={15} className="text-watermelon-500" />
                                 {currentCard.location || '위치 없음'} · {currentCard.date} 수집
                             </p>
-                            {currentCard.memo && <p className="mt-2 text-sm text-brown">메모: {currentCard.memo}</p>}
+                            {currentCard.memo && (
+                                <p className="mt-2 text-sm text-neutral-900">메모: {currentCard.memo}</p>
+                            )}
                         </div>
                     </div>
                 </div>
-                <div className="md:mx-auto md:grid md:max-w-6xl md:grid-cols-[144px_minmax(0,768px)_144px] md:gap-6">
+                <div className="">
                     <AnimatePresence>
                         {teaser && (
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0 }}
-                                className="mx-5 mt-4 flex items-center gap-3 rounded-2xl border-2 border-dashed border-cream-300 bg-cream-50 p-3 md:col-start-2 md:mx-0"
+                                className="mx-5 mt-4 flex items-center gap-3 rounded-2xl border-2 border-dashed border-neutral-200 bg-white p-3"
                             >
                                 <div className="flex">
                                     {Array.from({
@@ -365,24 +374,24 @@ export function DexDetail({
                                     }).map((_, value) => (
                                         <span
                                             key={value}
-                                            className="-ml-2 flex h-9 w-9 items-center justify-center rounded-xl border-2 border-cream-50 bg-cream-200 text-brown-muted first:ml-0"
+                                            className="-ml-2 flex h-9 w-9 items-center justify-center rounded-xl border-2 border-white bg-neutral-100 text-neutral-400 first:ml-0"
                                         >
                                             ?
                                         </span>
                                     ))}
                                     {teaser.kind === 'skipped' && (teaser.skipped ?? 0) > 3 && (
-                                        <span className="-ml-2 flex h-9 w-9 items-center justify-center rounded-xl border-2 border-cream-50 bg-cream-200 text-xs font-bold text-brown-muted">
+                                        <span className="-ml-2 flex h-9 w-9 items-center justify-center rounded-xl border-2 border-white bg-neutral-100 text-xs font-bold text-neutral-400">
                                             +{(teaser.skipped ?? 0) - 3}
                                         </span>
                                     )}
                                 </div>
                                 <div>
-                                    <p className="text-sm font-bold text-brown">
+                                    <p className="text-sm font-bold text-neutral-900">
                                         {teaser.kind === 'complete'
                                             ? '카테고리를 모두 확인했습니다'
                                             : `미해금 도감 ${teaser.skipped}칸을 건너뛰었어요`}
                                     </p>
-                                    <p className="text-xs text-brown-soft">
+                                    <p className="text-xs text-neutral-800">
                                         {teaser.kind === 'complete'
                                             ? teaser.direction === 'next'
                                                 ? activeCategory === '전체'
@@ -400,18 +409,18 @@ export function DexDetail({
                         )}
                     </AnimatePresence>
                 </div>
-                <div className="md:mx-auto md:grid md:max-w-6xl md:grid-cols-[144px_minmax(0,768px)_144px] md:gap-6">
-                    <div className="mt-4 border-t border-cream-300 px-5 py-4 md:col-start-2 md:rounded-2xl md:border md:bg-white md:shadow-soft">
+                <div className="">
+                    <div className="mt-4 border-t border-neutral-200 px-5 py-4">
                         <div className="flex items-center justify-between">
-                            <span className="font-display text-lg text-brown">{entry.name}</span>
+                            <span className="font-display text-lg text-neutral-900">{entry.name}</span>
                             <StarRank value={entry.stars ?? 1} size={16} />
                         </div>
-                        <p className="mt-1 text-xs text-brown-soft">첫 수집일 {entry.firstDate}</p>
+                        <p className="mt-1 text-xs text-neutral-800">첫 수집일 {entry.firstDate}</p>
                     </div>
                 </div>
                 <button
                     onClick={moveNext}
-                    className="flex min-h-touch w-full items-center justify-center gap-1 pb-6 text-xs text-brown-soft md:hidden"
+                    className="flex min-h-touch w-full items-center justify-center gap-1 pb-6 text-xs text-neutral-800"
                 >
                     <ChevronUpIcon size={16} aria-hidden />
                     위로 스와이프하면 다음 도감으로

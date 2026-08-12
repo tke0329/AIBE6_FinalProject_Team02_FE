@@ -3,11 +3,22 @@ import { LocationInput } from '@/features/register/confirmApi'
 import { geocodeAddress } from '@/features/register/placeApi'
 import { resolveBadgeImage } from '@/shared/data/badgeAssets'
 import { useAppState } from '@/shared/store/AppStateProvider'
-import { Badge } from '@/shared/ui/atoms/Badge'
+import { Badge } from '@/shared/ui'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ArrowLeftIcon, CameraIcon, CheckIcon, MapPinIcon, Trash2Icon } from 'lucide-react'
+import {
+    ArrowLeftIcon,
+    CameraIcon,
+    CheckIcon,
+    MapPinIcon,
+    MedalIcon,
+    PencilIcon,
+    Trash2Icon,
+    TrophyIcon,
+    UtensilsIcon,
+} from 'lucide-react'
 import React, { useRef, useState } from 'react'
 import { ChallengeData, ChallengeTarget, RewardBadge } from './types'
+import { CoverPhotoStep } from './CoverPhotoStep'
 
 interface Props {
     createdThisMonth: number
@@ -27,11 +38,12 @@ const MIN_TARGETS = 5
 
 // 스텝 인덱스
 const TITLE = 0
-const PERIOD = 1
-const FOODS = 2
-const BADGE = 3
-const DONE = 4
-const STEP_LABEL = ['제목', '기한', '음식', '보상']
+const COVER = 1
+const PERIOD = 2
+const FOODS = 3
+const BADGE = 4
+const DONE = 5
+const STEP_LABEL = ['제목', '대표 사진', '기한', '음식', '보상']
 
 const variants = {
     enter: (dir: number) => ({ x: dir > 0 ? 48 : -48, opacity: 0 }),
@@ -72,6 +84,8 @@ export function ChallengeCreate({
     const [desc, setDesc] = useState('')
     const [targetFile, setTargetFile] = useState<File | null>(null)
     const [targetPreview, setTargetPreview] = useState('')
+    const [coverFile, setCoverFile] = useState<Blob | null>(null) // 대표 사진(정사각 크롭 Blob)
+    const [coverPreview, setCoverPreview] = useState('')
     const [targetPlace, setTargetPlace] = useState<LocationInput | null>(null)
     const [addressInput, setAddressInput] = useState('')
     const [addressError, setAddressError] = useState('')
@@ -149,6 +163,8 @@ export function ChallengeCreate({
             await onCreate({
                 id: `created-${Date.now()}`,
                 title: title.trim(),
+                coverFile,
+                coverUrl: coverPreview || undefined,
                 emoji: '🏆',
                 tag: '수집형',
                 dday: 'D-30',
@@ -164,7 +180,7 @@ export function ChallengeCreate({
                 rewardBadge: customBadge ?? {
                     emoji: '🏆',
                     name: presetName.trim() || selectedPreset.name,
-                    tone: 'bg-orange-100 text-orange-700',
+                    tone: 'bg-watermelon-100 text-watermelon-700',
                     code: selectedPreset.code,
                 },
             })
@@ -189,16 +205,16 @@ export function ChallengeCreate({
             {step !== DONE && (
                 <header className="flex items-center gap-3 px-5 pb-2 pt-4">
                     <button onClick={headerBack} aria-label="뒤로가기">
-                        <ArrowLeftIcon size={22} className="text-brown" />
+                        <ArrowLeftIcon size={22} className="text-neutral-900" />
                     </button>
-                    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-orange-100">
+                    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-watermelon-100">
                         <motion.div
-                            className="h-full rounded-full bg-orange-500"
-                            animate={{ width: `${((step + 1) / 4) * 100}%` }}
+                            className="h-full rounded-full bg-watermelon-500"
+                            animate={{ width: `${((step + 1) / 5) * 100}%` }}
                             transition={{ type: 'spring', stiffness: 220, damping: 30 }}
                         />
                     </div>
-                    <span className="text-xs font-bold text-orange-500">{step + 1}/4</span>
+                    <span className="text-xs font-bold text-watermelon-500">{step + 1}/5</span>
                 </header>
             )}
 
@@ -215,19 +231,20 @@ export function ChallengeCreate({
                     >
                         {step === TITLE && (
                             <div>
-                                <p className="text-sm font-bold text-orange-500">{STEP_LABEL[0]}</p>
-                                <h1 className="mt-1 font-display text-2xl leading-snug text-brown">
+                                <p className="text-sm font-bold text-watermelon-500">{STEP_LABEL[0]}</p>
+                                <h1 className="mt-1 font-display text-2xl leading-snug text-neutral-900">
                                     어떤 챌린지인가요?
                                 </h1>
-                                <p className="mt-2 text-sm text-brown-muted">
-                                    📍 위치 인증 챌린지 — 참가자는 지정 장소에서 인증해요
+                                <p className="mt-2 flex items-center gap-1 text-sm text-neutral-400">
+                                    <MapPinIcon size={15} strokeWidth={2} aria-hidden className="shrink-0" />
+                                    위치 인증 챌린지 — 참가자는 지정 장소에서 인증해요
                                 </p>
                                 <input
                                     autoFocus
                                     value={title}
                                     onChange={(e) => patchDraft({ title: e.target.value })}
                                     placeholder="예: 서울 라멘 성지순례"
-                                    className="mt-6 w-full border-0 border-b-2 border-orange-500 bg-transparent pb-2 text-xl text-brown outline-none placeholder:text-brown-muted/50"
+                                    className="mt-6 w-full border-0 border-b-2 border-watermelon-500 bg-transparent pb-2 text-xl text-neutral-900 outline-none placeholder:text-neutral-400/50"
                                 />
                                 <textarea
                                     value={challengeDraft.description}
@@ -235,20 +252,34 @@ export function ChallengeCreate({
                                     placeholder="소개글 (선택) — 어떤 챌린지인지 짧게 소개해요"
                                     rows={3}
                                     maxLength={200}
-                                    className="mt-5 w-full resize-none rounded-2xl border border-cream-300 bg-white px-4 py-3 text-sm text-brown outline-none focus:border-orange-400 placeholder:text-brown-muted/50"
+                                    className="mt-5 w-full resize-none rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-900 outline-none focus:border-watermelon-400 placeholder:text-neutral-400/50"
                                 />
                                 {!canCreate && (
-                                    <p className="mt-4 rounded-2xl bg-orange-50 p-3 text-sm text-orange-700">
+                                    <p className="mt-4 rounded-2xl bg-watermelon-50 p-3 text-sm text-watermelon-700">
                                         이번 달 개설 가능 횟수(3회)를 모두 사용했어요.
                                     </p>
                                 )}
                             </div>
                         )}
 
+                        {step === COVER && (
+                            <CoverPhotoStep
+                                preview={coverPreview}
+                                onApply={(blob, url) => {
+                                    setCoverFile(blob)
+                                    setCoverPreview(url)
+                                }}
+                                onClear={() => {
+                                    setCoverFile(null)
+                                    setCoverPreview('')
+                                }}
+                            />
+                        )}
+
                         {step === PERIOD && (
                             <div>
-                                <p className="text-sm font-bold text-orange-500">{STEP_LABEL[1]}</p>
-                                <h1 className="mt-1 font-display text-2xl leading-snug text-brown">
+                                <p className="text-sm font-bold text-watermelon-500">{STEP_LABEL[2]}</p>
+                                <h1 className="mt-1 font-display text-2xl leading-snug text-neutral-900">
                                     얼마 동안 진행하나요?
                                 </h1>
                                 <div className="mt-6 space-y-3">
@@ -263,18 +294,18 @@ export function ChallengeCreate({
                                                         : { periodType: p },
                                                 )
                                             }
-                                            className={`flex w-full items-center gap-3 rounded-2xl border-2 p-4 text-left ${periodType === p ? 'border-orange-500 bg-orange-50' : 'border-cream-200 bg-white'}`}
+                                            className={`flex w-full items-center gap-3 rounded-2xl border-2 p-4 text-left ${periodType === p ? 'border-watermelon-500 bg-watermelon-50' : 'border-neutral-100 bg-white'}`}
                                         >
                                             <span
-                                                className={`flex h-6 w-6 items-center justify-center rounded-full border-2 ${periodType === p ? 'border-orange-500 bg-orange-500 text-white' : 'border-cream-300'}`}
+                                                className={`flex h-6 w-6 items-center justify-center rounded-full border-2 ${periodType === p ? 'border-watermelon-500 bg-watermelon-500 text-white' : 'border-neutral-200'}`}
                                             >
                                                 {periodType === p && <CheckIcon size={14} />}
                                             </span>
                                             <span>
-                                                <strong className="block text-brown">
+                                                <strong className="block text-neutral-900">
                                                     {p === 'PERMANENT' ? '상시' : '기간 한정'}
                                                 </strong>
-                                                <small className="text-brown-muted">
+                                                <small className="text-neutral-400">
                                                     {p === 'PERMANENT' ? '기한 없이 계속' : '종료일까지만 참여'}
                                                 </small>
                                             </span>
@@ -289,12 +320,14 @@ export function ChallengeCreate({
                                             animate={{ height: 'auto', opacity: 1 }}
                                             exit={{ height: 0, opacity: 0 }}
                                         >
-                                            <span className="mb-1 block text-xs font-bold text-brown-soft">종료일</span>
+                                            <span className="mb-1 block text-xs font-bold text-neutral-800">
+                                                종료일
+                                            </span>
                                             <input
                                                 type="date"
                                                 value={endsAt}
                                                 onChange={(e) => patchDraft({ endsAt: e.target.value })}
-                                                className="w-full rounded-2xl border border-cream-300 bg-white px-4 py-3 text-sm outline-none focus:border-orange-400"
+                                                className="w-full rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-sm outline-none focus:border-watermelon-400"
                                             />
                                         </motion.label>
                                     )}
@@ -304,19 +337,19 @@ export function ChallengeCreate({
 
                         {step === FOODS && (
                             <div>
-                                <p className="text-sm font-bold text-orange-500">{STEP_LABEL[2]}</p>
-                                <h1 className="mt-1 font-display text-2xl leading-snug text-brown">
+                                <p className="text-sm font-bold text-watermelon-500">{STEP_LABEL[3]}</p>
+                                <h1 className="mt-1 font-display text-2xl leading-snug text-neutral-900">
                                     어떤 음식을 모을까요?
                                 </h1>
-                                <p className="mt-2 text-sm text-brown-muted">최소 5개 · 가게명·음식·주소·사진</p>
+                                <p className="mt-2 text-sm text-neutral-400">최소 5개 · 가게명·음식·주소·사진</p>
 
-                                <div className="mt-5 rounded-2xl border border-cream-200 bg-white p-4 shadow-soft">
+                                <div className="mt-5 rounded-2xl border border-neutral-100 bg-white p-4 shadow-soft">
                                     <div className="flex gap-3">
                                         <button
                                             type="button"
                                             onClick={() => fileRef.current?.click()}
                                             aria-label="사진 등록"
-                                            className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-orange-50 text-orange-500"
+                                            className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-watermelon-50 text-watermelon-500"
                                         >
                                             {targetPreview ? (
                                                 <img
@@ -340,19 +373,19 @@ export function ChallengeCreate({
                                                 value={storeName}
                                                 onChange={(e) => setStoreName(e.target.value)}
                                                 placeholder="가게명 (예: 라멘야 낙성대점)"
-                                                className="w-full rounded-xl bg-cream-100 px-3 py-2.5 text-sm outline-none"
+                                                className="w-full rounded-xl bg-neutral-50 px-3 py-2.5 text-sm outline-none"
                                             />
                                             <input
                                                 value={foodName}
                                                 onChange={(e) => setFoodName(e.target.value)}
                                                 placeholder="음식 이름 (예: 돈코츠 라멘)"
-                                                className="w-full rounded-xl bg-cream-100 px-3 py-2.5 text-sm outline-none"
+                                                className="w-full rounded-xl bg-neutral-50 px-3 py-2.5 text-sm outline-none"
                                             />
                                         </div>
                                     </div>
 
-                                    <div className="mt-3 border-t border-cream-200 pt-3">
-                                        <span className="mb-1.5 block text-xs font-bold text-brown-soft">
+                                    <div className="mt-3 border-t border-neutral-100 pt-3">
+                                        <span className="mb-1.5 block text-xs font-bold text-neutral-800">
                                             주소 / 위치
                                         </span>
                                         <PlacePicker value={targetPlace} onChange={setTargetPlace} />
@@ -367,13 +400,13 @@ export function ChallengeCreate({
                                                     }
                                                 }}
                                                 placeholder="또는 주소 입력"
-                                                className="min-w-0 flex-1 rounded-xl bg-cream-100 px-3 py-2.5 text-sm outline-none"
+                                                className="min-w-0 flex-1 rounded-xl bg-neutral-50 px-3 py-2.5 text-sm outline-none"
                                             />
                                             <button
                                                 type="button"
                                                 onClick={resolveAddress}
                                                 disabled={!addressInput.trim() || resolving}
-                                                className="shrink-0 rounded-xl bg-brown px-3 text-sm font-bold text-white disabled:bg-action-disabled-bg disabled:text-action-disabled-text"
+                                                className="shrink-0 rounded-xl bg-neutral-900 px-3 text-sm font-bold text-white disabled:bg-action-disabled-bg disabled:text-action-disabled-text"
                                             >
                                                 {resolving ? '확인 중' : '주소 확인'}
                                             </button>
@@ -382,7 +415,7 @@ export function ChallengeCreate({
                                             <p className="mt-1.5 text-xs font-medium text-red-500">{addressError}</p>
                                         )}
                                         {placeReady && targetPlace && (
-                                            <p className="mt-1.5 flex items-center gap-1 text-xs font-medium text-green-600">
+                                            <p className="mt-1.5 flex items-center gap-1 text-xs font-medium text-lime-text">
                                                 <MapPinIcon size={13} /> {targetPlace.name} 위치 확인됨
                                             </p>
                                         )}
@@ -392,25 +425,25 @@ export function ChallengeCreate({
                                         value={desc}
                                         onChange={(e) => setDesc(e.target.value)}
                                         placeholder="설명(팁이나, 설명하고 싶은걸 적으세요!)"
-                                        className="mt-3 w-full rounded-xl bg-cream-100 px-3 py-2.5 text-sm outline-none"
+                                        className="mt-3 w-full rounded-xl bg-neutral-50 px-3 py-2.5 text-sm outline-none"
                                     />
 
                                     <button
                                         type="button"
                                         onClick={addTarget}
                                         disabled={!foodName.trim() || !placeReady}
-                                        className="mt-3 h-11 w-full rounded-xl bg-orange-500 text-sm font-bold text-white disabled:bg-action-disabled-bg disabled:text-action-disabled-text"
+                                        className="mt-3 h-11 w-full rounded-xl bg-watermelon-500 text-sm font-bold text-white disabled:bg-action-disabled-bg disabled:text-action-disabled-text"
                                     >
                                         이 음식 추가
                                     </button>
                                 </div>
 
                                 <div className="mt-3 flex items-center justify-between px-1">
-                                    <span className="text-xs font-bold text-brown-soft">
+                                    <span className="text-xs font-bold text-neutral-800">
                                         담은 음식 {targets.length}개
                                     </span>
                                     {!enough && (
-                                        <span className="text-xs text-brown-muted">
+                                        <span className="text-xs text-neutral-400">
                                             {MIN_TARGETS - targets.length}개 더 필요
                                         </span>
                                     )}
@@ -427,7 +460,7 @@ export function ChallengeCreate({
                                                 exit={{ opacity: 0, scale: 0.9 }}
                                                 className="flex items-center gap-3 rounded-2xl bg-white px-3 py-2.5 shadow-soft"
                                             >
-                                                <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-orange-50">
+                                                <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-watermelon-50">
                                                     {t.imageUrl ? (
                                                         <img
                                                             src={t.imageUrl}
@@ -435,13 +468,18 @@ export function ChallengeCreate({
                                                             className="h-full w-full object-cover"
                                                         />
                                                     ) : (
-                                                        '🍽️'
+                                                        <UtensilsIcon
+                                                            size={18}
+                                                            strokeWidth={1.5}
+                                                            aria-hidden
+                                                            className="text-neutral-400"
+                                                        />
                                                     )}
                                                 </span>
-                                                <span className="min-w-0 flex-1 text-sm font-bold text-brown">
-                                                    <small className="mr-1 text-brown-muted">{i + 1}.</small>
+                                                <span className="min-w-0 flex-1 text-sm font-bold text-neutral-900">
+                                                    <small className="mr-1 text-neutral-400">{i + 1}.</small>
                                                     {t.name}
-                                                    <small className="mt-0.5 block truncate text-xs font-normal text-brown-muted">
+                                                    <small className="mt-0.5 block truncate text-xs font-normal text-neutral-400">
                                                         {t.storeName ? `${t.storeName} · ` : ''}
                                                         {t.placeName}
                                                     </small>
@@ -449,7 +487,7 @@ export function ChallengeCreate({
                                                 <button
                                                     onClick={() => setTargets((c) => c.filter((x) => x.id !== t.id))}
                                                     aria-label={`${t.name} 삭제`}
-                                                    className="text-brown-muted"
+                                                    className="text-neutral-400"
                                                 >
                                                     <Trash2Icon size={17} />
                                                 </button>
@@ -462,9 +500,11 @@ export function ChallengeCreate({
 
                         {step === BADGE && (
                             <div>
-                                <p className="text-sm font-bold text-orange-500">{STEP_LABEL[3]}</p>
-                                <h1 className="mt-1 font-display text-2xl leading-snug text-brown">완주 보상 뱃지</h1>
-                                <p className="mt-2 text-sm text-brown-muted">프리셋을 고르거나 직접 만들어요.</p>
+                                <p className="text-sm font-bold text-watermelon-500">{STEP_LABEL[4]}</p>
+                                <h1 className="mt-1 font-display text-2xl leading-snug text-neutral-900">
+                                    완주 보상 뱃지
+                                </h1>
+                                <p className="mt-2 text-sm text-neutral-400">프리셋을 고르거나 직접 만들어요.</p>
 
                                 <div className="mt-5 grid grid-cols-2 gap-3">
                                     {PRESETS.map((preset) => {
@@ -478,9 +518,9 @@ export function ChallengeCreate({
                                                     setPresetName(preset.name)
                                                     onUsePreset()
                                                 }}
-                                                className={`flex items-center gap-3 rounded-2xl border-2 p-3 text-left ${selected ? 'border-orange-500 bg-orange-50' : 'border-cream-200 bg-white'}`}
+                                                className={`flex items-center gap-3 rounded-2xl border-2 p-3 text-left ${selected ? 'border-watermelon-500 bg-watermelon-50' : 'border-neutral-100 bg-white'}`}
                                             >
-                                                <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-orange-50">
+                                                <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-watermelon-50">
                                                     {image ? (
                                                         <img
                                                             src={image}
@@ -488,18 +528,25 @@ export function ChallengeCreate({
                                                             className="h-full w-full object-cover"
                                                         />
                                                     ) : (
-                                                        '🏅'
+                                                        <MedalIcon
+                                                            size={22}
+                                                            strokeWidth={1.5}
+                                                            aria-hidden
+                                                            className="text-watermelon-500"
+                                                        />
                                                     )}
                                                 </span>
-                                                <span className="text-sm font-bold text-brown">{preset.name}</span>
+                                                <span className="text-sm font-bold text-neutral-900">
+                                                    {preset.name}
+                                                </span>
                                             </button>
                                         )
                                     })}
                                     <button
                                         onClick={onCustomBadge}
-                                        className={`flex items-center gap-3 rounded-2xl border-2 border-dashed p-3 text-left ${customBadge ? 'border-orange-500 bg-orange-50' : 'border-orange-300 bg-white text-orange-600'}`}
+                                        className={`flex items-center gap-3 rounded-2xl border-2 border-dashed p-3 text-left ${customBadge ? 'border-watermelon-500 bg-watermelon-50' : 'border-watermelon-300 bg-white text-watermelon-600'}`}
                                     >
-                                        <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-orange-100 text-xl">
+                                        <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-watermelon-100 text-xl">
                                             {customBadge?.customImage ? (
                                                 <img
                                                     src={customBadge.customImage}
@@ -507,7 +554,7 @@ export function ChallengeCreate({
                                                     className="h-full w-full object-cover"
                                                 />
                                             ) : (
-                                                '✏️'
+                                                <PencilIcon size={20} strokeWidth={1.5} aria-hidden />
                                             )}
                                         </span>
                                         <span className="min-w-0 flex-1">
@@ -521,7 +568,7 @@ export function ChallengeCreate({
 
                                 {!customBadge && (
                                     <label className="mt-3 block">
-                                        <span className="mb-1.5 block text-sm font-bold text-brown">
+                                        <span className="mb-1.5 block text-sm font-bold text-neutral-900">
                                             보상 뱃지 이름
                                         </span>
                                         <input
@@ -529,17 +576,22 @@ export function ChallengeCreate({
                                             onChange={(e) => setPresetName(e.target.value)}
                                             maxLength={18}
                                             placeholder={selectedPreset.name}
-                                            className="w-full rounded-2xl border border-cream-300 bg-white px-4 py-3 text-sm outline-none focus:border-orange-400"
+                                            className="w-full rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-sm outline-none focus:border-watermelon-400"
                                         />
                                     </label>
                                 )}
-                                <div className="mt-3 flex items-center gap-3 rounded-2xl bg-cream-50 p-3">
+                                <div className="mt-3 flex items-center gap-3 rounded-2xl bg-white p-3">
                                     <Badge variant="reward" imageSrc={rewardImage} label={`보상 뱃지 ${rewardName}`}>
-                                        🏆
+                                        <TrophyIcon
+                                            size={24}
+                                            strokeWidth={1.5}
+                                            aria-hidden
+                                            className="text-watermelon-500"
+                                        />
                                     </Badge>
                                     <span>
-                                        <p className="text-xs text-brown-muted">완주 보상 미리보기</p>
-                                        <strong className="text-sm text-brown">{rewardName}</strong>
+                                        <p className="text-xs text-neutral-400">완주 보상 미리보기</p>
+                                        <strong className="text-sm text-neutral-900">{rewardName}</strong>
                                     </span>
                                 </div>
                             </div>
@@ -551,7 +603,7 @@ export function ChallengeCreate({
                                     initial={{ scale: 0 }}
                                     animate={{ scale: 1 }}
                                     transition={{ type: 'spring', stiffness: 260, damping: 18 }}
-                                    className="flex h-24 w-24 items-center justify-center rounded-full bg-orange-500 text-white"
+                                    className="flex h-24 w-24 items-center justify-center rounded-full bg-watermelon-500 text-white"
                                 >
                                     <CheckIcon size={48} />
                                 </motion.div>
@@ -559,7 +611,7 @@ export function ChallengeCreate({
                                     initial={{ opacity: 0, y: 12 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.15 }}
-                                    className="mt-6 font-display text-2xl text-brown"
+                                    className="mt-6 font-display text-2xl text-neutral-900"
                                 >
                                     챌린지 개설 완료!
                                 </motion.h1>
@@ -567,7 +619,7 @@ export function ChallengeCreate({
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     transition={{ delay: 0.3 }}
-                                    className="mt-2 text-sm text-brown-muted"
+                                    className="mt-2 text-sm text-neutral-400"
                                 >
                                     {title} · 목표 {targets.length}개
                                 </motion.p>
@@ -581,7 +633,7 @@ export function ChallengeCreate({
                 {step === DONE ? (
                     <button
                         onClick={onBack}
-                        className="h-cta w-full rounded-full bg-orange-500 font-display text-lg text-white shadow-card"
+                        className="h-cta w-full rounded-full bg-watermelon-500 font-display text-lg text-white shadow-card"
                     >
                         확인
                     </button>
@@ -589,7 +641,7 @@ export function ChallengeCreate({
                     <button
                         onClick={create}
                         disabled={submitting || !canCreate}
-                        className="h-cta w-full rounded-full bg-orange-500 font-display text-lg text-white shadow-card disabled:bg-action-disabled-bg disabled:text-action-disabled-text disabled:shadow-none"
+                        className="h-cta w-full rounded-full bg-watermelon-500 font-display text-lg text-white shadow-card disabled:bg-action-disabled-bg disabled:text-action-disabled-text disabled:shadow-none"
                     >
                         {submitting ? '개설 중…' : '개설하기'}
                     </button>
@@ -597,7 +649,7 @@ export function ChallengeCreate({
                     <button
                         onClick={() => stepValid && go(step + 1)}
                         disabled={!stepValid}
-                        className="h-cta w-full rounded-full bg-orange-500 font-display text-lg text-white shadow-card disabled:bg-action-disabled-bg disabled:text-action-disabled-text disabled:shadow-none"
+                        className="h-cta w-full rounded-full bg-watermelon-500 font-display text-lg text-white shadow-card disabled:bg-action-disabled-bg disabled:text-action-disabled-text disabled:shadow-none"
                     >
                         {step === FOODS && !enough ? `음식 ${targets.length}/${MIN_TARGETS}` : '다음'}
                     </button>

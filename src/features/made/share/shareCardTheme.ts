@@ -88,18 +88,18 @@ export const COLOR_EMPTY_CELL = '#46514E'
 export const COLOR_EMPTY_TEXT = '#98A5A1'
 
 export const COLOR = {
-    /** cream-200 — 못 불러온 사진 자리 */
-    placeholder: '#EFE3CC',
+    /** neutral-100 — 못 불러온 사진 자리 */
+    placeholder: '#F1F1F2',
     /** white — 칸 바탕, 겹친 낱장, 통계 카드 */
     cell: '#FFFFFF',
-    /** brown-900 */
-    title: '#3E2D18',
-    /** brown-800 */
-    body: '#5C4326',
-    /** brown-300 */
-    muted: '#C9A87C',
-    /** orange-500 */
-    accent: '#D98E33',
+    /** neutral-900 */
+    title: '#1A1A1A',
+    /** neutral-800 */
+    body: '#2A2A2A',
+    /** neutral-400 */
+    muted: '#B5B5BA',
+    /** watermelon-500 */
+    accent: '#FC6C85',
     badgeText: '#FFFFFF',
 } as const
 

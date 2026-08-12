@@ -15,6 +15,7 @@ export interface CreateSlotInput {
 export interface CreateChallengePayload {
     name: string
     description?: string | null
+    imageKey?: string | null // 대표 이미지(S3 key, 선택)
     periodType: PeriodType
     startsAt?: string | null // ISO, null이면 지금부터
     endsAt?: string | null // LIMITED면 필수
@@ -51,6 +52,7 @@ export interface ChallengeSummary {
     unlockedCount: number // 내가 해금한 수 (내 챌린지 진행도용, 탐색은 0)
     rankScore: number | null // 현재 정렬 지표값(최근 7일 조회/참여/해금). 최신순·완료면 null
     joined: boolean // 요청 유저의 참여 여부(탐색 목록 참여중 표시)
+    imageUrl: string | null // 대표 이미지(프리사인 URL)
 }
 
 // 탐색 정렬 기준. 랭킹 3종은 최근 7일 기준
@@ -113,6 +115,7 @@ export interface ChallengeDetailData {
     participantCount: number
     joined: boolean
     completed: boolean
+    imageUrl: string | null // 대표 이미지(프리사인 URL)
     slots: ChallengeSlotDetail[]
 }
 
@@ -185,10 +188,19 @@ export function fetchRewardBadge(badgeId: number | string) {
     return apiFetch<RewardBadgeInfo>(`/api/v1/challenges/reward-badges/${badgeId}`)
 }
 
+/** 리뷰 작성자의 대표 뱃지 표시 정보(서버) */
+export interface ReviewerBadge {
+    name: string
+    code: string | null
+    imageUrl: string | null
+}
+
 export interface Review {
     id: number
     reviewerId: number
     reviewerNickname: string | null
+    reviewerProfileImageUrl: string | null
+    reviewerEquippedBadge: ReviewerBadge | null
     content: string | null
     rating: number | null
     likeCount: number

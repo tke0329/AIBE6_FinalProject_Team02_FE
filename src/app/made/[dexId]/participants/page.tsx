@@ -14,24 +14,11 @@ import {
 import { MADE_DEX_MAX_MEMBERS, parseMadeDexId } from '@/features/made/types'
 import type { MadeDexInvite as Invite, MadeDexMember, MadeDexMembers } from '@/features/made/types'
 import { isNotOwner, madeErrorMessage } from '@/features/made/errors'
+import { copyToClipboard } from '@/shared/lib/clipboard'
 import { ROUTES } from '@/shared/lib/routes'
 
 function messageOf(failure: unknown): string {
     return madeErrorMessage(failure, '요청을 처리하지 못했어요.')
-}
-
-/**
- * 클립보드 API는 https나 localhost에서만 존재하고, 있어도 거부될 수 있다.
- * 성공 여부를 돌려줘야 화면이 "복사했어요"를 거짓으로 띄우지 않는다.
- */
-async function copyToClipboard(text: string): Promise<boolean> {
-    if (!navigator.clipboard) return false
-    try {
-        await navigator.clipboard.writeText(text)
-        return true
-    } catch {
-        return false
-    }
 }
 
 /** `/made/[dexId]/participants` 초대 코드 + 참여자 관리 */
@@ -188,7 +175,7 @@ export default function MadeDexParticipantsPage() {
             membersFailed={membersFailed}
             memberBusy={memberBusy}
             memberError={memberError}
-            onBack={() => router.push(ROUTES.madeDex(dexId))}
+            onBack={() => router.push(ROUTES.madeInfo(dexId))}
             onIssue={() => void issue()}
             onRetry={() => void load(dexId)}
             onCopy={copyToClipboard}

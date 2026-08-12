@@ -7,7 +7,7 @@ import { uploadImageToS3 } from '@/shared/lib/upload'
 import { useAppState } from '@/shared/store/AppStateProvider'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { AlertModal } from '@/shared/ui/molecules/AlertModal'
+import { Dialog } from '@/shared/ui'
 
 const MONTHLY_LIMIT = 3
 
@@ -81,8 +81,14 @@ export default function ChallengeCreatePage() {
                             rewardBadgeId = (await createRewardBadge({ name: badge.name, imageKey: key })).badgeId
                         }
 
+                        // 대표 이미지 업로드(선택)
+                        const imageKey = challenge.coverFile
+                            ? (await uploadImageToS3(challenge.coverFile, 'challenge-cover.jpg')).key
+                            : null
+
                         await createChallenge({
                             name: challenge.title,
+                            imageKey,
                             description: challengeDraft.description.trim() || null, // 소개글(선택)
                             periodType: challengeDraft.periodType, // 상시 / 기간 한정
                             startsAt: null,
@@ -101,9 +107,7 @@ export default function ChallengeCreatePage() {
                 onCustomBadge={() => router.push(ROUTES.challengeNewBadge)}
                 onUsePreset={() => setCustomBadge(null)}
             />
-            {alertMessage && (
-                <AlertModal title="개설 실패" message={alertMessage} onClose={() => setAlertMessage(null)} />
-            )}
+            {alertMessage && <Dialog title="개설 실패" message={alertMessage} onClose={() => setAlertMessage(null)} />}
         </>
     )
 }

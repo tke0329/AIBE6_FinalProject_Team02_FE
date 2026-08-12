@@ -22,17 +22,17 @@ interface Props {
  */
 export function RegisterUpload({ entries, canProceed, onBack, onNext }: Props) {
     return (
-        <div className="flex h-full flex-col bg-cream-100">
+        <div className="flex h-full flex-col bg-surface-app">
             <header className="flex shrink-0 items-center gap-3 px-5 py-4">
                 <button type="button" onClick={onBack} aria-label="뒤로가기">
-                    <ArrowLeftIcon size={22} aria-hidden className="text-brown" />
+                    <ArrowLeftIcon size={22} aria-hidden className="text-neutral-900" />
                 </button>
-                <span className="font-display text-lg text-brown">음식 등록</span>
+                <span className="font-display text-lg text-neutral-900">음식 등록</span>
             </header>
 
             <main className="no-scrollbar flex-1 overflow-y-auto px-5 pb-4">
-                <h1 className="font-display text-xl text-brown">음식 사진을 올려 주세요</h1>
-                <p className="mt-1 text-sm text-brown-soft">최대 5장까지 올릴 수 있어요</p>
+                <h1 className="font-display text-xl text-neutral-900">음식 사진을 올려 주세요</h1>
+                <p className="mt-1 text-sm text-neutral-800">최대 5장까지 올릴 수 있어요</p>
 
                 <PhotoUploader />
                 <FoodNamePicker entries={entries} />
@@ -43,7 +43,7 @@ export function RegisterUpload({ entries, canProceed, onBack, onNext }: Props) {
                     type="button"
                     disabled={!canProceed}
                     onClick={onNext}
-                    className="w-full rounded-2xl bg-orange-500 py-4 font-display text-lg text-white shadow-card disabled:cursor-not-allowed disabled:opacity-40"
+                    className="w-full rounded-2xl bg-watermelon-500 py-4 font-display text-lg text-white shadow-card disabled:cursor-not-allowed disabled:opacity-40"
                 >
                     다음
                 </button>

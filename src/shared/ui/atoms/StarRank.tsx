@@ -13,7 +13,7 @@ export function StarRank({ value, size = 14 }: StarRankProps) {
                 <StarIcon
                     key={i}
                     size={size}
-                    className={i < value ? 'text-orange-500' : 'text-cream-300'}
+                    className={i < value ? 'text-watermelon-500' : 'text-neutral-200'}
                     fill={i < value ? 'currentColor' : 'none'}
                     strokeWidth={2}
                 />

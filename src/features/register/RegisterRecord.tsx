@@ -92,13 +92,13 @@ export function RegisterRecord({ submitting, error, onBack, onSubmit }: Props) {
 
     return (
         // break-keep은 상속된다 — 이 화면 전체에서 한글이 단어 중간에 끊기지 않는다
-        <div className="flex h-full flex-col break-keep bg-cream-100">
+        <div className="flex h-full flex-col break-keep bg-surface-app">
             <header className="flex shrink-0 items-center gap-3 px-5 py-4">
                 <button type="button" onClick={() => (step === 0 ? onBack() : setStep(step - 1))} aria-label="뒤로가기">
-                    <ArrowLeftIcon size={22} aria-hidden className="text-brown" />
+                    <ArrowLeftIcon size={22} aria-hidden className="text-neutral-900" />
                 </button>
                 <span className="font-display text-lg text-content-primary">음식별 기록</span>
-                <span className="ml-auto rounded-full bg-orange-50 px-2.5 py-1 text-xs font-bold text-content-link">
+                <span className="ml-auto rounded-full bg-watermelon-50 px-2.5 py-1 text-xs font-bold text-content-link">
                     {step + 1} / {total}
                 </span>
             </header>

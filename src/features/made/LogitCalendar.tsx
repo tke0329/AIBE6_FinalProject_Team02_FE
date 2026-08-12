@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
-import { BottomSheet } from '@/shared/ui/molecules/BottomSheet'
-import { Calendar } from '@/shared/ui/molecules/Calendar'
+import { BottomSheet, Calendar } from '@/shared/ui'
 import { YearMonthWheel } from './YearMonthWheel'
 import { formatDate, parseDate } from './logitTypes'
 import { useLogitCalendar } from './useLogitCalendar'
@@ -60,7 +59,7 @@ export function LogitCalendar({ madeDexId, date, today, onSelect, onClose }: Pro
 
     return (
         // 손잡이에서만 끌어 닫는다. 휠을 굴릴 때 시트가 함께 끌려 내려가지 않으면서 두 화면 모두 끌어 닫힌다
-        <BottomSheet title="날짜 선택" showTitle={false} onClose={onClose} draggable dragHandleOnly>
+        <BottomSheet title="날짜 선택" showTitle={false} onClose={onClose}>
             <div className="px-5 pb-8 pt-2">
                 <div className="flex items-center justify-between">
                     <button
@@ -83,7 +82,7 @@ export function LogitCalendar({ madeDexId, date, today, onSelect, onClose }: Pro
                             <button
                                 type="button"
                                 onClick={() => onSelect(today)}
-                                className="min-h-touch rounded-full bg-cream-200 px-3 text-xs font-bold text-content-secondary"
+                                className="min-h-touch rounded-full bg-neutral-100 px-3 text-xs font-bold text-content-secondary"
                             >
                                 오늘
                             </button>

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { CameraIcon, ImageIcon } from 'lucide-react'
-import { BottomSheet } from '@/shared/ui/molecules/BottomSheet'
+import { BottomSheet } from '@/shared/ui'
 import { PHOTO_INPUT_ACCEPT } from '@/shared/lib/upload'
 
 interface Props {
@@ -55,7 +55,7 @@ export function PhotoSourceSheet({ onPick, onClose }: Props) {
                     <button
                         type="button"
                         onClick={() => cameraRef.current?.click()}
-                        className="flex min-h-touch w-full items-center gap-3 rounded-2xl bg-cream-100 px-4 py-3 text-left"
+                        className="flex min-h-touch w-full items-center gap-3 rounded-2xl bg-neutral-50 px-4 py-3 text-left"
                     >
                         <CameraIcon size={20} aria-hidden className="text-content-link" />
                         <span className="text-sm font-bold text-content-primary">사진 찍기</span>
@@ -65,7 +65,7 @@ export function PhotoSourceSheet({ onPick, onClose }: Props) {
                 <button
                     type="button"
                     onClick={() => albumRef.current?.click()}
-                    className="mt-2 flex min-h-touch w-full items-center gap-3 rounded-2xl bg-cream-100 px-4 py-3 text-left"
+                    className="mt-2 flex min-h-touch w-full items-center gap-3 rounded-2xl bg-neutral-50 px-4 py-3 text-left"
                 >
                     <ImageIcon size={20} aria-hidden className="text-content-link" />
                     <span className="text-sm font-bold text-content-primary">앨범에서 선택</span>

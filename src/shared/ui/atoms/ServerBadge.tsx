@@ -33,7 +33,7 @@ export function ServerBadge({ code = null, imageUrl = null, name, size = 17 }: P
         <span
             title={name}
             aria-label={name}
-            className="inline-flex shrink-0 items-center text-orange-500"
+            className="inline-flex shrink-0 items-center text-watermelon-500"
             style={{ width: size, height: size }}
         >
             <AwardIcon size={size} strokeWidth={2.4} />

@@ -17,9 +17,8 @@ import { ROUTES } from '@/shared/lib/routes'
 import { uploadImageToS3 } from '@/shared/lib/upload'
 import { useAppState } from '@/shared/store/AppStateProvider'
 import { notFound, useParams, useRouter } from 'next/navigation'
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { AlertModal } from '@/shared/ui/molecules/AlertModal'
-import { ConfirmModal } from '@/shared/ui/molecules/ConfirmModal'
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
+import { Dialog } from '@/shared/ui'
 
 function ddayLabel(endsAt: string) {
     const days = Math.ceil((new Date(endsAt).getTime() - Date.now()) / 86_400_000)
@@ -41,6 +40,7 @@ function toChallengeData(d: ChallengeDetailData): ChallengeData {
         owner: '',
         joined: d.joined,
         completed: d.completed,
+        coverUrl: d.imageUrl ?? undefined,
         ended: d.periodType === 'LIMITED' && !!d.endsAt && new Date(d.endsAt).getTime() <= Date.now(),
         mine: `나 ${unlocked}/${total}`,
         progress: total ? unlocked / total : 0, // ProgressBar는 0~1 비율
@@ -50,6 +50,7 @@ function toChallengeData(d: ChallengeDetailData): ChallengeData {
             name: s.foodName,
             emoji: '🍽️',
             imageUrl: s.imageUrl ?? undefined,
+            storeName: s.storeName ?? undefined,
             placeName: s.placeName,
             myImageUrl: s.myImageUrl,
             unlockedAt: s.unlockedAt,
@@ -59,7 +60,7 @@ function toChallengeData(d: ChallengeDetailData): ChallengeData {
 }
 
 /** `/challenge/[id]` 챌린지 상세 */
-export default function ChallengeDetailPage() {
+function ChallengeDetailPageInner() {
     const router = useRouter()
     const { id } = useParams<{ id: string }>()
     const { startRegistration } = useAppState()
@@ -101,8 +102,8 @@ export default function ChallengeDetailPage() {
     if (missing) notFound()
     if (!challenge) {
         return (
-            <div className="flex h-full items-center justify-center bg-cream-100">
-                <p className="text-sm text-brown-soft">불러오는 중…</p>
+            <div className="flex h-full items-center justify-center bg-surface-app">
+                <p className="text-sm text-neutral-800">불러오는 중…</p>
             </div>
         )
     }
@@ -114,7 +115,7 @@ export default function ChallengeDetailPage() {
               rewardBadge: {
                   emoji: '🏆',
                   name: rewardBadge.name,
-                  tone: 'bg-orange-100 text-orange-700',
+                  tone: 'bg-watermelon-100 text-watermelon-700',
                   code: rewardBadge.code ?? undefined,
                   customImage: resolveBadgeImage(rewardBadge.code, rewardBadge.imageUrl) ?? undefined,
               },
@@ -122,7 +123,7 @@ export default function ChallengeDetailPage() {
         : challenge
 
     return (
-        <>
+        <div className="relative h-full">
             <ChallengeDetail
                 challenge={challengeWithReward}
                 onBack={() => {
@@ -166,26 +167,36 @@ export default function ChallengeDetailPage() {
                     onGoToBadges={() => router.push(ROUTES.myBadges)}
                 />
             )}
-            {alertMessage && <AlertModal title="오류" message={alertMessage} onClose={() => setAlertMessage(null)} />}
+            {alertMessage && <Dialog title="오류" message={alertMessage} onClose={() => setAlertMessage(null)} />}
             {confirmLeave && (
-                <ConfirmModal
+                <Dialog
                     title="챌린지 포기"
                     message="이 챌린지를 포기할까요? 내 인증 기록도 사라져요."
-                    confirmText="포기하기"
                     cancelText="계속하기"
                     danger
-                    onCancel={() => setConfirmLeave(false)}
-                    onConfirm={async () => {
-                        setConfirmLeave(false)
-                        try {
-                            await leaveChallenge(id)
-                            router.push(ROUTES.challenge)
-                        } catch (e) {
-                            setAlertMessage(e instanceof Error ? e.message : '나가기에 실패했어요')
-                        }
+                    onClose={() => setConfirmLeave(false)}
+                    action={{
+                        label: '포기하기',
+                        onClick: async () => {
+                            setConfirmLeave(false)
+                            try {
+                                await leaveChallenge(id)
+                                router.push(ROUTES.challenge)
+                            } catch (e) {
+                                setAlertMessage(e instanceof Error ? e.message : '나가기에 실패했어요')
+                            }
+                        },
                     }}
                 />
             )}
-        </>
+        </div>
+    )
+}
+
+export default function ChallengeDetailPage() {
+    return (
+        <Suspense fallback={null}>
+            <ChallengeDetailPageInner />
+        </Suspense>
     )
 }

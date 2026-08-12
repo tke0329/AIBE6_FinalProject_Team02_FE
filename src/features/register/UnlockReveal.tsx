@@ -1,7 +1,8 @@
 'use client'
 
 import { motion, useReducedMotion } from 'framer-motion'
-import { ClockIcon } from 'lucide-react'
+import { ClockIcon, Sparkles, Star } from 'lucide-react'
+import { StarRank } from '@/shared/ui'
 
 export interface RevealCard {
     slotId: number
@@ -55,7 +56,7 @@ export function UnlockReveal({ cards, awaitingReview, collectedCount, totalSlots
     return (
         <div
             className={`relative flex h-full flex-col items-center justify-center overflow-hidden px-8 text-center ${
-                celebrate ? 'bg-orange-500' : 'bg-cream-100'
+                celebrate ? 'bg-watermelon-500' : 'bg-surface-app'
             }`}
         >
             {/* 반짝임은 첫 해금에만, 1회만 재생 (무한 루프 장식 금지) */}
@@ -74,7 +75,13 @@ export function UnlockReveal({ cards, awaitingReview, collectedCount, totalSlots
                             top: `${20 + (index % 5) * 12}%`,
                         }}
                     >
-                        {['✨', '🎉', '⭐'][index % 3]}
+                        {
+                            [
+                                <Sparkles key="a" size={22} className="text-lime-500" fill="currentColor" />,
+                                <Star key="b" size={22} className="text-lime-500" fill="currentColor" />,
+                                <Sparkles key="c" size={22} className="text-lime-500" fill="currentColor" />,
+                            ][index % 3]
+                        }
                     </motion.span>
                 ))}
 
@@ -129,10 +136,9 @@ export function UnlockReveal({ cards, awaitingReview, collectedCount, totalSlots
                             {card.name}
                         </span>
 
-                        <span aria-label={`별 ${card.rank}개`} className="mt-1 text-action-primary">
-                            {'★'.repeat(card.rank)}
-                            {'☆'.repeat(Math.max(0, 3 - card.rank))}
-                        </span>
+                        <div className="mt-1">
+                            <StarRank value={card.rank} size={16} />
+                        </div>
 
                         {!card.firstUnlock && (
                             <span className="mt-1 rounded-full bg-surface-accent px-2 py-0.5 text-xs font-bold text-content-link">
@@ -160,7 +166,7 @@ export function UnlockReveal({ cards, awaitingReview, collectedCount, totalSlots
                 transition={reduceMotion ? { duration: 0 } : { delay: 0.5 + cards.length * 0.18 }}
                 onClick={onGoDex}
                 className={`mt-10 h-cta rounded-full border-2 px-10 font-display text-lg ${
-                    celebrate ? 'border-white text-white' : 'border-orange-400 text-orange-600'
+                    celebrate ? 'border-white text-white' : 'border-watermelon-400 text-watermelon-600'
                 }`}
             >
                 도감 보러 가기
@@ -174,7 +180,7 @@ export function UnlockReveal({ cards, awaitingReview, collectedCount, totalSlots
  */
 function ReviewRequested({ names, onGoDex }: { names: string[]; onGoDex: () => void }) {
     return (
-        <div className="flex h-full flex-col items-center justify-center bg-cream-100 px-8 text-center">
+        <div className="flex h-full flex-col items-center justify-center bg-surface-app px-8 text-center">
             <ClockIcon size={44} aria-hidden className="text-content-link" />
             <h1 className="mt-4 font-display text-xl text-content-primary">검토를 요청했어요</h1>
             <p className="mt-2 text-sm leading-6 text-content-secondary">
@@ -199,7 +205,7 @@ function ReviewRequested({ names, onGoDex }: { names: string[]; onGoDex: () => v
             <button
                 type="button"
                 onClick={onGoDex}
-                className="mt-10 h-cta rounded-full border-2 border-orange-400 px-10 font-display text-lg text-orange-600"
+                className="mt-10 h-cta rounded-full border-2 border-watermelon-400 px-10 font-display text-lg text-watermelon-600"
             >
                 도감 보러 가기
             </button>

@@ -114,7 +114,7 @@ export function YearMonthWheel({ month, maxMonth, onDone }: Props) {
                 {/* 가운데 선택 칸 표시. 불투명한 띠라 휠보다 뒤에 깔아야 글자를 가리지 않는다 */}
                 <div
                     aria-hidden
-                    className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 rounded-xl bg-cream-100"
+                    className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 rounded-xl bg-neutral-50"
                     style={{ height: ROW }}
                 />
                 {/* absolute인 띠보다 나중에 그려지도록 이쪽도 쌓임 맥락에 올린다 */}

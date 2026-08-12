@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { ChevronLeftIcon, ChevronRightIcon, MapPinIcon } from 'lucide-react'
-import { BottomSheet } from '@/shared/ui/molecules/BottomSheet'
-import { ConfirmDialog } from '@/shared/ui/molecules/ConfirmDialog'
+import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
+import { BottomSheet, Dialog } from '@/shared/ui'
 import { PhotoCarousel } from './PhotoCarousel'
 import { deleteRecord, fetchRecord } from './logitApi'
 import { madeErrorMessage } from './errors'
@@ -57,7 +56,7 @@ export function RecordDetailSheet({ madeDexId, recordIds, onClose, onEdit, onDel
     }
 
     return (
-        <BottomSheet title={record?.slotName ?? '기록'} onClose={onClose} draggable maxHeightClass="max-h-[88%]">
+        <BottomSheet title={record?.slotName ?? '기록'} onClose={onClose} maxHeightClass="max-h-[88%]">
             <div className="no-scrollbar flex-1 overflow-y-auto px-5 pb-6 pt-3">
                 {recordIds.length > 1 && (
                     <div className="flex items-center justify-between pb-3">
@@ -90,30 +89,12 @@ export function RecordDetailSheet({ madeDexId, recordIds, onClose, onEdit, onDel
                 )}
 
                 {loading && !error && (
-                    <div className="aspect-[4/3] w-full animate-pulse rounded-2xl bg-cream-200" aria-hidden />
+                    <div className="aspect-square w-full animate-pulse rounded-2xl bg-neutral-100" aria-hidden />
                 )}
 
                 {record && !loading && !error && (
                     <>
                         <PhotoCarousel photos={record.photos} />
-
-                        <div className="flex flex-wrap gap-1 pt-3">
-                            {record.foodNames.map((food) => (
-                                <span
-                                    key={food}
-                                    className="rounded-full bg-orange-100 px-2 py-1 text-xs font-bold text-orange-600"
-                                >
-                                    {food}
-                                </span>
-                            ))}
-                        </div>
-
-                        {record.locationName && (
-                            <p className="flex items-center gap-1 pt-2 text-xs text-content-secondary">
-                                <MapPinIcon size={14} aria-hidden />
-                                {record.locationName}
-                            </p>
-                        )}
 
                         <p className="pt-3 text-xs text-content-muted">
                             {record.loggedAt && `${timeLabel(record.loggedAt)} · `}
@@ -125,7 +106,7 @@ export function RecordDetailSheet({ madeDexId, recordIds, onClose, onEdit, onDel
                                 <button
                                     type="button"
                                     onClick={() => onEdit(record.recordId)}
-                                    className="min-h-touch rounded-2xl bg-cream-200 text-sm font-bold text-content-secondary"
+                                    className="min-h-touch rounded-2xl bg-neutral-100 text-sm font-bold text-content-secondary"
                                 >
                                     수정하기
                                 </button>
@@ -143,12 +124,12 @@ export function RecordDetailSheet({ madeDexId, recordIds, onClose, onEdit, onDel
             </div>
 
             {confirming && (
-                <ConfirmDialog
+                <Dialog
                     title="기록을 지울까요?"
-                    message="사진과 음식 이름이 함께 사라져요. 되돌릴 수 없어요."
-                    actionText="삭제하기"
-                    onCancel={() => setConfirming(false)}
-                    onConfirm={() => void remove()}
+                    message="사진과 사진에 붙인 글이 함께 사라져요. 되돌릴 수 없어요."
+                    danger
+                    action={{ label: '삭제하기', onClick: () => void remove() }}
+                    onClose={() => setConfirming(false)}
                 />
             )}
         </BottomSheet>

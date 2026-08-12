@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react'
 import { XIcon } from 'lucide-react'
 
-import { BottomSheet } from '@/shared/ui/molecules/BottomSheet'
+import { BottomSheet } from '@/shared/ui'
 import { INVITE_CODE_LENGTH, normalizeInviteCode } from './types'
 
 interface Props {
@@ -96,7 +96,7 @@ export function MadeDexCodeSheet({ onSubmit, onClose }: Props) {
                             autoCapitalize="characters"
                             autoComplete="off"
                             aria-label={`초대 코드 ${index + 1}번째 자리`}
-                            className="h-14 w-12 rounded-2xl bg-cream-200 text-center font-display text-2xl uppercase text-content-primary outline-none focus:ring-2 focus:ring-orange-400"
+                            className="h-14 w-12 rounded-2xl bg-neutral-100 text-center font-display text-2xl uppercase text-content-primary outline-none focus:ring-2 focus:ring-watermelon-400"
                         />
                     ))}
                 </div>

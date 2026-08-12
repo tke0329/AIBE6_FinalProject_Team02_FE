@@ -21,9 +21,9 @@ interface BadgeProps {
 }
 
 const variantClass: Record<BadgeVariant, string> = {
-    dday: 'inline-flex items-center rounded-full bg-orange-100 px-2 py-1 text-xs font-bold text-orange-600',
-    type: 'inline-flex items-center rounded-full bg-cream-200 px-2 py-1 text-xs font-medium text-content-secondary',
-    member: 'flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 border-white bg-orange-100 text-xs font-bold text-orange-600',
+    dday: 'inline-flex items-center rounded-full bg-watermelon-100 px-2 py-1 text-xs font-bold text-watermelon-600',
+    type: 'inline-flex items-center rounded-full bg-neutral-100 px-2 py-1 text-xs font-medium text-content-secondary',
+    member: 'flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 border-white bg-watermelon-100 text-xs font-bold text-watermelon-600',
     reward: 'flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white/60 text-2xl',
 }
 

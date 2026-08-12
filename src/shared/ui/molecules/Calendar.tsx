@@ -32,7 +32,7 @@ export function Calendar({ className, classNames, showOutsideDays = false, ...pr
                 day: 'flex-1 p-1',
                 // 빈 칸과 날짜를 구분하려고 옅은 원을 깔아 둔다
                 day_button:
-                    'flex aspect-square w-full items-center justify-center rounded-full bg-cream-100 text-sm font-medium text-content-primary transition-colors active:scale-[0.98]',
+                    'flex aspect-square w-full items-center justify-center rounded-full bg-neutral-50 text-sm font-medium text-content-primary transition-colors active:scale-[0.98]',
                 today: '[&>button]:font-bold [&>button]:text-content-link',
                 selected: '[&>button]:bg-action-primary [&>button]:font-bold [&>button]:text-content-on-action',
                 outside: 'opacity-40',

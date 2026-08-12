@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { MAX_PHOTOS, putToS3, requestUploadTargets, validatePhotoFile } from '@/shared/lib/upload'
-import { createRecord, fetchRecord, fetchSlots, setDayCardCover, updateRecord } from './logitApi'
-import { madeErrorMessage } from './errors'
+import { createRecord, fetchFeed, fetchRecord, fetchSlots, setDayCardCover, updateRecord } from './logitApi'
+import { isPastDate, isSlotTaken, madeErrorMessage } from './errors'
 import { RECORD_MAX_PHOTOS, timeLabel } from './logitTypes'
 import { hasFailure, newPhotoId, newPhotosOf, readyCount, updatePayloadOf } from './recordPhotos'
-import type { LogitSlot } from './logitTypes'
+import type { LogitFeed, LogitSlot } from './logitTypes'
 import type { RecordPhoto } from './recordPhotos'
 import type { MadeDexId } from './types'
 
@@ -21,6 +21,10 @@ export function useRecordForm({ madeDexId, recordId, initialSlotId, initialDate 
     const [slots, setSlots] = useState<LogitSlot[]>([])
     const [slotId, setSlotId] = useState<number | null>(initialSlotId)
     const [loggedOn, setLoggedOn] = useState(initialDate)
+    /** 서버가 준 기준일. 이게 정해지기 전에는 지난 기록인지 판단하지 않는다 */
+    const [today, setToday] = useState('')
+    /** 그날 내가 이미 채운 끼니. 하루에 한 끼니는 한 번이다 */
+    const [taken, setTaken] = useState<number[]>([])
     const [photos, setPhotos] = useState<RecordPhoto[]>([])
     // `HH:mm`. 비어 있으면 시각을 남기지 않는다
     const [loggedTime, setLoggedTime] = useState('')
@@ -45,18 +49,27 @@ export function useRecordForm({ madeDexId, recordId, initialSlotId, initialDate 
     // 숨긴 슬롯에는 새로 쓸 수 없다. 고를 수 있는 것만 보여 준다
     const selectable = useMemo(() => slots.filter((slot) => !slot.hidden), [slots])
 
+    /**
+     * 지난 기록은 사진에 붙인 글만 고칠 수 있다. 사진 구성·끼니·시각은 잠긴다.
+     * 기준일을 받기 전에는 false로 둔다 — 잠깐 잠겼다 풀리면 화면이 튄다.
+     */
+    const past = recordId !== null && today !== '' && loggedOn !== today
+
     useEffect(() => {
         let live = true
         setLoading(true)
 
         const load = async () => {
-            const [allSlots, record] = await Promise.all([
+            const [allSlots, record, feed] = await Promise.all([
                 fetchSlots(madeDexId),
                 recordId === null ? Promise.resolve(null) : fetchRecord(madeDexId, recordId),
+                fetchFeed(madeDexId, initialDate || undefined),
             ])
             if (!live) return
 
             setSlots(allSlots)
+            setToday(feed.today)
+            setTaken(takenSlotIds(feed, recordId))
             if (record) {
                 setSlotId(record.slotId)
                 setLoggedOn(record.loggedOn)
@@ -68,6 +81,8 @@ export function useRecordForm({ madeDexId, recordId, initialSlotId, initialDate 
                         photoId: photo.photoId,
                         url: photo.url,
                         caption: photo.caption ?? '',
+                        cropX: photo.cropX,
+                        cropY: photo.cropY,
                     })),
                 )
             }
@@ -84,7 +99,7 @@ export function useRecordForm({ madeDexId, recordId, initialSlotId, initialDate 
         return () => {
             live = false
         }
-    }, [madeDexId, recordId, applyPhotos])
+    }, [madeDexId, recordId, initialDate, applyPhotos])
 
     // 미리보기 blob URL은 두면 페이지를 떠나도 메모리에 남는다
     useEffect(() => {
@@ -160,6 +175,8 @@ export function useRecordForm({ madeDexId, recordId, initialSlotId, initialDate 
                 file,
                 previewUrl: URL.createObjectURL(file),
                 caption: '',
+                cropX: 50,
+                cropY: 50,
             }))
 
             applyPhotos((current) => [...current, ...accepted])
@@ -170,6 +187,10 @@ export function useRecordForm({ madeDexId, recordId, initialSlotId, initialDate 
 
     const writeCaption = (id: string, caption: string) => {
         applyPhotos((current) => current.map((photo) => (photo.id === id ? { ...photo, caption } : photo)))
+    }
+
+    const writeCrop = (id: string, cropX: number, cropY: number) => {
+        applyPhotos((current) => current.map((photo) => (photo.id === id ? { ...photo, cropX, cropY } : photo)))
     }
 
     const removePhoto = (id: string) => {
@@ -184,6 +205,21 @@ export function useRecordForm({ madeDexId, recordId, initialSlotId, initialDate 
             const target = current.find((photo) => photo.id === id)
             if (!target) return current
             return [target, ...current.filter((photo) => photo.id !== id)]
+        })
+    }
+
+    const movePhoto = (fromIndex: number, toIndex: number) => {
+        applyPhotos((current) => {
+            if (fromIndex === toIndex) return current
+            // 드래그 도중 실패한 사진이 빠지면 잡아 둔 인덱스가 어긋난다.
+            // 범위 밖이면 splice가 빈 배열을 돌려주고 undefined가 목록에 꽂힌다
+            const inRange = (index: number) => index >= 0 && index < current.length
+            if (!inRange(fromIndex) || !inRange(toIndex)) return current
+
+            const next = [...current]
+            const [moved] = next.splice(fromIndex, 1)
+            next.splice(toIndex, 0, moved)
+            return next
         })
     }
 
@@ -245,25 +281,72 @@ export function useRecordForm({ madeDexId, recordId, initialSlotId, initialDate 
                 loggedOn,
                 // 서버는 LocalTime을 받는다. 비었으면 시각을 남기지 않는다
                 loggedTime: loggedTime || null,
-                foodNames: [],
-                locationName: null,
-                lat: null,
-                lng: null,
             }
             if (recordId === null) {
                 // 새 기록은 보낸 순서가 그대로 저장된다 — 대표가 이미 맨 앞이다
-                await createRecord(madeDexId, { ...common, photos: newPhotosOf(photos) })
+                await createRecord(madeDexId, { ...common, loggedOn, photos: newPhotosOf(photos) })
             } else {
                 await updateRecord(madeDexId, recordId, { ...common, ...updatePayloadOf(photos) })
-                await fixCover(recordId)
+                // 지난 기록은 서버가 대표 변경을 막는다. 부를 이유가 없다
+                if (!past) await fixCover(recordId)
             }
             return true
         } catch (failure) {
+            if (isPastDate(failure)) {
+                await moveToToday(failure)
+                return false
+            }
+            if (isSlotTaken(failure)) {
+                await rereadTaken(failure)
+                return false
+            }
             setError(madeErrorMessage(failure, '기록을 남기지 못했어요.'))
             return false
         } finally {
             setSubmitting(false)
         }
+    }
+
+    /**
+     * 선점 목록을 갈아 끼운다.
+     * 이미 찬 끼니가 골라진 채로 남으면 칩이 잠기지 않아(잠금 조건이 !selected다)
+     * 사용자가 그대로 다시 눌러 또 거절당한다. 그래서 선택을 놓아 준다.
+     */
+    const applyTaken = (next: number[]) => {
+        setTaken(next)
+        setSlotId((current) => (current !== null && next.includes(current) ? null : current))
+    }
+
+    /**
+     * 폼을 채우는 사이 자정을 넘겼다. 올린 사진은 멀쩡하니 버리지 않고,
+     * 날짜만 새 기준일로 되잡아 한 번 더 누르면 되게 한다.
+     * 새 날의 그 끼니가 이미 차 있을 수도 있어 선점 목록도 다시 읽는다.
+     */
+    const moveToToday = async (failure: unknown) => {
+        try {
+            const feed = await fetchFeed(madeDexId)
+            setToday(feed.today)
+            setLoggedOn(feed.today)
+            applyTaken(takenSlotIds(feed, recordId))
+        } catch {
+            // 기준일을 못 받아도 아래 문구는 띄운다. 사용자가 상황은 알아야 한다
+        }
+        setError(madeErrorMessage(failure, '날짜가 바뀌었어요. 오늘 기록으로 다시 올려 주세요.'))
+    }
+
+    /**
+     * 그 끼니는 이미 찼다. 유니크 키에 author_id가 들어가므로 남이 채운 게 아니라
+     * 내가 다른 기기·탭에서 먼저 올린 경우다. 화면의 선점 목록이 낡았다는 뜻이라 다시 읽는다.
+     */
+    const rereadTaken = async (failure: unknown) => {
+        try {
+            const feed = await fetchFeed(madeDexId, loggedOn || undefined)
+            setToday(feed.today)
+            applyTaken(takenSlotIds(feed, recordId))
+        } catch {
+            // 목록을 못 받아도 아래 문구는 띄운다
+        }
+        setError(madeErrorMessage(failure, '이미 기록한 끼니예요.'))
     }
 
     // 올리는 중인 사진을 세면 상한을 넘긴 채로 제출된다
@@ -273,6 +356,10 @@ export function useRecordForm({ madeDexId, recordId, initialSlotId, initialDate 
         slots: selectable,
         slotId,
         setSlotId,
+        /** 신규 등록에서 이미 찬 끼니. 고르지 못하게 막는다 */
+        taken,
+        /** 지난 기록이라 글만 고칠 수 있는 상태 */
+        past,
         loggedOn,
         loggedTime,
         setLoggedTime,
@@ -284,9 +371,28 @@ export function useRecordForm({ madeDexId, recordId, initialSlotId, initialDate 
         failed,
         addFiles,
         writeCaption,
+        writeCrop,
         makeCover,
+        movePhoto,
         removePhoto,
         retryPhoto,
         submit,
     }
+}
+
+/**
+ * 그 날짜에 내가 이미 채운 끼니를 모은다.
+ * 고치는 중인 기록이 놓인 끼니는 뺀다 — 자기 자리를 자기가 막으면 안 된다.
+ */
+function takenSlotIds(feed: LogitFeed, editingRecordId: number | null): number[] {
+    return feed.slots
+        .filter((slot) =>
+            slot.cards.some(
+                (card) =>
+                    card.me &&
+                    card.recordCount > 0 &&
+                    !(editingRecordId !== null && card.recordIds.includes(editingRecordId)),
+            ),
+        )
+        .map((slot) => slot.slotId)
 }

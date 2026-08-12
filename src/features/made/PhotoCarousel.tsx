@@ -34,7 +34,12 @@ export function PhotoCarousel({ photos, className = '' }: Props) {
                     <figure key={photo.photoId} className="w-full shrink-0 snap-start">
                         {/* presigned URL이라 next/image의 도메인 설정 대상이 아니다 */}
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={photo.url} alt="" className="aspect-[4/3] w-full rounded-2xl object-cover" />
+                        <img
+                            src={photo.url}
+                            alt=""
+                            className="aspect-square w-full rounded-2xl object-cover"
+                            style={{ objectPosition: `${photo.cropX}% ${photo.cropY}%` }}
+                        />
                         {photo.caption && (
                             <figcaption className="break-keep px-1 pt-2 text-sm leading-5 text-content-primary">
                                 {photo.caption}
@@ -52,7 +57,7 @@ export function PhotoCarousel({ photos, className = '' }: Props) {
                                 key={photo.photoId}
                                 aria-hidden
                                 className={`h-1.5 w-1.5 rounded-full transition-colors ${
-                                    position === index ? 'bg-action-primary' : 'bg-cream-300'
+                                    position === index ? 'bg-action-primary' : 'bg-neutral-200'
                                 }`}
                             />
                         ))

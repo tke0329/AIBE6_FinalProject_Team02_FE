@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Reorder, useDragControls } from 'framer-motion'
 import { GripVerticalIcon, PencilIcon, RotateCcwIcon, Trash2Icon } from 'lucide-react'
-import { BottomSheet } from '@/shared/ui/molecules/BottomSheet'
-import { ConfirmDialog } from '@/shared/ui/molecules/ConfirmDialog'
+import { BottomSheet, Dialog } from '@/shared/ui'
 import { useSlotEditor } from './useSlotEditor'
 import { MAX_SLOTS, MIN_SLOTS, SLOT_NAME_MAX } from './logitTypes'
 import type { LogitSlot } from './logitTypes'
@@ -60,7 +59,8 @@ export function SlotEditSheet({ madeDexId, onClose, onChanged }: Props) {
     }
 
     return (
-        <BottomSheet title="구성 편집" onClose={onClose} maxHeightClass="max-h-[85%]">
+        // 끼니 추가·이름변경·순서 저장이 도는 중에는 닫지 않는다
+        <BottomSheet title="구성 편집" onClose={onClose} dismissible={!editor.busy} maxHeightClass="max-h-[85%]">
             <div className="no-scrollbar flex-1 overflow-y-auto px-5 pb-6 pt-3">
                 <p className="break-keep text-sm text-content-secondary">
                     참여자 누구나 이름과 순서를 편집할 수 있어요!
@@ -101,7 +101,7 @@ export function SlotEditSheet({ madeDexId, onClose, onChanged }: Props) {
                         placeholder="예: 야식, 간식"
                         aria-label="새 끼니 이름"
                         disabled={full}
-                        className="min-h-touch min-w-0 flex-1 rounded-xl bg-cream-100 px-3 text-sm text-content-primary disabled:text-action-disabled-text"
+                        className="min-h-touch min-w-0 flex-1 rounded-xl bg-neutral-50 px-3 text-sm text-content-primary disabled:text-action-disabled-text"
                     />
                     <button
                         type="submit"
@@ -146,7 +146,7 @@ export function SlotEditSheet({ madeDexId, onClose, onChanged }: Props) {
             </div>
 
             {removing && (
-                <ConfirmDialog
+                <Dialog
                     title={`${removing.name}을 없앨까요?`}
                     message={
                         removing.hasRecords ? (
@@ -159,12 +159,15 @@ export function SlotEditSheet({ madeDexId, onClose, onChanged }: Props) {
                             '아직 기록이 없어서 바로 없어져요.'
                         )
                     }
-                    actionText="없애기"
-                    onCancel={() => setRemoving(null)}
-                    onConfirm={() => {
-                        apply(() => editor.remove(removing.slotId))
-                        setRemoving(null)
+                    danger
+                    action={{
+                        label: '없애기',
+                        onClick: () => {
+                            apply(() => editor.remove(removing.slotId))
+                            setRemoving(null)
+                        },
                     }}
+                    onClose={() => setRemoving(null)}
                 />
             )}
         </BottomSheet>
@@ -227,7 +230,7 @@ function SlotRow({ slot, busy, canRemove, onRename, onRemove, onMove, onDropped 
                         onBlur={submit}
                         maxLength={SLOT_NAME_MAX}
                         aria-label="끼니 이름"
-                        className="min-h-touch min-w-0 flex-1 rounded-xl bg-cream-100 px-3 text-sm text-content-primary"
+                        className="min-h-touch min-w-0 flex-1 rounded-xl bg-neutral-50 px-3 text-sm text-content-primary"
                     />
                     <button
                         type="submit"

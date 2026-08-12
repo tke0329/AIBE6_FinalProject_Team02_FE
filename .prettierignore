@@ -7,3 +7,7 @@ coverage
 public
 package-lock.json
 *.log
+
+# 자동 생성 (npm run build:font). unicode-range 한 줄이 6천 자라 포맷할 이유가 없고,
+# 포맷하면 생성 직후 항상 prettier를 한 번 더 돌려야 한다
+src/app/fonts.css

@@ -1,11 +1,16 @@
 import type { MadeDexId } from '@/features/made/types'
-import type { NavTab } from '@/shared/ui/molecules/BottomNav'
+import type { NavTab } from '@/shared/ui'
 
 /**
  * 앱의 모든 URL을 한곳에서 관리.
  * 라우트 경로를 문자열로 흩뿌리지 말고 항상 여기를 통해 만들 것.
  */
 export const ROUTES = {
+    /**
+     * 앱 진입점. **어떤 화면인지는 `src/app/page.tsx`가 정한다** — 지금은 로그잇으로 보낸다.
+     * 로그인·온보딩·OAuth가 끝난 뒤 돌아올 곳으로 계속 이걸 쓴다.
+     * 첫 화면을 바꿀 때 여기저기 고치지 않으려고 한 겹 둔 것
+     */
     home: '/',
     onboarding: '/onboarding',
     //로그인 경로
@@ -13,6 +18,7 @@ export const ROUTES = {
     oauthCallback: '/oauth/callback',
     nicknameSetup: '/nickname-setup',
 
+    /** 인자 없으면 카테고리 목록, 카테고리를 주면 그 카테고리 그리드 */
     basicDex: (category?: string) => (category ? `/basicDex?category=${encodeURIComponent(category)}` : '/basicDex'),
     dexDetail: (id: number, category?: string) =>
         category ? `/dex/${id}?category=${encodeURIComponent(category)}` : `/dex/${id}`,
@@ -24,7 +30,6 @@ export const ROUTES = {
     madeJoinWithCode: (code: string) => `/made/join?code=${encodeURIComponent(code)}`,
     madeDex: (dexId: MadeDexId) => `/made/${dexId}`,
     madeInfo: (dexId: MadeDexId) => `/made/${dexId}/info`,
-    madeManage: (dexId: MadeDexId) => `/made/${dexId}/manage`,
     madeEdit: (dexId: MadeDexId) => `/made/${dexId}/edit`,
     madeParticipants: (dexId: MadeDexId) => `/made/${dexId}/participants`,
     /** 식사 기록 화면(CATCHEAT-52). 날짜와 끼니를 채운 채로 연다 */
@@ -58,7 +63,7 @@ export const ROUTES = {
 
 /** 하단 네비 4탭 → 라우트 */
 export const TAB_HREF: Record<NavTab, string> = {
-    기본: ROUTES.home,
+    기본: ROUTES.basicDex(),
     제작: ROUTES.made,
     챌린지: ROUTES.challenge,
     마이: ROUTES.my,

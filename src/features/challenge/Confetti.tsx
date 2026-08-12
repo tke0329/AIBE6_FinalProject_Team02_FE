@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react'
 import { motion } from 'framer-motion'
 
-const COLORS = ['#F97316', '#FB923C', '#FBBF24', '#34D399', '#60A5FA', '#F472B6']
+// Watermelon 팔레트 기반 축하 색: 워터멜론 핑크·연핑크·라임·민트 + 흰색, 따뜻한 포인트 1
+const COLORS = ['#FC6C85', '#FFB3C2', '#89F336', '#ADEBB3', '#FFFFFF', '#FFD24C']
 
 /** 해금 성공 시 한 번 터지는 컨페티. 화면 상단 중앙에서 쏟아진다. */
 export function Confetti({ count = 28 }: { count?: number }) {

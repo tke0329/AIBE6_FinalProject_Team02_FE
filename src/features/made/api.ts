@@ -6,7 +6,6 @@ import type {
     MadeDexInvitePreview,
     MadeDexMembers,
     MadeDexSummary,
-    MadeDexVisibility,
 } from './types'
 
 /** BE MadeDex.NAME_MAX / DESCRIPTION_MAX와 맞춘다 — 넘기면 서버가 막는다 */
@@ -16,7 +15,6 @@ export const MADE_DEX_DESCRIPTION_MAX = 500
 interface MadeDexCreateRequest {
     name: string
     description?: string
-    visibility: MadeDexVisibility
     /** S3에 먼저 올리고 받은 key */
     imageKey?: string
 }
@@ -25,7 +23,6 @@ interface MadeDexCreateRequest {
 interface MadeDexUpdateRequest {
     name: string
     description: string | null
-    visibility: MadeDexVisibility
     imageKey: string | null
 }
 

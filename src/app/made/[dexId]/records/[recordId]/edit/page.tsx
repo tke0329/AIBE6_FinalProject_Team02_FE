@@ -5,7 +5,7 @@ import { RecordForm } from '@/features/made/RecordForm'
 import { parseMadeDexId } from '@/features/made/types'
 import { ROUTES } from '@/shared/lib/routes'
 
-/** `/made/[dexId]/records/[recordId]/edit` 기록 고치기 */
+/** `/made/[dexId]/records/[recordId]/edit` 기록 수정 */
 export default function EditRecordPage() {
     const router = useRouter()
     const params = useParams<{ dexId: string; recordId: string }>()

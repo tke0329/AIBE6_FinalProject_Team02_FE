@@ -29,7 +29,7 @@ interface TabBarProps<T extends string> {
 }
 
 const trackClass: Record<TabBarVariant, string> = {
-    segmented: 'flex rounded-2xl bg-cream-200 p-1',
+    segmented: 'flex rounded-2xl bg-neutral-100 p-1',
     pill: 'flex items-center gap-2',
     scroll: 'flex w-max gap-2 pb-1',
 }
@@ -44,7 +44,7 @@ function tabClass(variant: TabBarVariant, active: boolean) {
     }
     if (variant === 'pill') {
         return `${base} rounded-full px-4 text-xs font-bold ${
-            active ? 'bg-orange-100 text-content-link' : 'text-content-secondary'
+            active ? 'bg-watermelon-100 text-content-link' : 'text-content-secondary'
         }`
     }
     return `${base} gap-2 rounded-full border px-4 text-xs font-bold ${

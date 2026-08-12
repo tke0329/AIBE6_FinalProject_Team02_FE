@@ -1,5 +1,5 @@
 import React from 'react'
-import { SparklesIcon, UsersIcon } from 'lucide-react'
+import { SparklesIcon, UsersIcon, FolderTreeIcon, TagIcon, SearchIcon, TrophyIcon } from 'lucide-react'
 import { BottomSheet } from './BottomSheet'
 
 type HelpKind = 'basic' | 'made' | 'challenge'
@@ -18,11 +18,11 @@ const helpCopy: Record<HelpKind, { title: string; items: Array<{ icon: React.Rea
                 text: '음식 사진을 찍으면 AI가 도감 음식을 찾아줘요.',
             },
             {
-                icon: <span aria-hidden>🗂️</span>,
+                icon: <FolderTreeIcon size={17} aria-hidden />,
                 text: '등록하면 음식 칸이 해금되고 기록 카드가 쌓여요.',
             },
             {
-                icon: <span aria-hidden>🏷️</span>,
+                icon: <TagIcon size={17} aria-hidden />,
                 text: '카테고리 태그로 원하는 음식만 빠르게 볼 수 있어요.',
             },
         ],
@@ -39,7 +39,7 @@ const helpCopy: Record<HelpKind, { title: string; items: Array<{ icon: React.Rea
                 text: '등록하기로 새 카드를 추가하고, 태그를 함께 남겨 보세요.',
             },
             {
-                icon: <span aria-hidden>🔎</span>,
+                icon: <SearchIcon size={17} aria-hidden />,
                 text: '카드명·장소·#태그로 기록을 검색할 수 있어요.',
             },
         ],
@@ -56,7 +56,7 @@ const helpCopy: Record<HelpKind, { title: string; items: Array<{ icon: React.Rea
                 text: '내 챌린지에서 진행 상황을, 탐색에서 새 챌린지를 확인해요.',
             },
             {
-                icon: <span aria-hidden>🏆</span>,
+                icon: <TrophyIcon size={17} aria-hidden />,
                 text: '챌린지 상세에서 내 기록과 참가자 랭킹을 볼 수 있어요.',
             },
         ],

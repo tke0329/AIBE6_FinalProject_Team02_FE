@@ -1,8 +1,6 @@
 import React, { useState } from 'react'
 import { ArrowLeftIcon, MenuIcon, PencilIcon, PlusIcon, SparklesIcon } from 'lucide-react'
-import { BottomNav, NavTab } from '@/shared/ui/molecules/BottomNav'
-import { DexHelpSheet } from '@/shared/ui/molecules/DexHelpSheet'
-import { HelpIcon } from '@/shared/ui/atoms/HelpIcon'
+import { BottomNav, DexHelpSheet, HelpIcon, NavTab } from '@/shared/ui'
 import { DateStrip } from './DateStrip'
 import { DayCardView } from './DayCardView'
 import { LogitCalendar } from './LogitCalendar'
@@ -32,9 +30,11 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
     const [openedRecordIds, setOpenedRecordIds] = useState<number[] | null>(null)
 
     const slots = feed.feed?.slots ?? []
+    // 로그잇은 오늘을 나누는 앱이다. 지난 날은 읽기만 한다
+    const canRecord = feed.today !== '' && feed.date === feed.today
 
     return (
-        <div className="relative flex h-full flex-col bg-cream-100">
+        <div className="relative flex h-full flex-col bg-surface-app">
             <header className="shrink-0 bg-surface-app px-5 pt-4">
                 <div className="flex items-center gap-2">
                     <button type="button" onClick={onBack} aria-label="로그잇 목록으로">
@@ -68,7 +68,7 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
                         <button
                             type="button"
                             onClick={feed.reload}
-                            className="mt-3 min-h-touch rounded-full bg-cream-200 px-5 text-sm font-bold text-content-secondary"
+                            className="mt-3 min-h-touch rounded-full bg-neutral-100 px-5 text-sm font-bold text-content-secondary"
                         >
                             다시 시도
                         </button>
@@ -77,8 +77,8 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
 
                 {feed.loading && !feed.feed && (
                     <div className="space-y-3 pt-5" aria-hidden>
-                        <div className="h-5 w-20 animate-pulse rounded-full bg-cream-200" />
-                        <div className="aspect-[4/3] w-4/5 animate-pulse rounded-2xl bg-cream-200" />
+                        <div className="h-5 w-20 animate-pulse rounded-full bg-neutral-100" />
+                        <div className="aspect-square w-4/5 animate-pulse rounded-2xl bg-neutral-100" />
                     </div>
                 )}
 
@@ -89,6 +89,7 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
                                 key={slot.slotId}
                                 slot={slot}
                                 onOpen={(card) => setOpenedRecordIds(card.recordIds)}
+                                canRecord={canRecord}
                                 onRecord={(target) => onRecord(feed.date, target.slotId)}
                             />
                         ))}
@@ -116,14 +117,16 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
                         오늘의 냉장고 만들기
                     </button>
                 )}
-                <button
-                    type="button"
-                    onClick={() => onRecord(feed.date)}
-                    className="flex h-cta items-center justify-center gap-1 rounded-full bg-action-primary text-sm font-bold text-content-on-action shadow-card"
-                >
-                    <PlusIcon size={18} aria-hidden />
-                    식사 기록하기
-                </button>
+                {canRecord && (
+                    <button
+                        type="button"
+                        onClick={() => onRecord(feed.date)}
+                        className="flex h-cta items-center justify-center gap-1 rounded-full bg-action-primary text-sm font-bold text-content-on-action shadow-card"
+                    >
+                        <PlusIcon size={18} aria-hidden />
+                        식사 기록하기
+                    </button>
+                )}
             </div>
 
             <BottomNav active="제작" onTab={onTab} />
@@ -161,7 +164,7 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
             )}
 
             {dayCardOpen && (
-                <div className="absolute inset-0 z-20 flex flex-col bg-cream-100">
+                <div className="absolute inset-0 z-20 flex flex-col bg-surface-app">
                     <div className="shrink-0 bg-surface-app px-5 pt-4">
                         <button
                             type="button"
@@ -177,6 +180,7 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
                             madeDexId={dexId}
                             date={feed.date}
                             title={title}
+                            canRecord={canRecord}
                             onRecord={() => onRecord(feed.date)}
                         />
                     </main>

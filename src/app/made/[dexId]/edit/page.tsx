@@ -7,7 +7,7 @@ import type { CoverImage } from '@/features/made/MadeDexFormFields'
 import { fetchMadeDexDetail, updateMadeDex } from '@/features/made/api'
 import { madeErrorMessage } from '@/features/made/errors'
 import { parseMadeDexId } from '@/features/made/types'
-import type { MadeDexDetail, MadeDexVisibility } from '@/features/made/types'
+import type { MadeDexDetail } from '@/features/made/types'
 import { ROUTES } from '@/shared/lib/routes'
 import { uploadImageToS3 } from '@/shared/lib/upload'
 
@@ -50,11 +50,10 @@ export default function MadeDexEditPage() {
 
     if (!dexId) notFound()
 
-    const save = async (name: string, description: string, visibility: MadeDexVisibility, image: CoverImage) => {
+    const save = async (name: string, description: string, image: CoverImage) => {
         await updateMadeDex(dexId, {
             name,
             description: description || null,
-            visibility,
             imageKey: await resolveImageKey(image),
         })
         router.replace(ROUTES.madeInfo(dexId))
@@ -62,11 +61,11 @@ export default function MadeDexEditPage() {
 
     if (!detail || detail.myRole !== 'OWNER') {
         return (
-            <div className="flex h-full items-center justify-center bg-cream-100">
+            <div className="flex h-full items-center justify-center bg-surface-app">
                 <p className="text-sm text-content-secondary">{error ?? '도감 정보를 불러오는 중…'}</p>
             </div>
         )
     }
 
-    return <MadeDexEditForm detail={detail} onSave={save} onBack={() => router.push(ROUTES.madeManage(dexId))} />
+    return <MadeDexEditForm detail={detail} onSave={save} onBack={() => router.push(ROUTES.madeInfo(dexId))} />
 }

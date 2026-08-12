@@ -1,22 +1,24 @@
 import { createReport } from '@/features/report/api'
 import { DexEntry } from '@/shared/data/dex'
 import { getLocalDexIllustrationUrl } from '@/shared/lib/dexIllustrations'
-import { HelpIcon } from '@/shared/ui/atoms/HelpIcon'
-import { ProgressBar } from '@/shared/ui/atoms/ProgressBar'
-import { SearchBar } from '@/shared/ui/atoms/SearchBar'
-import { StarRank } from '@/shared/ui/atoms/StarRank'
-import { BottomNav, NavTab } from '@/shared/ui/molecules/BottomNav'
-import { DexHelpSheet } from '@/shared/ui/molecules/DexHelpSheet'
-import { FoodCard } from '@/shared/ui/molecules/FoodCard'
-import { TabBar } from '@/shared/ui/molecules/TabBar'
+import {
+    BottomNav,
+    DexHelpSheet,
+    FoodCard,
+    HelpIcon,
+    NavTab,
+    ProgressBar,
+    SearchBar,
+    StarRank,
+    TabBar,
+} from '@/shared/ui'
 import { ArrowLeftIcon, ChevronDownIcon, PlusIcon } from 'lucide-react'
 import { useState } from 'react'
-import { useDexFilter } from './useDexFilter'
 import type { CategoryFilter } from './useDexFilter'
+import { useDexFilter } from './useDexFilter'
 interface DexGridProps {
     entries: DexEntry[]
     collectedIds: number[]
-    newlyUnlockedId?: number | null
     initialCategory?: CategoryFilter
     onBackToList: () => void
     onCategoryChange?: (category: CategoryFilter) => void
@@ -26,13 +28,28 @@ interface DexGridProps {
 }
 
 /**
+ * 카드 우측 상단 스티커. New와 검토대기가 같은 자리를 쓰며 동시에 뜨지 않는다 —
+ * 검토대기는 아직 안 열린 칸에만 붙기 때문이다.
+ */
+function CornerSticker({ label, tone }: { label: string; tone: 'new' | 'review' }) {
+    return (
+        <span
+            className={`absolute -right-2 -top-2 rounded-full px-2 py-1 text-xs font-bold leading-none text-white ${
+                tone === 'new' ? 'bg-blue-500' : 'bg-content-secondary'
+            }`}
+        >
+            {label}
+        </span>
+    )
+}
+
+/**
  * 기본 도감 (§6) — 200칸 고정, 미해금은 `?` 실루엣, 진행률 바 사용.
  * 그리드는 모바일 3열 기준(§2)이며 넓은 뷰포트에서만 열을 늘림.
  */
 export function DexGrid({
     entries,
     collectedIds,
-    newlyUnlockedId,
     initialCategory,
     onBackToList,
     onCategoryChange,
@@ -86,7 +103,7 @@ export function DexGrid({
     const displayTotal = activeCategory === '전체' ? entries.length : sectionTotal
 
     return (
-        <div className="relative flex h-full flex-col bg-cream-100">
+        <div className="relative flex h-full flex-col bg-surface-app">
             <header className="shrink-0 px-4 pt-4">
                 <div className="flex items-center justify-between gap-3">
                     <div className="flex min-w-0 items-center gap-2">
@@ -94,7 +111,7 @@ export function DexGrid({
                             type="button"
                             onClick={onBackToList}
                             aria-label="도감 목록으로 돌아가기"
-                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-card text-content-primary shadow-card transition-colors hover:bg-cream-50 active:scale-[0.98]"
+                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-card text-content-primary shadow-card transition-colors hover:bg-white active:scale-[0.98]"
                         >
                             <ArrowLeftIcon size={19} aria-hidden />
                         </button>
@@ -113,7 +130,7 @@ export function DexGrid({
                 <div className="mt-3 rounded-2xl bg-surface-card p-4 shadow-card">
                     <div className="mb-2 flex items-center justify-between">
                         <span className="text-sm font-medium text-content-secondary">수집률</span>
-                        <span className="rounded-full bg-orange-50 px-3 py-1 text-xs font-bold text-content-link">
+                        <span className="rounded-full bg-watermelon-50 px-3 py-1 text-xs font-bold text-content-link">
                             {displayCollected} / {displayTotal} · {displayPercentage}%
                         </span>
                     </div>
@@ -147,7 +164,7 @@ export function DexGrid({
                         aria-haspopup="listbox"
                         aria-expanded={unlockMenuOpen}
                         onClick={() => setUnlockMenuOpen((open) => !open)}
-                        className="flex min-h-touch items-center gap-2 rounded-full border border-edge-default bg-surface-card px-4 text-sm font-bold text-content-primary shadow-card transition-colors hover:bg-cream-50 active:scale-[0.98]"
+                        className="flex min-h-touch items-center gap-2 rounded-full border border-edge-default bg-surface-card px-4 text-sm font-bold text-content-primary shadow-card transition-colors hover:bg-white active:scale-[0.98]"
                     >
                         {unlockFilter}
                         <ChevronDownIcon
@@ -174,8 +191,8 @@ export function DexGrid({
                                     }}
                                     className={`min-h-touch w-full px-4 text-left text-sm ${
                                         unlockFilter === item.id
-                                            ? 'bg-orange-50 font-bold text-content-link'
-                                            : 'text-content-secondary hover:bg-cream-50'
+                                            ? 'bg-watermelon-50 font-bold text-content-link'
+                                            : 'text-content-secondary hover:bg-white'
                                     }`}
                                 >
                                     {item.label}
@@ -232,10 +249,12 @@ export function DexGrid({
                                 ))}
                         </div>
                     ) : (
-                        <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10">
+                        <div className="grid grid-cols-[repeat(auto-fill,minmax(104px,1fr))] gap-3">
                             {visibleEntries.map((entry) => {
                                 const unlocked = collected.has(entry.id)
-                                const isNew = entry.id === newlyUnlockedId
+                                const isNew = unlocked && entry.recentlyUnlocked === true
+                                // 이미 열린 칸이면 검토대기를 알릴 이유가 없다 — 칸은 벌써 열려 있다
+                                const isAwaitingReview = !unlocked && entry.awaitingReview === true
                                 return (
                                     <FoodCard
                                         key={entry.id}
@@ -245,15 +264,19 @@ export function DexGrid({
                                         state={!unlocked ? 'locked' : isNew ? 'recent' : 'unlocked'}
                                         accessibleName={
                                             unlocked
-                                                ? `${entry.name}, 해금됨, 별 ${entry.stars ?? 1}개`
-                                                : `${entry.name}, 미해금 카드`
+                                                ? `${entry.name}, 해금됨, 별 ${entry.stars ?? 1}개${
+                                                      isNew ? ', 새로 해금' : ''
+                                                  }`
+                                                : isAwaitingReview
+                                                  ? `${entry.name}, 미해금 카드, 운영진 검토 대기 중`
+                                                  : `${entry.name}, 미해금 카드`
                                         }
                                         onClick={() => onOpenEntry(entry.id, activeCategory)}
                                         corner={
                                             isNew ? (
-                                                <span className="absolute -right-2 -top-2 rounded-full bg-blue-500 px-2 py-1 text-xs font-bold leading-none text-white">
-                                                    New
-                                                </span>
+                                                <CornerSticker label="New" tone="new" />
+                                            ) : isAwaitingReview ? (
+                                                <CornerSticker label="검토대기" tone="review" />
                                             ) : undefined
                                         }
                                         footer={

@@ -51,4 +51,8 @@ export interface ChallengeData {
     targetRestaurants?: ChallengeTarget[]
     completedTargetIds?: string[]
     rewardBadge?: RewardBadge
+    /** 대표 이미지(프리사인 URL, 표시용) */
+    coverUrl?: string | null
+    /** 대표 이미지 업로드 파일(개설 마법사 → 개설 처리) */
+    coverFile?: Blob | null
 }

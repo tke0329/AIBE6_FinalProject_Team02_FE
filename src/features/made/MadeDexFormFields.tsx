@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { CameraIcon, GlobeIcon, LockIcon } from 'lucide-react'
+import { CameraIcon } from 'lucide-react'
 
 import { MADE_DEX_DESCRIPTION_MAX, MADE_DEX_NAME_MAX } from './api'
-import { DEFAULT_MADE_DEX_COVER, MadeDexVisibility } from './types'
+import { DEFAULT_MADE_DEX_COVER } from './types'
 
 /** 이미 올라가 있는 표지. 그대로 두면 key를 되돌려 보내고, 보여줄 땐 url을 쓴다 */
 export interface ExistingCover {
@@ -64,11 +64,11 @@ export function MadeDexCoverPicker({ preview, onPick, onClear }: CoverPickerProp
                     <img
                         src={preview ?? DEFAULT_MADE_DEX_COVER}
                         alt=""
-                        className="h-32 w-32 rounded-full bg-cream-200 object-cover"
+                        className="h-32 w-32 rounded-full bg-neutral-100 object-cover"
                     />
                     <span
                         aria-hidden
-                        className="absolute bottom-0 right-0 flex h-11 w-11 items-center justify-center rounded-full bg-content-primary text-cream-50 ring-4 ring-cream-100"
+                        className="absolute bottom-0 right-0 flex h-11 w-11 items-center justify-center rounded-full bg-content-primary text-white ring-4 ring-neutral-50"
                     >
                         <CameraIcon size={19} />
                     </span>
@@ -78,7 +78,7 @@ export function MadeDexCoverPicker({ preview, onPick, onClear }: CoverPickerProp
                     <button
                         type="button"
                         onClick={open}
-                        className="min-h-touch rounded-full bg-cream-200 px-4 text-sm font-bold text-content-primary"
+                        className="min-h-touch rounded-full bg-neutral-100 px-4 text-sm font-bold text-content-primary"
                     >
                         사진 {preview ? '바꾸기' : '고르기'}
                     </button>
@@ -130,7 +130,7 @@ export function MadeDexBasicFields({ name, description, onNameChange, onDescript
                 maxLength={MADE_DEX_NAME_MAX}
                 placeholder="예: 우리 동네 맛집 도감"
                 onChange={(event) => onNameChange(event.target.value)}
-                className="mt-2 w-full rounded-2xl bg-surface-card px-4 py-4 text-sm shadow-card outline-none focus:ring-2 focus:ring-orange-400"
+                className="mt-2 w-full rounded-2xl bg-surface-card px-4 py-4 text-sm shadow-card outline-none focus:ring-2 focus:ring-watermelon-400"
             />
 
             <label htmlFor="made-dex-description" className="mt-6 block text-sm font-bold text-content-primary">
@@ -144,62 +144,11 @@ export function MadeDexBasicFields({ name, description, onNameChange, onDescript
                 rows={4}
                 placeholder="어떤 도감인지 알려주면 참여자가 이해하기 쉬워요"
                 onChange={(event) => onDescriptionChange(event.target.value)}
-                className="mt-2 w-full resize-none rounded-2xl bg-surface-card px-4 py-4 text-sm shadow-card outline-none focus:ring-2 focus:ring-orange-400"
+                className="mt-2 w-full resize-none rounded-2xl bg-surface-card px-4 py-4 text-sm shadow-card outline-none focus:ring-2 focus:ring-watermelon-400"
             />
             <p className="mt-1 text-right text-xs text-content-muted">
                 {description.length}/{MADE_DEX_DESCRIPTION_MAX}
             </p>
         </>
-    )
-}
-
-const VISIBILITY_OPTIONS: Array<{
-    value: MadeDexVisibility
-    label: string
-    description: string
-    Icon: typeof LockIcon
-}> = [
-    {
-        value: 'PRIVATE',
-        label: '비공개 도감',
-        description: '초대 코드를 받은 사람만 열람하고 참여할 수 있어요',
-        Icon: LockIcon,
-    },
-    {
-        value: 'PUBLIC',
-        label: '공개 도감',
-        description: '누구나 열람할 수 있어요. 참여는 초대 코드로만 가능해요',
-        Icon: GlobeIcon,
-    },
-]
-
-interface VisibilityPickerProps {
-    visibility: MadeDexVisibility
-    onChange: (visibility: MadeDexVisibility) => void
-}
-
-export function MadeDexVisibilityPicker({ visibility, onChange }: VisibilityPickerProps) {
-    return (
-        <div className="space-y-3">
-            {VISIBILITY_OPTIONS.map(({ value, label, description, Icon }) => (
-                <button
-                    key={value}
-                    type="button"
-                    aria-pressed={visibility === value}
-                    onClick={() => onChange(value)}
-                    className={`flex w-full items-center gap-4 rounded-2xl p-4 text-left shadow-card ${
-                        visibility === value ? 'bg-surface-accent ring-2 ring-orange-400' : 'bg-surface-card'
-                    }`}
-                >
-                    <span className="min-w-0 flex-1">
-                        <span className="block font-display text-lg text-content-primary">{label}</span>
-                        <span className="mt-1 block text-xs leading-4 text-content-secondary">{description}</span>
-                    </span>
-                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-cream-200">
-                        <Icon size={22} aria-hidden className="text-content-secondary" />
-                    </span>
-                </button>
-            ))}
-        </div>
     )
 }

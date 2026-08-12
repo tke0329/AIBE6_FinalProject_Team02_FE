@@ -1,3 +1,24 @@
 {
-    "extends": ["next/core-web-vitals", "next/typescript", "prettier"]
+    "extends": ["next/core-web-vitals", "next/typescript", "prettier"],
+    "rules": {
+        "no-restricted-imports": [
+            "error",
+            {
+                "patterns": [
+                    {
+                        "group": ["@/shared/ui/*"],
+                        "message": "공통 UI는 배럴에서 가져옵니다 — import { Button } from '@/shared/ui'. 배럴에 없으면 src/shared/ui/index.ts에 export를 추가하세요 (DESIGN.md §3.2)."
+                    }
+                ]
+            }
+        ]
+    },
+    "overrides": [
+        {
+            "files": ["src/shared/ui/**"],
+            "rules": {
+                "no-restricted-imports": "off"
+            }
+        }
+    ]
 }

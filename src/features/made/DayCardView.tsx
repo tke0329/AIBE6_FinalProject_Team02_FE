@@ -1,4 +1,4 @@
-import { RotateCwIcon } from 'lucide-react'
+import { RotateCwIcon, RefrigeratorIcon } from 'lucide-react'
 import { LogitAvatar } from './LogitAvatar'
 import { DayCardShare } from './share/DayCardShare'
 import type { LogitDayCard } from './logitTypes'
@@ -12,18 +12,27 @@ interface Props {
     date: string
     /** 로그잇 이름. 공유 카드 헤더에 올라간다 */
     title: string
+    /** 오늘이 아니면 기록을 받지 않는다 */
+    canRecord: boolean
     onRecord: () => void
 }
 
 /** 냉장고 — 위쪽은 공유용 카드, 아래쪽은 카드에 담기지 않는 담긴 사람 */
-export function DayCardView({ madeDexId, date, title, onRecord }: Props) {
+export function DayCardView({ madeDexId, date, title, canRecord, onRecord }: Props) {
     const { dayCard, loading, error, reload } = useLogitDayCard(madeDexId, date)
     const hasItems = dayCard?.slots.some((slot) => slot.items.length > 0) ?? false
 
     return (
         <>
             {dayCard && hasItems && <DayCardShare dayCard={dayCard} title={title} />}
-            <DayCardContent dayCard={dayCard} loading={loading} error={error} onReload={reload} onRecord={onRecord} />
+            <DayCardContent
+                dayCard={dayCard}
+                loading={loading}
+                error={error}
+                canRecord={canRecord}
+                onReload={reload}
+                onRecord={onRecord}
+            />
         </>
     )
 }
@@ -32,12 +41,13 @@ interface ContentProps {
     dayCard: LogitDayCard | null
     loading: boolean
     error: string | null
+    canRecord: boolean
     onReload: () => void
     onRecord: () => void
 }
 
 /** 데이터와 분리한 냉장고 화면 */
-export function DayCardContent({ dayCard, loading, error, onReload, onRecord }: ContentProps) {
+export function DayCardContent({ dayCard, loading, error, canRecord, onReload, onRecord }: ContentProps) {
     if (error) {
         return (
             <div className="pt-10 text-center">
@@ -45,7 +55,7 @@ export function DayCardContent({ dayCard, loading, error, onReload, onRecord }: 
                 <button
                     type="button"
                     onClick={onReload}
-                    className="mt-3 min-h-touch rounded-full bg-cream-200 px-5 text-sm font-bold text-content-secondary"
+                    className="mt-3 min-h-touch rounded-full bg-neutral-100 px-5 text-sm font-bold text-content-secondary"
                 >
                     다시 시도
                 </button>
@@ -56,8 +66,8 @@ export function DayCardContent({ dayCard, loading, error, onReload, onRecord }: 
     if (loading && !dayCard) {
         return (
             <div className="space-y-3 pt-5" aria-hidden>
-                <div className="h-5 w-24 animate-pulse rounded-full bg-cream-200" />
-                <div className="aspect-[4/3] w-full animate-pulse rounded-2xl bg-cream-200" />
+                <div className="h-5 w-24 animate-pulse rounded-full bg-neutral-100" />
+                <div className="aspect-square w-full animate-pulse rounded-2xl bg-neutral-100" />
             </div>
         )
     }
@@ -68,18 +78,21 @@ export function DayCardContent({ dayCard, loading, error, onReload, onRecord }: 
 
     if (filledSlots.length === 0) {
         return (
-            <div className="flex min-h-48 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-edge-default bg-cream-50 text-center">
-                <span aria-hidden className="text-3xl">
-                    🧊
-                </span>
+            <div className="flex min-h-48 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-edge-default bg-white text-center">
+                <RefrigeratorIcon size={30} strokeWidth={1.5} aria-hidden className="text-neutral-400" />
                 <p className="mt-2 break-keep text-sm font-bold text-content-primary">아직 냉장고가 비어 있어요</p>
-                <button
-                    type="button"
-                    onClick={onRecord}
-                    className="mt-3 min-h-touch rounded-full bg-action-primary px-5 text-sm font-bold text-content-on-action shadow-card"
-                >
-                    식사 기록하기
-                </button>
+                {canRecord ? (
+                    <button
+                        type="button"
+                        onClick={onRecord}
+                        className="mt-3 min-h-touch rounded-full bg-action-primary px-5 text-sm font-bold text-content-on-action shadow-card"
+                    >
+                        식사 기록하기
+                    </button>
+                ) : (
+                    // 지난 날은 채울 수 없다. 버튼을 남겨 두면 눌러 놓고 거절당한다
+                    <p className="mt-1 text-xs text-content-muted">그날은 아무도 기록하지 않았어요</p>
+                )}
             </div>
         )
     }

@@ -1,5 +1,4 @@
-import { ServerBadge } from '@/shared/ui/atoms/ServerBadge'
-import { BottomNav, NavTab } from '@/shared/ui/molecules/BottomNav'
+import { BottomNav, NavTab, ServerBadge } from '@/shared/ui'
 import { AwardIcon, BookOpenIcon, CameraIcon, ChevronRightIcon, LogOutIcon, PencilIcon, UsersIcon } from 'lucide-react'
 import React from 'react'
 
@@ -35,16 +34,16 @@ export function MyPage({
     onTab,
 }: Props) {
     return (
-        <div className="flex h-full flex-col bg-cream-100">
+        <div className="flex h-full flex-col bg-surface-app">
             <header className="flex items-center px-5 py-4">
-                <h1 className="font-display text-xl text-brown">마이페이지</h1>
+                <h1 className="font-display text-xl text-neutral-900">마이페이지</h1>
             </header>
             <main className="no-scrollbar flex-1 overflow-y-auto px-5 pb-6">
                 <div className="flex w-full items-center gap-4">
                     <button
                         onClick={onChangePhoto}
                         aria-label="프로필 사진 변경"
-                        className="group relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-orange-200 font-display text-2xl text-orange-700"
+                        className="group relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-watermelon-200 font-display text-2xl text-watermelon-700"
                     >
                         {profileImageUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element
@@ -66,19 +65,19 @@ export function MyPage({
                                     size={50}
                                 />
                             )}
-                            <span className="font-display text-2xl text-brown">{nickname}</span>
+                            <span className="font-display text-2xl text-neutral-900">{nickname}</span>
                         </span>
-                        <span className="block text-sm text-brown-soft">먹을수록 채워지는 나의 도감</span>
+                        <span className="block text-sm text-neutral-800">먹을수록 채워지는 나의 도감</span>
                     </div>
                 </div>
                 <button onClick={onOpenBadges} className="mt-4 w-full rounded-2xl bg-white p-4 text-left shadow-soft">
                     <div className="flex items-center gap-2">
-                        <AwardIcon size={18} className="text-orange-500" />
-                        <span className="font-medium text-brown">뱃지</span>
-                        <ChevronRightIcon size={16} className="ml-auto text-brown-muted" />
+                        <AwardIcon size={18} className="text-watermelon-500" />
+                        <span className="font-medium text-neutral-900">뱃지</span>
+                        <ChevronRightIcon size={16} className="ml-auto text-neutral-400" />
                     </div>
                     <div className="mt-3 flex items-center gap-2">
-                        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50">
+                        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-watermelon-50">
                             {equippedBadge ? (
                                 <ServerBadge
                                     code={equippedBadge.code}
@@ -87,10 +86,10 @@ export function MyPage({
                                     size={50}
                                 />
                             ) : (
-                                <AwardIcon size={20} className="text-brown-muted" />
+                                <AwardIcon size={20} className="text-neutral-400" />
                             )}
                         </span>
-                        <span className="text-sm text-brown-soft">
+                        <span className="text-sm text-neutral-800">
                             {equippedBadge ? `대표 뱃지 · ${equippedBadge.name}` : '대표 뱃지 없음'}
                         </span>
                     </div>
@@ -98,27 +97,27 @@ export function MyPage({
                 <div className="mt-4 overflow-hidden rounded-2xl bg-white shadow-soft">
                     <MenuItem
                         onClick={onOpenFriends}
-                        icon={<UsersIcon size={18} className="text-brown-soft" />}
+                        icon={<UsersIcon size={18} className="text-neutral-800" />}
                         label="친구"
                     />
                     <MenuItem
                         onClick={onReplayOnboarding}
-                        icon={<BookOpenIcon size={18} className="text-brown-soft" />}
+                        icon={<BookOpenIcon size={18} className="text-neutral-800" />}
                         label="튜토리얼 다시 보기"
                     />
                     <MenuItem
                         onClick={onEditNickname}
-                        icon={<PencilIcon size={18} className="text-brown-soft" />}
+                        icon={<PencilIcon size={18} className="text-neutral-800" />}
                         label="닉네임 수정"
                         hint="1개월에 1회 가능"
                     />
                     <MenuItem
                         onClick={onLogout}
-                        icon={<LogOutIcon size={18} className="text-brown-soft" />}
+                        icon={<LogOutIcon size={18} className="text-neutral-800" />}
                         label="로그아웃"
                     />
                 </div>
-                <button onClick={onWithdraw} className="mt-6 min-h-touch w-full text-center text-xs text-brown-soft">
+                <button onClick={onWithdraw} className="mt-6 min-h-touch w-full text-center text-xs text-neutral-800">
                     회원 탈퇴
                 </button>
             </main>
@@ -140,12 +139,12 @@ function MenuItem({
     return (
         <button
             onClick={onClick}
-            className="flex min-h-touch w-full items-center gap-3 border-b border-cream-100 px-4 py-3 text-left last:border-0"
+            className="flex min-h-touch w-full items-center gap-3 border-b border-neutral-50 px-4 py-3 text-left last:border-0"
         >
             {icon}
-            <span className="flex-1 text-sm font-medium text-brown">{label}</span>
-            {hint && <span className="text-xs text-brown-soft">{hint}</span>}
-            <ChevronRightIcon size={16} className="text-brown-muted" />
+            <span className="flex-1 text-sm font-medium text-neutral-900">{label}</span>
+            {hint && <span className="text-xs text-neutral-800">{hint}</span>}
+            <ChevronRightIcon size={16} className="text-neutral-400" />
         </button>
     )
 }

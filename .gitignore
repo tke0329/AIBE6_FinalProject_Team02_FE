@@ -44,3 +44,6 @@ DESIGN.md
 
 # report
 REPORT.md
+
+assets/fonts/*.ttf
+assets/fonts/*.otf

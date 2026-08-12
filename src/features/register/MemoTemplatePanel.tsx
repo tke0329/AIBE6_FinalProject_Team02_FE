@@ -133,7 +133,7 @@ export function MemoTemplatePanel({ currentMemo, triggerRef, onPick, onClose }: 
                 type="button"
                 disabled={!memo || alreadySaved || atLimit || saving}
                 onClick={save}
-                className="flex min-h-touch w-full items-center justify-center gap-1.5 rounded-xl border-2 border-orange-400 px-3 text-xs font-medium text-orange-600 disabled:opacity-40"
+                className="flex min-h-touch w-full items-center justify-center gap-1.5 rounded-xl border-2 border-watermelon-400 px-3 text-xs font-medium text-watermelon-600 disabled:opacity-40"
             >
                 {saving ? (
                     <Loader2Icon size={14} aria-hidden className="animate-spin" />

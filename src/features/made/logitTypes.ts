@@ -6,7 +6,6 @@ export const MAX_SLOTS = 6
 /** BE MadeDexRecord 상수. 기본 도감의 5장과 공유하지 않는다 (DESIGN §6) */
 export const RECORD_MIN_PHOTOS = 1
 export const RECORD_MAX_PHOTOS = 8
-export const FOOD_NAME_MAX = 100
 export const CAPTION_MAX = 100
 
 export interface LogitSlot {
@@ -26,7 +25,8 @@ export interface LogitFeedCard {
     me: boolean
     recordCount: number
     thumbnailUrl: string | null
-    foodNames: string[]
+    thumbnailCropX: number
+    thumbnailCropY: number
     recordIds: number[]
     /** 대표 사진을 낸 기록의 먹은 시각. 빈 카드이거나 적지 않았으면 null */
     loggedAt: string | null
@@ -41,35 +41,43 @@ export interface LogitFeedSlot {
 }
 
 export interface LogitFeed {
-    /** 서버(Asia/Seoul) 기준일 `YYYY-MM-DD`. 클라이언트가 오늘을 계산하지 않는다 */
+    /** 조회한 날 `YYYY-MM-DD` */
     date: string
+    /** 서버(Asia/Seoul)의 오늘. 조회한 날과 별개라 과거를 봐도 오늘을 잃지 않는다 */
+    today: string
     slots: LogitFeedSlot[]
 }
 
 interface LogitRecordFields {
     slotId: number
-    loggedOn: string
     /** `HH:mm`. 적지 않으면 null이고, 화면에도 시각을 띄우지 않는다 */
     loggedTime: string | null
-    foodNames: string[]
-    locationName: string | null
-    lat: number | null
-    lng: number | null
 }
 
 /** 글은 사진마다 붙는다. 기록 전체 메모는 없다 */
 export interface LogitPhotoInput {
     imageKey: string
     caption: string | null
+    cropX: number | null
+    cropY: number | null
 }
 
 export interface LogitRecordCreateRequest extends LogitRecordFields {
+    /**
+     * 등록은 오늘만 된다. 이 값은 "언제 걸로 남길지" 고르는 게 아니라
+     * 클라이언트가 지금 며칠이라 믿는지 서버에 확인받는 값이다.
+     * 어긋나면 서버가 MADE_DEX_RECORD_PAST_DATE로 거절한다.
+     */
+    loggedOn: string
     photos: LogitPhotoInput[]
 }
 
-/** 유지할 기존 사진과 새로 올린 것을 나눠 보낸다. 최종 순서는 keep 다음에 new */
+/**
+ * 유지할 기존 사진과 새로 올린 것을 나눠 보낸다. 최종 순서는 keep 다음에 new.
+ * 날짜는 보내지 않는다 — 기록이 놓인 날은 만든 뒤 바뀌지 않는다.
+ */
 export interface LogitRecordUpdateRequest extends LogitRecordFields {
-    keepPhotos: Array<{ photoId: number; caption: string | null }>
+    keepPhotos: Array<{ photoId: number; caption: string | null; cropX: number | null; cropY: number | null }>
     newPhotos: LogitPhotoInput[]
 }
 
@@ -87,6 +95,8 @@ export interface DayCardPhoto {
     photoId: number
     caption: string | null
     imageUrl: string | null
+    cropX: number
+    cropY: number
 }
 
 /** 카드에 놓이는 아이템 = 기록 하나
@@ -151,6 +161,8 @@ export interface LogitRecordPhoto {
     /** 서명된 조회 URL. 원본 S3 key는 서버가 내보내지 않는다 */
     url: string
     caption: string | null
+    cropX: number
+    cropY: number
 }
 
 export interface LogitRecordDetail {
@@ -162,10 +174,6 @@ export interface LogitRecordDetail {
     authorNickname: string | null
     mine: boolean
     photos: LogitRecordPhoto[]
-    foodNames: string[]
-    locationName: string | null
-    lat: number | null
-    lng: number | null
     /** 먹은 시각. 적지 않았으면 null */
     loggedAt: string | null
 }

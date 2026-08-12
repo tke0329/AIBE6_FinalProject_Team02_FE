@@ -13,7 +13,7 @@ import {
 import { ChallengeData } from '@/features/challenge/types'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
-import { AlertModal } from '@/shared/ui/molecules/AlertModal'
+import { Dialog } from '@/shared/ui'
 
 const MONTHLY_LIMIT = 3
 const PAGE_SIZE = 10
@@ -33,6 +33,7 @@ function toChallengeData(c: ChallengeSummary): ChallengeData {
         score: c.rankScore,
         joined: c.joined,
         owner: '',
+        coverUrl: c.imageUrl ?? undefined,
         target: total,
         mine: `나 ${unlocked}/${total}`,
         progress: total ? unlocked / total : 0, // ProgressBar는 0~1 비율
@@ -201,7 +202,7 @@ function ChallengeHome() {
                 onCreateChallenge={() => router.push(ROUTES.challengeNew)}
                 onTab={(tab) => router.push(getTabHref(tab))}
             />
-            {alertMessage && <AlertModal title="오류" message={alertMessage} onClose={() => setAlertMessage(null)} />}
+            {alertMessage && <Dialog title="오류" message={alertMessage} onClose={() => setAlertMessage(null)} />}
         </>
     )
 }
@@ -210,8 +211,8 @@ export default function ChallengeHomePage() {
     return (
         <Suspense
             fallback={
-                <div className="flex h-full items-center justify-center bg-cream-100">
-                    <p className="text-sm text-brown-soft">불러오는 중…</p>
+                <div className="flex h-full items-center justify-center bg-surface-app">
+                    <p className="text-sm text-neutral-800">불러오는 중…</p>
                 </div>
             }
         >
