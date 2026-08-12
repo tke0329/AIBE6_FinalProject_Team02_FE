@@ -1,7 +1,6 @@
 import { DexEntry } from '@/shared/data/dex'
 import { getLocalDexIllustrationUrl } from '@/shared/lib/dexIllustrations'
-import { StarRank } from '@/shared/ui/atoms/StarRank'
-import { BottomNav, NavTab } from '@/shared/ui/molecules/BottomNav'
+import { BottomNav, NavTab, StarRank } from '@/shared/ui'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
     ArrowLeftIcon,
@@ -354,7 +353,9 @@ export function DexDetail({
                                 <MapPinIcon size={15} className="text-watermelon-500" />
                                 {currentCard.location || '위치 없음'} · {currentCard.date} 수집
                             </p>
-                            {currentCard.memo && <p className="mt-2 text-sm text-neutral-900">메모: {currentCard.memo}</p>}
+                            {currentCard.memo && (
+                                <p className="mt-2 text-sm text-neutral-900">메모: {currentCard.memo}</p>
+                            )}
                         </div>
                     </div>
                 </div>

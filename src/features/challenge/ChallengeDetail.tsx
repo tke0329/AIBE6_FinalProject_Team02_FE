@@ -1,10 +1,7 @@
 import React, { useState } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeftIcon, AwardIcon, MapPinIcon, PlusIcon, TrophyIcon, XIcon } from 'lucide-react'
-import { ProgressBar } from '@/shared/ui/atoms/ProgressBar'
-import { Badge } from '@/shared/ui/atoms/Badge'
-import { FoodCard } from '@/shared/ui/molecules/FoodCard'
-import { TabBar } from '@/shared/ui/molecules/TabBar'
+import { Badge, FoodCard, ProgressBar, TabBar } from '@/shared/ui'
 import { ChallengeData, ChallengeTarget } from './types'
 import { ReviewSection } from './ReviewSection'
 import { CertifyWizard } from './CertifyWizard'
@@ -61,8 +58,8 @@ export function ChallengeDetail({
 
     const foodParam = searchParams.get('food')
     const lockedParam = searchParams.get('locked')
-    const record = foodParam ? targets.find((t) => t.id === foodParam) ?? null : null // 해금 기록 모달
-    const locked = lockedParam ? targets.find((t) => t.id === lockedParam) ?? null : null // 미해금 미리보기 모달
+    const record = foodParam ? (targets.find((t) => t.id === foodParam) ?? null) : null // 해금 기록 모달
+    const locked = lockedParam ? (targets.find((t) => t.id === lockedParam) ?? null) : null // 미해금 미리보기 모달
 
     // 해금 위저드 (사진 → 위치 → 리뷰)
     const [certify, setCertify] = useState<ChallengeTarget | null>(null)
@@ -116,7 +113,12 @@ export function ChallengeDetail({
                                 <span>내 진행</span>
                                 <span>{challenge.mine ?? `나 0/${targets.length}`}</span>
                             </div>
-                            <ProgressBar value={challenge.progress ?? 0} animate={false} tone="lime" label="챌린지 진행률" />
+                            <ProgressBar
+                                value={challenge.progress ?? 0}
+                                animate={false}
+                                tone="lime"
+                                label="챌린지 진행률"
+                            />
                         </div>
                     )}
                 </section>

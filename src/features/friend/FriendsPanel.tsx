@@ -2,8 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { ArrowLeftIcon, UserPlusIcon, CheckIcon, XIcon, Trash2Icon, SearchIcon } from 'lucide-react'
-import { ServerBadge } from '@/shared/ui/atoms/ServerBadge'
-import { TabBar } from '@/shared/ui/molecules/TabBar'
+import { ServerBadge, TabBar } from '@/shared/ui'
 import {
     UserBrief,
     ReceivedRequest,

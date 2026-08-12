@@ -1,3 +1,5 @@
+'use client'
+
 import React from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
@@ -73,10 +75,7 @@ export function FoodCard({
             }`}
         >
             {corner}
-            <div
-                aria-hidden
-                className="relative aspect-square w-full overflow-hidden rounded-2xl bg-neutral-50"
-            >
+            <div aria-hidden className="relative aspect-square w-full overflow-hidden rounded-2xl bg-neutral-50">
                 {showImage ? (
                     <Image
                         src={illustrationUrl as string}

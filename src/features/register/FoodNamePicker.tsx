@@ -2,7 +2,7 @@
 
 import { CATEGORY_META, DexEntry, FoodCategory } from '@/shared/data/dex'
 import { buildDexSearchIndex, searchDex } from '@/shared/lib/dexSearch'
-import { SearchBar } from '@/shared/ui/atoms/SearchBar'
+import { SearchBar } from '@/shared/ui'
 import { PlusIcon, SearchXIcon, XIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { MAX_FOOD_NAMES, useRegisterFlow } from './RegisterFlowContext'

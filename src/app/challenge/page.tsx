@@ -13,7 +13,7 @@ import {
 import { ChallengeData } from '@/features/challenge/types'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
-import { AlertModal } from '@/shared/ui/molecules/AlertModal'
+import { Dialog } from '@/shared/ui'
 
 const MONTHLY_LIMIT = 3
 const PAGE_SIZE = 10
@@ -202,7 +202,7 @@ function ChallengeHome() {
                 onCreateChallenge={() => router.push(ROUTES.challengeNew)}
                 onTab={(tab) => router.push(getTabHref(tab))}
             />
-            {alertMessage && <AlertModal title="오류" message={alertMessage} onClose={() => setAlertMessage(null)} />}
+            {alertMessage && <Dialog title="오류" message={alertMessage} onClose={() => setAlertMessage(null)} />}
         </>
     )
 }

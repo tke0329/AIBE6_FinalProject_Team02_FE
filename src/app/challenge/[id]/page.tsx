@@ -18,8 +18,7 @@ import { uploadImageToS3 } from '@/shared/lib/upload'
 import { useAppState } from '@/shared/store/AppStateProvider'
 import { notFound, useParams, useRouter } from 'next/navigation'
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
-import { AlertModal } from '@/shared/ui/molecules/AlertModal'
-import { ConfirmModal } from '@/shared/ui/molecules/ConfirmModal'
+import { Dialog } from '@/shared/ui'
 
 function ddayLabel(endsAt: string) {
     const days = Math.ceil((new Date(endsAt).getTime() - Date.now()) / 86_400_000)
@@ -168,23 +167,25 @@ function ChallengeDetailPageInner() {
                     onGoToBadges={() => router.push(ROUTES.myBadges)}
                 />
             )}
-            {alertMessage && <AlertModal title="오류" message={alertMessage} onClose={() => setAlertMessage(null)} />}
+            {alertMessage && <Dialog title="오류" message={alertMessage} onClose={() => setAlertMessage(null)} />}
             {confirmLeave && (
-                <ConfirmModal
+                <Dialog
                     title="챌린지 포기"
                     message="이 챌린지를 포기할까요? 내 인증 기록도 사라져요."
-                    confirmText="포기하기"
                     cancelText="계속하기"
                     danger
-                    onCancel={() => setConfirmLeave(false)}
-                    onConfirm={async () => {
-                        setConfirmLeave(false)
-                        try {
-                            await leaveChallenge(id)
-                            router.push(ROUTES.challenge)
-                        } catch (e) {
-                            setAlertMessage(e instanceof Error ? e.message : '나가기에 실패했어요')
-                        }
+                    onClose={() => setConfirmLeave(false)}
+                    action={{
+                        label: '포기하기',
+                        onClick: async () => {
+                            setConfirmLeave(false)
+                            try {
+                                await leaveChallenge(id)
+                                router.push(ROUTES.challenge)
+                            } catch (e) {
+                                setAlertMessage(e instanceof Error ? e.message : '나가기에 실패했어요')
+                            }
+                        },
                     }}
                 />
             )}

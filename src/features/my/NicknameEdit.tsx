@@ -1,7 +1,7 @@
 'use client'
 
 import { NICKNAME_HINT, NICKNAME_MAX, NICKNAME_RE } from '@/features/my/nickname'
-import { ArrowLeftIcon } from 'lucide-react'
+import { AppScreen, Button, PageHeader, Text, TextField } from '@/shared/ui'
 import { useState } from 'react'
 
 interface Props {
@@ -24,7 +24,23 @@ function formatDate(iso: string): string {
     })
 }
 
-/** 닉네임 변경 화면. 1개월 1회 제한 — 아직 불가하면 다음 가능일을 안내하고 잠근다. */
+/**
+ * 닉네임 변경 화면. 1개월 1회 제한 — 아직 불가하면 다음 가능일을 안내하고 잠근다.
+ *
+ * ## 공통 컴포넌트 이관 예시 (2026-08-11)
+ *
+ * "손대는 화면은 공통으로 옮긴다"의 본보기로 먼저 옮긴 화면이다. 무엇이 어떻게 바뀌는지:
+ *
+ * | 이전 | 이후 |
+ * |---|---|
+ * | `div.flex.h-full` + `header` 손조립 | `AppScreen` + `PageHeader` |
+ * | `input` 클래스 12줄 + 안내문 `p` 따로 | `TextField` (라벨·에러·힌트·카운터가 한 자리) |
+ * | 버튼 클래스 문자열 | `Button` |
+ * | `text-neutral-900` `text-neutral-800` 원시 토큰 | `Text` variant (색이 역할에 따라온다) |
+ *
+ * 눈에 보이는 이득은 **에러 자리**다. 예전에는 `min-h-[1.25rem]`으로 자리를 억지로 잡아
+ * 문구가 떴다 사라질 때 아래가 흔들리지 않게 했는데, `TextField`는 그 처리를 안에서 한다.
+ */
 export function NicknameEdit({
     currentNickname,
     changeable,
@@ -46,49 +62,43 @@ export function NicknameEdit({
         if (canSubmit) onSubmit(trimmed)
     }
 
+    /**
+     * 무엇을 보여줄지 하나로 정한다. 우선순위: 변경 불가 안내 → 형식 안내 → 서버 에러.
+     * `TextField`는 에러와 힌트를 동시에 띄우지 않으므로, 고를 책임이 화면에 있다.
+     */
+    const message =
+        !changeable && changeableAt
+            ? `${formatDate(changeableAt)}부터 바꿀 수 있어요.`
+            : showFormatHint
+              ? NICKNAME_HINT
+              : error
+
     return (
-        <div className="flex h-full flex-col bg-surface-app">
-            <header className="flex items-center gap-3 px-5 py-4">
-                <button onClick={onBack} aria-label="뒤로가기" className="min-h-touch">
-                    <ArrowLeftIcon size={21} className="text-neutral-900" />
-                </button>
-                <h1 className="font-display text-lg text-neutral-900">닉네임 수정</h1>
-            </header>
+        <AppScreen
+            header={<PageHeader title="닉네임 수정" onBack={onBack} />}
+            footer={
+                <Button fullWidth onClick={submit} disabled={!canSubmit} loading={submitting}>
+                    {submitting ? '저장 중…' : '변경하기'}
+                </Button>
+            }
+        >
+            <Text as="p" variant="secondary" className="pt-2">
+                닉네임은 한 달에 한 번만 바꿀 수 있어요. 2~8자, 한글·영문·숫자·밑줄.
+            </Text>
 
-            <div className="flex flex-1 flex-col px-8 pt-4">
-                <p className="text-sm text-neutral-800">
-                    닉네임은 한 달에 한 번만 바꿀 수 있어요. 2~8자, 한글·영문·숫자·밑줄.
-                </p>
-
-                <input
+            <div className="pt-6">
+                <TextField
+                    label="닉네임"
+                    hideLabel
                     value={value}
-                    onChange={(e) => setValue(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && submit()}
+                    onChange={(event) => setValue(event.target.value)}
+                    onKeyDown={(event) => event.key === 'Enter' && submit()}
                     maxLength={NICKNAME_MAX}
                     disabled={!changeable || submitting}
-                    aria-label="닉네임"
-                    className="mt-6 h-cta w-full rounded-2xl border-2 border-neutral-200 bg-white px-4 font-display text-lg text-neutral-900 outline-none focus:border-watermelon-400 disabled:bg-neutral-100 disabled:text-neutral-400"
+                    error={message}
+                    count={{ current: trimmed.length, max: NICKNAME_MAX }}
                 />
-
-                {/* 우선순위: 변경 불가 안내 → 형식 안내 → 서버 에러 */}
-                <p className="mt-2 min-h-[1.25rem] text-sm text-watermelon-600">
-                    {!changeable && changeableAt
-                        ? `${formatDate(changeableAt)}부터 바꿀 수 있어요.`
-                        : showFormatHint
-                          ? NICKNAME_HINT
-                          : (error ?? '')}
-                </p>
             </div>
-
-            <div className="px-6 pb-10">
-                <button
-                    onClick={submit}
-                    disabled={!canSubmit}
-                    className="h-cta w-full rounded-full bg-watermelon-500 font-display text-lg text-white shadow-card transition active:scale-[0.98] disabled:bg-neutral-200 disabled:text-neutral-400 disabled:shadow-none"
-                >
-                    {submitting ? '저장 중…' : '변경하기'}
-                </button>
-            </div>
-        </div>
+        </AppScreen>
     )
 }

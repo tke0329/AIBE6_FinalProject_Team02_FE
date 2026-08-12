@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react'
-import { BottomSheet } from '@/shared/ui/molecules/BottomSheet'
+import { BottomSheet } from '@/shared/ui'
 
 interface Props {
     /** `HH:mm` (24시간). 비어 있으면 아직 안 적은 것 */
@@ -254,8 +254,14 @@ function WheelPicker<T extends number>({ items, value, onChange, format, label }
         <div className="relative" style={{ width: 72 }}>
             <div className="relative overflow-hidden" style={{ height: WHEEL_HEIGHT }}>
                 {/* 위아래 페이드 */}
-                <div className="pointer-events-none absolute inset-x-0 top-0 z-20 bg-gradient-to-b from-surface-app to-transparent" style={{ height: ITEM_HEIGHT * 1.5 }} />
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-surface-app to-transparent" style={{ height: ITEM_HEIGHT * 1.5 }} />
+                <div
+                    className="pointer-events-none absolute inset-x-0 top-0 z-20 bg-gradient-to-b from-surface-app to-transparent"
+                    style={{ height: ITEM_HEIGHT * 1.5 }}
+                />
+                <div
+                    className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-surface-app to-transparent"
+                    style={{ height: ITEM_HEIGHT * 1.5 }}
+                />
 
                 <div
                     ref={listRef}

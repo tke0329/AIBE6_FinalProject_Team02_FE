@@ -1,6 +1,6 @@
 'use client'
 
-import { BottomSheet } from '@/shared/ui/molecules/BottomSheet'
+import { BottomSheet } from '@/shared/ui'
 
 interface Props {
     pending: boolean

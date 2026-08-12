@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { ArrowLeftIcon, LockIcon } from 'lucide-react'
 
-import { BottomSheet } from '@/shared/ui/molecules/BottomSheet'
+import { BottomSheet } from '@/shared/ui'
 import { madeErrorMessage } from './errors'
 import { MadeDexBasicFields, MadeDexCoverPicker, useCoverPreview } from './MadeDexFormFields'
 import { DEFAULT_MADE_DEX_COVER } from './types'

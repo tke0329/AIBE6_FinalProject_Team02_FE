@@ -1,14 +1,17 @@
 import { createReport } from '@/features/report/api'
 import { DexEntry } from '@/shared/data/dex'
 import { getLocalDexIllustrationUrl } from '@/shared/lib/dexIllustrations'
-import { HelpIcon } from '@/shared/ui/atoms/HelpIcon'
-import { ProgressBar } from '@/shared/ui/atoms/ProgressBar'
-import { SearchBar } from '@/shared/ui/atoms/SearchBar'
-import { StarRank } from '@/shared/ui/atoms/StarRank'
-import { BottomNav, NavTab } from '@/shared/ui/molecules/BottomNav'
-import { DexHelpSheet } from '@/shared/ui/molecules/DexHelpSheet'
-import { FoodCard } from '@/shared/ui/molecules/FoodCard'
-import { TabBar } from '@/shared/ui/molecules/TabBar'
+import {
+    BottomNav,
+    DexHelpSheet,
+    FoodCard,
+    HelpIcon,
+    NavTab,
+    ProgressBar,
+    SearchBar,
+    StarRank,
+    TabBar,
+} from '@/shared/ui'
 import { ArrowLeftIcon, ChevronDownIcon, PlusIcon } from 'lucide-react'
 import { useState } from 'react'
 import type { CategoryFilter } from './useDexFilter'

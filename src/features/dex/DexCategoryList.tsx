@@ -1,9 +1,7 @@
 'use client'
 
 import { CATEGORY_META, DexEntry } from '@/shared/data/dex'
-import { ProgressBar } from '@/shared/ui/atoms/ProgressBar'
-import { BottomNav, NavTab } from '@/shared/ui/molecules/BottomNav'
-import { DexHelpSheet } from '@/shared/ui/molecules/DexHelpSheet'
+import { BottomNav, DexHelpSheet, NavTab, ProgressBar } from '@/shared/ui'
 import { ChevronRightIcon, LayoutGridIcon, PlusIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import type { CategoryFilter } from './useDexFilter'
@@ -89,7 +87,9 @@ export function DexCategoryList({ entries, collectedIds, onOpenCategory, onRegis
                         >
                             <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${row.dotClass}`} />
                             <span className="min-w-0 flex-1">
-                                <span className="block truncate font-display text-base text-neutral-900">{row.category}</span>
+                                <span className="block truncate font-display text-base text-neutral-900">
+                                    {row.category}
+                                </span>
                                 <div className="mt-2">
                                     <ProgressBar value={row.total > 0 ? row.mine / row.total : 0} animate={false} />
                                 </div>

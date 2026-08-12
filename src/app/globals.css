@@ -1,6 +1,10 @@
 /* 웹폰트 import는 반드시 tailwind 지시자보다 위 */
+
+/* 온글잎 딩궁딩굴 — 앱 전체 글꼴. `npm run build:font`가 만드는 자동 생성 파일 */
+@import './fonts.css';
+/* Pretendard는 **폴백 전용**이다. 딩궁딩굴에 없는 글자(이모지·일부 기호·한자)가
+   여기로 넘어온다. dynamic subset이라 실제로 쓰인 구간만 내려받는다 */
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css');
-@import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -26,7 +30,9 @@
     --watermelon-400: 255 128 149; /* #FF8095 밝은 primary */
     --watermelon-500: 252 108 133; /* #FC6C85 주 액션(PRIMARY) */
     --watermelon-600: 228 83 109; /* #E4536D primary-pressed / 링크 hover */
-    --watermelon-700: 198 69 91; /* #C6455B 진한 핑크(연한 배경 위 텍스트 대비용) */
+    /* #C04358 진한 핑크. 링크(흰 배경 5.02:1)와 soft 버튼 글자(#FFF0F3 위 4.54:1)를
+       이 값 하나로 함께 만족시킨다 — 이전 #C6455B는 soft 위에서 4.32로 미달이었다 */
+    --watermelon-700: 192 67 88;
     --watermelon-800: 165 56 75; /* #A5384B */
     --watermelon-900: 126 42 57; /* #7E2A39 */
 
@@ -35,7 +41,12 @@
     --neutral-100: 241 241 242; /* #F1F1F2 비활성 배경, 연한 구분 면, 카드 테두리 */
     --neutral-200: 229 229 234; /* #E5E5EA 진행 바 트랙 */
     --neutral-300: 198 198 203; /* #C6C6CB chevron, 빈 별 근처 */
-    --neutral-400: 181 181 186; /* #B5B5BA 보조 텍스트/비활성(muted) */
+    /* 비활성 컨트롤의 글자 전용. WCAG 1.4.3은 비활성 요소를 면제하지만
+       이전 값(#B5B5BA)은 비활성 배경 위에서 1.81:1이라 글자가 보이지 않았다 → 3.01:1 */
+    --neutral-350: 139 139 143; /* #8B8B8F */
+    /* #767679 — 보조 텍스트. 이전 #B5B5BA는 흰 배경에서 2.04:1로 본문 기준 미달이었다.
+       이 토큰은 **텍스트로만** 쓰이므로(86곳 전부 text-*) 값만 바꿔 한 번에 고쳐진다 → 4.53:1 */
+    --neutral-400: 118 118 121;
     --neutral-500: 142 142 147; /* #8E8E93 아이콘 보조 */
     --neutral-600: 74 74 74; /* #4A4A4A 본문 강조, 미해금 면 */
     --neutral-700: 58 58 60; /* #3A3A3C */
@@ -45,7 +56,7 @@
     /* --- 1.1 Primitive: Accent Lime (달성/완료 진행 바, 성공, 섹션 도트) --- */
     --lime-500: 137 243 54; /* #89F336 라임 면(진행 바) */
     --lime-soft: 242 252 234; /* #F2FCEA 인증 완료 아이콘 배경 */
-    --lime-text: 78 156 24; /* #4E9C18 성공 텍스트/아이콘 (흰 배경 대비 확보) */
+    --lime-text: 67 134 21; /* #438615 성공 텍스트/아이콘 (흰 배경 4.51:1) */
 
     /* --- 1.1 Primitive: Accent Mint (공유 카드, 끼니 모아보기 카드) --- */
     --mint-500: 173 235 179; /* #ADEBB3 공유 카드 배경 면 */
@@ -55,7 +66,7 @@
 
     /* --- 1.1 Primitive: Utility --- */
     --white: 255 255 255; /* #FFFFFF 앱/카드 배경 */
-    --red-500: 217 83 79; /* #D9534F 에러/삭제 */
+    --red-500: 200 76 73; /* #C84C49 에러/삭제 (흰 배경 4.58:1, 흰 글자를 얹어도 4.58:1) */
 
     /* --- 1.2 Semantic: Surface --- */
     --surface-app: var(--white); /* 화이트 배경 */
@@ -68,14 +79,28 @@
     --text-primary: var(--neutral-900);
     --text-secondary: var(--neutral-800);
     --text-muted: var(--neutral-400);
-    --text-on-action: var(--white);
-    --text-link: var(--watermelon-600);
+    /**
+     * 주 액션 면(핑크) 위의 글자. **흰색이 아니라 어두운 색이다.**
+     *
+     * 흰 글자를 얹으면 2.75:1로 크게 미달인데, 통과시키려면 핑크를 #C05265까지 어둡게
+     * 낮춰야 했다 — 팀이 막 정한 브랜드색이 사라진다. 반대로 글자를 어둡게 하면
+     * 핑크를 그대로 두고 6.32:1이 나온다. 그래서 배경이 아니라 글자를 바꿨다.
+     * hover 면(#E4536D) 위에서도 4.77:1로 유지된다.
+     */
+    --text-on-action: var(--neutral-900);
+    /** 어두운 면(에러 버튼·토스트) 위의 글자. 이쪽은 흰색이 맞다 */
+    --text-on-dark: var(--white);
+    --text-link: var(--watermelon-700);
 
     /* --- 1.2 Semantic: Action --- */
     --action-primary: var(--watermelon-500);
     --action-primary-hover: var(--watermelon-600);
     --action-disabled-bg: var(--neutral-100);
-    --action-disabled-text: var(--neutral-400);
+    /* neutral-400을 쓰면 비활성인데 진해서 눌릴 것처럼 보인다. 한 단계 밝은 값 */
+    --action-disabled-text: var(--neutral-350);
+    /* 목록 안에서 반복되는 약한 동작(더 보기·되살리기). 주 버튼과 경쟁하지 않는 세기 */
+    --action-soft: var(--watermelon-50);
+    --action-soft-text: var(--watermelon-700);
 
     /* --- 1.2 Semantic: Border --- */
     --border-default: var(--neutral-100);
@@ -123,20 +148,25 @@ body {
 body {
     background: rgb(var(--surface-app));
     color: rgb(var(--text-primary));
-    /* §1.4 본문 폰트 */
+    /* §1.4 앱 전체 글꼴 — 딩궁딩굴 하나로 통일.
+       Pretendard가 뒤에 붙는 건 딩궁딩굴에 없는 글자(이모지·한자·일부 기호)를 받기 위한 폴백이다 */
     font-family:
+        'Dinggul',
         'Pretendard',
         -apple-system,
         BlinkMacSystemFont,
         system-ui,
         sans-serif;
-    font-size: 16px;
-    line-height: 24px;
+    /* tailwind.config.ts의 `base` 단계와 같은 값. `text-*` 클래스가 없는 글자의 기준이다 */
+    font-size: 18px;
+    line-height: 27px;
 }
 
-/* 도감 감성용 디스플레이 폰트. 화면 타이틀에만 사용 */
+/* 예전에는 Jua(제목 전용)를 가리켰다. 지금은 본문과 같은 글꼴이라 이 클래스만으로는
+   아무 것도 달라지지 않는다 — 남겨 둔 이유는 기존 화면 200여 곳이 아직 쓰고 있어서다.
+   §1.4 역할 위계는 `<Text>`의 크기·굵기가 담당한다 */
 .font-display {
-    font-family: 'Jua', 'Pretendard', sans-serif;
+    font-family: 'Dinggul', 'Pretendard', sans-serif;
 }
 
 /* 앱 셸 — 뷰포트 전체를 채움 (모바일 목업 제거).
@@ -151,7 +181,12 @@ body {
        화면을 꽉 채워 이 회색은 보이지 않는다. */
     background: rgb(var(--neutral-200));
 }
-.app-shell > * {
+/* 폰 폭 컬럼. layout.tsx가 children을 이 한 겹으로 감싼다.
+   `.app-shell > *`(자식 선택자)여서는 안 된다 — 페이지가 Fragment를 반환하면
+   모달·시트가 화면과 형제가 되어 같이 걸린다. @tailwind utilities보다 아래라
+   같은 명시도에서 순서로 이기므로 `fixed`가 `relative`로 덮여 오버레이가
+   화면 아래에 흰 패널로 쌓였다 (position:relative / top:686px / 불투명 흰 배경 관측). */
+.app-shell-content {
     width: 100%;
     max-width: var(--layout-max);
     height: 100%;

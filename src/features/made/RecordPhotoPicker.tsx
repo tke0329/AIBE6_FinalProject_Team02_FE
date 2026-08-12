@@ -90,9 +90,7 @@ export function RecordPhotoPicker({
                                 style={{ objectPosition: `${photo.cropX}% ${photo.cropY}%` }}
                             />
 
-                            {cropping && isCurrent && (
-                                <CropOverlay photo={photo} onCrop={onCrop} />
-                            )}
+                            {cropping && isCurrent && <CropOverlay photo={photo} onCrop={onCrop} />}
 
                             {photo.kind === 'new' && photo.status === 'uploading' && (
                                 <span className="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/35">
@@ -140,29 +138,32 @@ export function RecordPhotoPicker({
                                 ))}
 
                             {/* 위치 조정 / 완료 버튼 */}
-                            {isCurrent && !failed && !captionOnly && !(photo.kind === 'new' && photo.status === 'uploading') && (
-                                <button
-                                    type="button"
-                                    onClick={() => setCropping(!cropping)}
-                                    className={`no-touch-expand absolute bottom-2 right-2 z-20 flex items-center gap-1 rounded-full px-2.5 py-1.5 text-[11px] font-bold backdrop-blur-sm transition-all duration-200 ${
-                                        cropping
-                                            ? 'bg-action-primary text-content-on-action shadow-lg ring-2 ring-white/50 hover:scale-110 hover:brightness-[1.15]'
-                                            : 'bg-black/50 text-white'
-                                    }`}
-                                >
-                                    {cropping ? (
-                                        <>
-                                            <CheckIcon size={13} aria-hidden />
-                                            완료
-                                        </>
-                                    ) : (
-                                        <>
-                                            <MoveIcon size={13} aria-hidden />
-                                            위치 조정
-                                        </>
-                                    )}
-                                </button>
-                            )}
+                            {isCurrent &&
+                                !failed &&
+                                !captionOnly &&
+                                !(photo.kind === 'new' && photo.status === 'uploading') && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setCropping(!cropping)}
+                                        className={`no-touch-expand absolute bottom-2 right-2 z-20 flex items-center gap-1 rounded-full px-2.5 py-1.5 text-[11px] font-bold backdrop-blur-sm transition-all duration-200 ${
+                                            cropping
+                                                ? 'bg-action-primary text-content-on-action shadow-lg ring-2 ring-white/50 hover:scale-110 hover:brightness-[1.15]'
+                                                : 'bg-black/50 text-white'
+                                        }`}
+                                    >
+                                        {cropping ? (
+                                            <>
+                                                <CheckIcon size={13} aria-hidden />
+                                                완료
+                                            </>
+                                        ) : (
+                                            <>
+                                                <MoveIcon size={13} aria-hidden />
+                                                위치 조정
+                                            </>
+                                        )}
+                                    </button>
+                                )}
                         </div>
                     )
                 })}
@@ -171,15 +172,8 @@ export function RecordPhotoPicker({
             {/* 번호 붙은 썸네일 스트립 — 꾹 눌러 드래그로 순서 변경 */}
             {count > 1 && !captionOnly && (
                 <>
-                    <ThumbnailStrip
-                        photos={photos}
-                        activeIndex={index}
-                        onTap={scrollToIndex}
-                        onMove={handleMove}
-                    />
-                    <p className="mt-1.5 text-[11px] text-content-muted">
-                        사진을 길게 눌러 순서를 변경할 수 있어요
-                    </p>
+                    <ThumbnailStrip photos={photos} activeIndex={index} onTap={scrollToIndex} onMove={handleMove} />
+                    <p className="mt-1.5 text-[11px] text-content-muted">사진을 길게 눌러 순서를 변경할 수 있어요</p>
                 </>
             )}
 
@@ -302,41 +296,47 @@ function ThumbnailStrip({ photos, activeIndex, onTap, onMove }: ThumbnailStripPr
         }, LONG_PRESS_MS)
     }, [])
 
-    const handlePointerMove = useCallback((e: React.PointerEvent) => {
-        const dx = Math.abs(e.clientX - pointerStart.current.x)
-        const dy = Math.abs(e.clientY - pointerStart.current.y)
-        if (dx > 8 || dy > 8) {
-            moved.current = true
-            if (dragFrom === null) {
-                clearLongPress()
-                return
+    const handlePointerMove = useCallback(
+        (e: React.PointerEvent) => {
+            const dx = Math.abs(e.clientX - pointerStart.current.x)
+            const dy = Math.abs(e.clientY - pointerStart.current.y)
+            if (dx > 8 || dy > 8) {
+                moved.current = true
+                if (dragFrom === null) {
+                    clearLongPress()
+                    return
+                }
             }
-        }
 
-        if (dragFrom === null) return
-        e.preventDefault()
+            if (dragFrom === null) return
+            e.preventDefault()
 
-        const strip = stripRef.current
-        if (!strip) return
-        // 컨테이너에 px-5(20px)가 있어 rect.left로 재면 그만큼 밀린다.
-        // 첫 썸네일의 화면 좌표를 원점으로 쓰면 패딩도 스크롤도 함께 상쇄된다
-        const first = strip.firstElementChild?.getBoundingClientRect()
-        const originX = first ? first.left : strip.getBoundingClientRect().left
-        const x = e.clientX - originX
-        const targetIdx = Math.max(0, Math.min(photos.length - 1, Math.floor(x / (THUMB_SIZE + THUMB_GAP))))
-        setDragOver(targetIdx)
-    }, [dragFrom, photos.length])
+            const strip = stripRef.current
+            if (!strip) return
+            // 컨테이너에 px-5(20px)가 있어 rect.left로 재면 그만큼 밀린다.
+            // 첫 썸네일의 화면 좌표를 원점으로 쓰면 패딩도 스크롤도 함께 상쇄된다
+            const first = strip.firstElementChild?.getBoundingClientRect()
+            const originX = first ? first.left : strip.getBoundingClientRect().left
+            const x = e.clientX - originX
+            const targetIdx = Math.max(0, Math.min(photos.length - 1, Math.floor(x / (THUMB_SIZE + THUMB_GAP))))
+            setDragOver(targetIdx)
+        },
+        [dragFrom, photos.length],
+    )
 
-    const handlePointerUp = useCallback((idx: number) => {
-        clearLongPress()
-        if (dragFrom !== null && dragOver !== null && dragFrom !== dragOver) {
-            onMove(dragFrom, dragOver)
-        } else if (dragFrom === null && !moved.current) {
-            onTap(idx)
-        }
-        setDragFrom(null)
-        setDragOver(null)
-    }, [dragFrom, dragOver, onMove, onTap])
+    const handlePointerUp = useCallback(
+        (idx: number) => {
+            clearLongPress()
+            if (dragFrom !== null && dragOver !== null && dragFrom !== dragOver) {
+                onMove(dragFrom, dragOver)
+            } else if (dragFrom === null && !moved.current) {
+                onTap(idx)
+            }
+            setDragFrom(null)
+            setDragOver(null)
+        },
+        [dragFrom, dragOver, onMove, onTap],
+    )
 
     const handlePointerCancel = useCallback(() => {
         clearLongPress()
@@ -384,18 +384,18 @@ function ThumbnailStrip({ photos, activeIndex, onTap, onMove }: ThumbnailStripPr
                             alt=""
                             draggable={false}
                             className={`h-full w-full rounded-xl object-cover ring-2 transition-all ${
-                                isActive
-                                    ? 'ring-action-primary'
-                                    : 'ring-transparent'
+                                isActive ? 'ring-action-primary' : 'ring-transparent'
                             }`}
                             style={{ objectPosition: `${photo.cropX}% ${photo.cropY}%` }}
                         />
                         {/* 순서 번호 뱃지 */}
-                        <span className={`absolute right-0.5 top-0.5 flex h-[18px] w-[18px] items-center justify-center rounded-full text-[9px] font-bold shadow-sm ${
-                            displayPosition === 0
-                                ? 'bg-action-primary text-content-on-action'
-                                : 'bg-neutral-800 text-white'
-                        }`}>
+                        <span
+                            className={`absolute right-0.5 top-0.5 flex h-[18px] w-[18px] items-center justify-center rounded-full text-[9px] font-bold shadow-sm ${
+                                displayPosition === 0
+                                    ? 'bg-action-primary text-content-on-action'
+                                    : 'bg-neutral-800 text-white'
+                            }`}
+                        >
                             {displayPosition + 1}
                         </span>
                     </div>
@@ -409,7 +409,13 @@ function ThumbnailStrip({ photos, activeIndex, onTap, onMove }: ThumbnailStripPr
 // 크롭 오버레이
 // ---------------------------------------------------------------------------
 
-function CropOverlay({ photo, onCrop }: { photo: RecordPhoto; onCrop: (id: string, cropX: number, cropY: number) => void }) {
+function CropOverlay({
+    photo,
+    onCrop,
+}: {
+    photo: RecordPhoto
+    onCrop: (id: string, cropX: number, cropY: number) => void
+}) {
     const containerRef = useRef<HTMLDivElement>(null)
     const dragging = useRef(false)
     const startPos = useRef({ x: 0, y: 0 })

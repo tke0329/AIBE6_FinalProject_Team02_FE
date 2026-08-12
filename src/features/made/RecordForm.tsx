@@ -99,11 +99,13 @@ export function RecordForm({ madeDexId, recordId, slotId, date, onBack, onDone }
                             )
                         })}
                     </div>
-                    {!editing && form.slots.length > 0 && form.slots.every((slot) => form.taken.includes(slot.slotId)) && (
-                        <p className="break-keep pt-2 text-xs text-content-muted">
-                            오늘 끼니를 모두 기록했어요. 고치려면 홈에서 그 카드를 열어 주세요.
-                        </p>
-                    )}
+                    {!editing &&
+                        form.slots.length > 0 &&
+                        form.slots.every((slot) => form.taken.includes(slot.slotId)) && (
+                            <p className="break-keep pt-2 text-xs text-content-muted">
+                                오늘 끼니를 모두 기록했어요. 고치려면 홈에서 그 카드를 열어 주세요.
+                            </p>
+                        )}
                 </section>
 
                 <section aria-label="시간">

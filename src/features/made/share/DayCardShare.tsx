@@ -33,7 +33,9 @@ export function DayCardShare({ dayCard, title }: Props) {
                     aria-label={`${dayCard.date} 하루 카드`}
                     className="block w-full"
                 />
-                {status === 'preparing' && <div className="absolute inset-0 animate-pulse bg-neutral-100" aria-hidden />}
+                {status === 'preparing' && (
+                    <div className="absolute inset-0 animate-pulse bg-neutral-100" aria-hidden />
+                )}
             </div>
 
             {status === 'idle' && (

@@ -7,7 +7,7 @@ import { fetchBasicDexEntries, fetchMyBasicDexEntries, markNewBadgeSeen as postN
 import { MadeDexId, parseMadeDexId } from '@/features/made/types'
 import { fetchOnboardingStatus, postOnboardingComplete } from '@/features/onboarding/api'
 import { AI_CANDIDATES, DEX_ENTRIES, DexEntry } from '@/shared/data/dex'
-import { BadgeId } from '@/shared/ui/atoms/EquippedBadge'
+import type { BadgeId } from '@/shared/ui'
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 

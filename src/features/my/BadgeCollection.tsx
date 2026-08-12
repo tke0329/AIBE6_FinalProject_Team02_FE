@@ -2,7 +2,7 @@
 
 import type { MyBadge } from '@/features/my/api'
 import { BADGE_GROUP_LABEL, BADGE_GROUP_ORDER, badgeGroupOf } from '@/shared/data/badgeAssets'
-import { ServerBadge } from '@/shared/ui/atoms/ServerBadge'
+import { ServerBadge } from '@/shared/ui'
 import { ArrowLeftIcon, CheckIcon } from 'lucide-react'
 import { useState } from 'react'
 

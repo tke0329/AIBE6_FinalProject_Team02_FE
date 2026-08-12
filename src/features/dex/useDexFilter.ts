@@ -1,6 +1,6 @@
 import { useDeferredValue, useEffect, useMemo, useState } from 'react'
 import { CATEGORY_META, DexEntry, FoodCategory } from '@/shared/data/dex'
-import type { TabItem } from '@/shared/ui/molecules/TabBar'
+import type { TabItem } from '@/shared/ui'
 
 export type CategoryFilter = '전체' | FoodCategory
 export type UnlockFilter = '전체' | '해금' | '미해금'

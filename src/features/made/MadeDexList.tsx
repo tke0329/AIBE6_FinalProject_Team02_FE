@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { ChevronRightIcon, KeyRoundIcon, PlusIcon, UsersIcon, BookMarkedIcon } from 'lucide-react'
-import { BottomNav, NavTab } from '@/shared/ui/molecules/BottomNav'
+import { BottomNav, NavTab } from '@/shared/ui'
 import { MadeDexCodeSheet } from './MadeDexCodeSheet'
 import { DEFAULT_MADE_DEX_COVER, MadeDexId, MadeDexSummary } from './types'
 

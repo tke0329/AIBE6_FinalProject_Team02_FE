@@ -46,9 +46,13 @@ function trimmed(caption: string): string | null {
 }
 
 /** 신규 기록용. 순서는 화면에 보이는 그대로다 */
-export function newPhotosOf(photos: RecordPhoto[]): Array<{ imageKey: string; caption: string | null; cropX: number; cropY: number }> {
+export function newPhotosOf(
+    photos: RecordPhoto[],
+): Array<{ imageKey: string; caption: string | null; cropX: number; cropY: number }> {
     return photos.flatMap((photo) =>
-        photo.kind === 'new' && photo.key ? [{ imageKey: photo.key, caption: trimmed(photo.caption), cropX: photo.cropX, cropY: photo.cropY }] : [],
+        photo.kind === 'new' && photo.key
+            ? [{ imageKey: photo.key, caption: trimmed(photo.caption), cropX: photo.cropX, cropY: photo.cropY }]
+            : [],
     )
 }
 
@@ -59,7 +63,9 @@ export function updatePayloadOf(photos: RecordPhoto[]): {
 } {
     return {
         keepPhotos: photos.flatMap((photo) =>
-            photo.kind === 'kept' ? [{ photoId: photo.photoId, caption: trimmed(photo.caption), cropX: photo.cropX, cropY: photo.cropY }] : [],
+            photo.kind === 'kept'
+                ? [{ photoId: photo.photoId, caption: trimmed(photo.caption), cropX: photo.cropX, cropY: photo.cropY }]
+                : [],
         ),
         newPhotos: newPhotosOf(photos),
     }

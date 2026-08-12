@@ -2,7 +2,7 @@
 
 import { motion, useReducedMotion } from 'framer-motion'
 import { ClockIcon, Sparkles, Star } from 'lucide-react'
-import { StarRank } from '@/shared/ui/atoms/StarRank'
+import { StarRank } from '@/shared/ui'
 
 export interface RevealCard {
     slotId: number

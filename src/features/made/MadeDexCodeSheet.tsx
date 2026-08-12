@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react'
 import { XIcon } from 'lucide-react'
 
-import { BottomSheet } from '@/shared/ui/molecules/BottomSheet'
+import { BottomSheet } from '@/shared/ui'
 import { INVITE_CODE_LENGTH, normalizeInviteCode } from './types'
 
 interface Props {

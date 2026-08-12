@@ -1,5 +1,4 @@
-import { ServerBadge } from '@/shared/ui/atoms/ServerBadge'
-import { BottomNav, NavTab } from '@/shared/ui/molecules/BottomNav'
+import { BottomNav, NavTab, ServerBadge } from '@/shared/ui'
 import { AwardIcon, BookOpenIcon, CameraIcon, ChevronRightIcon, LogOutIcon, PencilIcon, UsersIcon } from 'lucide-react'
 import React from 'react'
 

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
-import { BottomSheet } from '@/shared/ui/molecules/BottomSheet'
-import { ConfirmDialog } from '@/shared/ui/molecules/ConfirmDialog'
+import { BottomSheet, Dialog } from '@/shared/ui'
 import { PhotoCarousel } from './PhotoCarousel'
 import { deleteRecord, fetchRecord } from './logitApi'
 import { madeErrorMessage } from './errors'
@@ -125,12 +124,12 @@ export function RecordDetailSheet({ madeDexId, recordIds, onClose, onEdit, onDel
             </div>
 
             {confirming && (
-                <ConfirmDialog
+                <Dialog
                     title="기록을 지울까요?"
                     message="사진과 사진에 붙인 글이 함께 사라져요. 되돌릴 수 없어요."
-                    actionText="삭제하기"
-                    onCancel={() => setConfirming(false)}
-                    onConfirm={() => void remove()}
+                    danger
+                    action={{ label: '삭제하기', onClick: () => void remove() }}
+                    onClose={() => setConfirming(false)}
                 />
             )}
         </BottomSheet>

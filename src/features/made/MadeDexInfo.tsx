@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { ArrowLeftIcon, ChevronRightIcon, KeyRoundIcon, LockIcon, SettingsIcon, UsersIcon } from 'lucide-react'
 
-import { BottomSheet } from '@/shared/ui/molecules/BottomSheet'
+import { BottomSheet } from '@/shared/ui'
 import { DEFAULT_MADE_DEX_COVER, madeDexDayCount, MadeDexDetail } from './types'
 
 interface Props {
@@ -126,7 +126,11 @@ export function MadeDexInfo({
                                             </span>
                                             <span className="mt-0.5 block text-xs text-content-secondary">{hint}</span>
                                         </span>
-                                        <ChevronRightIcon size={18} aria-hidden className="shrink-0 text-content-muted" />
+                                        <ChevronRightIcon
+                                            size={18}
+                                            aria-hidden
+                                            className="shrink-0 text-content-muted"
+                                        />
                                     </button>
                                 </li>
                             ))}

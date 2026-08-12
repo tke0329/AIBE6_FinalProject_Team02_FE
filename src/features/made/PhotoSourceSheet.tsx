@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { CameraIcon, ImageIcon } from 'lucide-react'
-import { BottomSheet } from '@/shared/ui/molecules/BottomSheet'
+import { BottomSheet } from '@/shared/ui'
 import { PHOTO_INPUT_ACCEPT } from '@/shared/lib/upload'
 
 interface Props {

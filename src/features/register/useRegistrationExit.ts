@@ -18,5 +18,6 @@ export function useRegistrationExitHref() {
         return ROUTES.challengeDetail(registrationChallengeId)
     }
     if (from) return from
-    return ROUTES.home
+    // 기본(베이짓)에서 시작했으니 베이짓 목록으로 돌아간다 — 진입점(`/`)은 로그잇으로 나간다
+    return ROUTES.basicDex()
 }

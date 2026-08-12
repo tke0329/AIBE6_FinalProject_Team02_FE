@@ -1,4 +1,5 @@
 import React from 'react'
+import { Avatar } from '@/shared/ui'
 
 interface Props {
     name: string
@@ -8,28 +9,9 @@ interface Props {
     className?: string
 }
 
-const sizeClass = {
-    sm: 'h-6 w-6 text-xs',
-    md: 'h-9 w-9 text-sm',
-}
+/** 로그잇 안에서 부르던 이름과 크기 단계를 공통 Avatar에 이어 준다 */
+const TO_SHARED = { sm: 'xs', md: 'sm' } as const
 
 export function LogitAvatar({ name, imageUrl, size = 'md', className = '' }: Props) {
-    const base = `${sizeClass[size]} shrink-0 rounded-full object-cover ${className}`
-
-    if (imageUrl) {
-        return (
-            // presigned URL이라 next/image의 도메인 설정 대상이 아니다
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={imageUrl} alt={`${name} 프로필 사진`} className={base} />
-        )
-    }
-
-    return (
-        <span
-            aria-hidden
-            className={`${sizeClass[size]} flex shrink-0 items-center justify-center rounded-full bg-neutral-100 font-bold text-content-secondary ${className}`}
-        >
-            {name.charAt(0)}
-        </span>
-    )
+    return <Avatar name={name} imageUrl={imageUrl} size={TO_SHARED[size]} className={className} />
 }

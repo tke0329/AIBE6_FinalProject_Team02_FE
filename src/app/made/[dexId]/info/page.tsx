@@ -7,6 +7,7 @@ import { fetchMadeDexDetail, leaveMadeDex } from '@/features/made/api'
 import { madeErrorMessage } from '@/features/made/errors'
 import { parseMadeDexId } from '@/features/made/types'
 import type { MadeDexDetail } from '@/features/made/types'
+import { copyToClipboard } from '@/shared/lib/clipboard'
 import { ROUTES } from '@/shared/lib/routes'
 
 /** `/made/[dexId]/info` 도감 정보 + 도감 관리 */

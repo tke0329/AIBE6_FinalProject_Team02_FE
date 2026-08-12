@@ -6,6 +6,13 @@ const token = (name: string) => `rgb(var(--${name}) / <alpha-value>)`
 const config: Config = {
     content: ['./src/**/*.{js,ts,jsx,tsx,mdx}'],
     theme: {
+        /* 뷰포트 브레이크포인트 봉인.
+           앱은 `--layout-max` 폭 컬럼 안에서만 그려지는데 `md:`/`lg:`는 컬럼이 아니라
+           **브라우저 창** 폭을 본다. 데스크톱에서 창이 넓으면 컬럼은 430px 그대로인데
+           `md:grid-cols-4`가 걸려 430px 안에 4열이 들어차는 식으로 어긋난다.
+           비워 두면 `md:`가 CSS를 아예 생성하지 않아 실수해도 조용히 무시된다.
+           (현재 사용처 0곳 — 늘어나기 전에 막아 둔다) */
+        screens: {},
         extend: {
             colors: {
                 /* --- Primitive (DESIGN.md §1.1) — Watermelon Splash ---
@@ -66,7 +73,10 @@ const config: Config = {
                     primary: token('text-primary'),
                     secondary: token('text-secondary'),
                     muted: token('text-muted'),
+                    /** 핑크 면 위 — 어두운 색이다 (globals.css 주석 참고) */
                     'on-action': token('text-on-action'),
+                    /** 어두운 면(에러 버튼·토스트) 위 — 흰색 */
+                    'on-dark': token('text-on-dark'),
                     link: token('text-link'),
                 },
                 action: {
@@ -74,6 +84,8 @@ const config: Config = {
                     hover: token('action-primary-hover'),
                     'disabled-bg': token('action-disabled-bg'),
                     'disabled-text': token('action-disabled-text'),
+                    soft: token('action-soft'),
+                    'soft-text': token('action-soft-text'),
                 },
                 edge: {
                     default: token('border-default'),
@@ -86,22 +98,34 @@ const config: Config = {
                 },
             },
 
-            /* §1.4 타이포 스케일 — xs가 최소 크기. 그 아래 값 사용 금지 */
+            /* §1.4 타이포 스케일 — xs가 최소 크기. 그 아래 값 사용 금지.
+               5xl 이상은 이모지·이니셜 한 글자용이라 읽는 글자 스케일에 넣지 않는다.
+
+               **딩궁딩굴 기준으로 한 단계씩 올려 잡았다.** 이 글꼴은 x-height가 39로
+               Pretendard(53)의 74%라, 같은 px 값이면 눈에는 그만큼 작게 보인다.
+               괄호 안이 이전(Pretendard 기준) 값이다 — 숫자만 보고 "왜 이렇게 크지"
+               하지 않도록 남겨 둔다.
+
+               크기를 더 키우거나 줄이려면 **이 표만** 고친다. 화면에는 px가 박혀 있지 않다. */
             fontSize: {
-                xs: ['12px', '16px'],
-                sm: ['14px', '20px'],
-                base: ['16px', '24px'],
-                lg: ['18px', '26px'],
-                xl: ['22px', '30px'],
+                xs: ['14px', '20px'], //  (12/16)  날짜·카드 하단
+                sm: ['16px', '23px'], //  (14/20)  보조 설명·라벨
+                base: ['18px', '27px'], //  (16/24)  본문
+                lg: ['21px', '30px'], //  (18/26)  섹션 제목
+                xl: ['25px', '34px'], //  (22/30)  화면 제목
+                '2xl': ['28px', '38px'], //  (24/32)
+                '3xl': ['34px', '42px'], //  (30/36)  해금 연출
+                '4xl': ['41px', '48px'], //  (36/40)
             },
             fontWeight: {
                 regular: '400',
                 medium: '500',
                 bold: '700',
             },
+            /* 글꼴은 하나뿐이다. Pretendard는 딩궁딩굴에 없는 글자를 받는 폴백 */
             fontFamily: {
-                sans: ['Pretendard', '-apple-system', 'system-ui', 'sans-serif'],
-                display: ['Jua', 'Pretendard', 'sans-serif'],
+                sans: ['Dinggul', 'Pretendard', '-apple-system', 'system-ui', 'sans-serif'],
+                display: ['Dinggul', 'Pretendard', 'sans-serif'],
             },
 
             /* §1.5 라운드 — 3단계 + full. 레거시 xl/2xl/3xl도 토큰값으로 고정 */
@@ -136,6 +160,15 @@ const config: Config = {
             },
             spacing: {
                 'safe-b': 'env(safe-area-inset-bottom)',
+            },
+
+            /* 로딩 연출용 (shared/ui/molecules/loadingScenes.tsx) */
+            keyframes: {
+                /* 사진 위를 훑는 스캔선. 위 밖에서 시작해 아래 밖으로 빠진다 */
+                scan: {
+                    '0%': { transform: 'translateY(-100%)' },
+                    '100%': { transform: 'translateY(300%)' },
+                },
             },
         },
     },

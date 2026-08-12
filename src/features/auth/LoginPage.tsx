@@ -36,7 +36,8 @@ const PROVIDERS: {
     {
         key: 'google',
         label: 'Google로 시작해요',
-        className: 'bg-white text-neutral-900 border border-neutral-100 hover:bg-white focus-visible:outline-neutral-300',
+        className:
+            'bg-white text-neutral-900 border border-neutral-100 hover:bg-white focus-visible:outline-neutral-300',
         icon: (
             <svg className="w-5 h-5 mr-3 flex-shrink-0" viewBox="0 0 24 24">
                 <path

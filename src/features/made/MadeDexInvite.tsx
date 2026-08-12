@@ -13,7 +13,7 @@ import {
     UsersIcon,
 } from 'lucide-react'
 
-import { ConfirmDialog as ConfirmView } from '@/shared/ui/molecules/ConfirmDialog'
+import { Dialog } from '@/shared/ui'
 import { inviteDaysLeft, INVITE_CODE_LENGTH, memberInitial, memberName } from './types'
 import type { MadeDexMember, MadeDexRole } from './types'
 
@@ -152,7 +152,9 @@ export function MadeDexInvite({
                             </p>
                         </>
                     ) : (
-                        <p className="mt-4 text-sm text-watermelon-50">아직 유효한 코드가 없어요. 새로 발급해 주세요.</p>
+                        <p className="mt-4 text-sm text-watermelon-50">
+                            아직 유효한 코드가 없어요. 새로 발급해 주세요.
+                        </p>
                     )}
 
                     {/* 조회에 실패했으면 발급이 아니라 재조회만 준다 */}
@@ -277,15 +279,15 @@ export function MadeDexInvite({
                 {canManage && (
                     <section className="mt-5 rounded-2xl bg-white p-4 text-sm text-neutral-800 shadow-soft">
                         <ClipboardIcon size={18} className="mb-2 text-watermelon-500" />
-                        코드를 받은 친구는 제작 도감 목록 위쪽 <strong className="text-neutral-900">초대코드</strong>를 눌러{' '}
-                        {INVITE_CODE_LENGTH}
+                        코드를 받은 친구는 제작 도감 목록 위쪽 <strong className="text-neutral-900">초대코드</strong>를
+                        눌러 {INVITE_CODE_LENGTH}
                         자리 코드를 입력하면 돼요. 링크를 보냈다면 누르는 것만으로 코드가 채워져요.
                     </section>
                 )}
             </main>
 
             {confirm && (
-                <ConfirmDialog
+                <MemberActionDialog
                     confirm={confirm}
                     dexTitle={dexTitle}
                     onCancel={() => setConfirm(null)}
@@ -326,15 +328,18 @@ function MemberAvatar({ member }: { member: MadeDexMember }) {
     )
 }
 
-interface ConfirmDialogProps {
+interface MemberActionDialogProps {
     confirm: Confirm
     dexTitle: string
     onCancel: () => void
     onConfirm: () => void
 }
 
-// 확인을 누르면 바로 닫는다. 진행 상태와 실패는 목록 쪽에서 알린다
-function ConfirmDialog({ confirm, dexTitle, onCancel, onConfirm }: ConfirmDialogProps) {
+/**
+ * 내보내기·위임·나가기의 문구를 고르는 얇은 래퍼. 창 자체는 공통 `Dialog`가 그린다.
+ * 확인을 누르면 바로 닫는다 — 진행 상태와 실패는 목록 쪽에서 알린다
+ */
+function MemberActionDialog({ confirm, dexTitle, onCancel, onConfirm }: MemberActionDialogProps) {
     const copy =
         confirm.kind === 'kick'
             ? {
@@ -385,12 +390,12 @@ function ConfirmDialog({ confirm, dexTitle, onCancel, onConfirm }: ConfirmDialog
                   }
 
     return (
-        <ConfirmView
+        <Dialog
             title={copy.title}
             message={copy.body}
-            actionText={copy.action}
-            onCancel={onCancel}
-            onConfirm={onConfirm}
+            danger
+            action={{ label: copy.action, onClick: onConfirm }}
+            onClose={onCancel}
         />
     )
 }
@@ -432,9 +437,19 @@ export function MadeDexCodeEntry({
             <main className="flex-1 px-5 pt-8">
                 <div className="rounded-3xl bg-white p-5 text-center shadow-soft">
                     {alreadyJoined ? (
-                        <BookMarkedIcon size={44} strokeWidth={1.5} aria-hidden className="mx-auto text-watermelon-500" />
+                        <BookMarkedIcon
+                            size={44}
+                            strokeWidth={1.5}
+                            aria-hidden
+                            className="mx-auto text-watermelon-500"
+                        />
                     ) : (
-                        <HandshakeIcon size={44} strokeWidth={1.5} aria-hidden className="mx-auto text-watermelon-500" />
+                        <HandshakeIcon
+                            size={44}
+                            strokeWidth={1.5}
+                            aria-hidden
+                            className="mx-auto text-watermelon-500"
+                        />
                     )}
                     <h1 className="mt-3 font-display text-xl text-neutral-900">
                         {alreadyJoined

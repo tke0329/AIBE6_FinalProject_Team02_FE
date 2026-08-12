@@ -1,2 +1,9 @@
 # 모든 텍스트 파일 줄바꿈 LF로 통일 (Prettier 기본값과 일치, OS 무관 일관)
 * text=auto eol=lf
+
+# 웹폰트는 바이너리다. text=auto 자동 판별에 맡기지 않고 못 박는다 —
+# 71개 파일 중 하나라도 줄바꿈 변환을 타면 폰트가 깨진다
+*.woff2 binary
+*.woff binary
+*.ttf binary
+*.otf binary

@@ -1,10 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { HeartIcon, LockIcon, PencilIcon, StarIcon, Trash2Icon } from 'lucide-react'
 import { Review, ReviewWritePayload, deleteReview, editReview, toggleReviewLike } from './api'
-import { ConfirmModal } from '@/shared/ui/molecules/ConfirmModal'
-import { ServerBadge } from '@/shared/ui/atoms/ServerBadge'
 import { useRouter } from 'next/navigation'
 import { ROUTES } from '@/shared/lib/routes'
+import { Dialog, ServerBadge } from '@/shared/ui'
 
 interface Props {
     load: () => Promise<Review[]>
@@ -246,7 +245,9 @@ export function ReviewSection({
                                         <ReviewerAvatar
                                             nickname={r.reviewerNickname}
                                             imageUrl={r.reviewerProfileImageUrl}
-                                            onClick={() => router.push(r.mine ? ROUTES.my : ROUTES.userProfile(r.reviewerId))}
+                                            onClick={() =>
+                                                router.push(r.mine ? ROUTES.my : ROUTES.userProfile(r.reviewerId))
+                                            }
                                         />
                                         <span className="flex min-w-0 items-center gap-1">
                                             {r.reviewerEquippedBadge && (
@@ -340,14 +341,12 @@ export function ReviewSection({
             )}
 
             {confirmDeleteId != null && (
-                <ConfirmModal
+                <Dialog
                     title="리뷰 삭제"
                     message="이 리뷰를 지울까요?"
-                    confirmText="삭제"
-                    cancelText="취소"
                     danger
-                    onConfirm={doDelete}
-                    onCancel={() => setConfirmDeleteId(null)}
+                    action={{ label: '삭제', onClick: doDelete }}
+                    onClose={() => setConfirmDeleteId(null)}
                 />
             )}
         </div>

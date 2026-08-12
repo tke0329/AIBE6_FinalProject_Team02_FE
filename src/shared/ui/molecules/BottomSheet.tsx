@@ -1,5 +1,8 @@
+'use client'
+
 import { motion, useDragControls, useReducedMotion } from 'framer-motion'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useState } from 'react'
+import { useFocusTrap } from '@/shared/ui/hooks/useFocusTrap'
 
 interface BottomSheetProps {
     /** 시트 제목. 접근 가능한 이름으로도 쓰임 */
@@ -22,9 +25,6 @@ interface BottomSheetProps {
     /** 패널 높이 제한. 기본은 내용만큼 */
     maxHeightClass?: string
 }
-
-const FOCUSABLE =
-    'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
 /** §7 바텀시트 전환 300ms */
 const SLIDE_MS = 0.3
@@ -73,7 +73,6 @@ export function BottomSheet({
     className = '',
     maxHeightClass = 'max-h-[80%]',
 }: BottomSheetProps) {
-    const panelRef = useRef<HTMLElement>(null)
     const reduceMotion = useReducedMotion()
     const dragControls = useDragControls()
     const [closing, setClosing] = useState(false)
@@ -94,55 +93,8 @@ export function BottomSheet({
         setClosing(true)
     }, [dismissible, onClose, reduceMotion])
 
-    /**
-     * 아래 effect를 마운트 1회로 묶기 위한 통로.
-     * 호출부 다수가 `onClose={() => setOpen(false)}`처럼 인라인으로 넘겨 매 렌더마다 identity가 바뀐다.
-     * 그걸 deps에 두면 부모가 리렌더될 때마다 effect가 다시 돌아 panel.focus()가 재실행되고,
-     * 시트 안에서 글자를 입력하던 포커스를 빼앗는다.
-     */
-    const requestCloseRef = useRef(requestClose)
-    useEffect(() => {
-        requestCloseRef.current = requestClose
-    }, [requestClose])
-
-    useEffect(() => {
-        const trigger = document.activeElement as HTMLElement | null
-        const panel = panelRef.current
-        // preventScroll이 없으면 화면 밖 패널을 끌어오려고 뒷화면이 밀린다 (컴포넌트 주석 2번)
-        panel?.focus({ preventScroll: true })
-
-        const onKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') {
-                event.stopPropagation()
-                requestCloseRef.current()
-                return
-            }
-            if (event.key !== 'Tab' || !panel) return
-
-            const items = Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE))
-            if (!items.length) return
-            const first = items[0]
-            const last = items[items.length - 1]
-            const active = document.activeElement
-
-            if (event.shiftKey && (active === first || active === panel)) {
-                event.preventDefault()
-                last.focus()
-            } else if (!event.shiftKey && active === last) {
-                event.preventDefault()
-                first.focus()
-            }
-        }
-
-        document.addEventListener('keydown', onKeyDown)
-        return () => {
-            document.removeEventListener('keydown', onKeyDown)
-            // 닫을 때 트리거로 포커스 복귀. 여기서도 스크롤을 건드리지 않는다
-            trigger?.focus?.({ preventScroll: true })
-        }
-        // 마운트 1회. 닫기 핸들러는 ref로 최신값을 읽는다
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    // 포커스 가두기·Escape·복귀는 Dialog와 공유한다 (preventScroll이 위 주석 2번을 막는 지점)
+    const panelRef = useFocusTrap<HTMLElement>(requestClose)
 
     return (
         // overflow-hidden — 패널이 화면 밖에서 시작하므로 넘침을 잘라 스크롤 여지를 없앤다 (주석 1번)

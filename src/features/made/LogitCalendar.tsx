@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
-import { BottomSheet } from '@/shared/ui/molecules/BottomSheet'
-import { Calendar } from '@/shared/ui/molecules/Calendar'
+import { BottomSheet, Calendar } from '@/shared/ui'
 import { YearMonthWheel } from './YearMonthWheel'
 import { formatDate, parseDate } from './logitTypes'
 import { useLogitCalendar } from './useLogitCalendar'

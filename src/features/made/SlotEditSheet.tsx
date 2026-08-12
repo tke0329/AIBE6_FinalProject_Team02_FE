@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Reorder, useDragControls } from 'framer-motion'
 import { GripVerticalIcon, PencilIcon, RotateCcwIcon, Trash2Icon } from 'lucide-react'
-import { BottomSheet } from '@/shared/ui/molecules/BottomSheet'
-import { ConfirmDialog } from '@/shared/ui/molecules/ConfirmDialog'
+import { BottomSheet, Dialog } from '@/shared/ui'
 import { useSlotEditor } from './useSlotEditor'
 import { MAX_SLOTS, MIN_SLOTS, SLOT_NAME_MAX } from './logitTypes'
 import type { LogitSlot } from './logitTypes'
@@ -147,7 +146,7 @@ export function SlotEditSheet({ madeDexId, onClose, onChanged }: Props) {
             </div>
 
             {removing && (
-                <ConfirmDialog
+                <Dialog
                     title={`${removing.name}을 없앨까요?`}
                     message={
                         removing.hasRecords ? (
@@ -160,12 +159,15 @@ export function SlotEditSheet({ madeDexId, onClose, onChanged }: Props) {
                             '아직 기록이 없어서 바로 없어져요.'
                         )
                     }
-                    actionText="없애기"
-                    onCancel={() => setRemoving(null)}
-                    onConfirm={() => {
-                        apply(() => editor.remove(removing.slotId))
-                        setRemoving(null)
+                    danger
+                    action={{
+                        label: '없애기',
+                        onClick: () => {
+                            apply(() => editor.remove(removing.slotId))
+                            setRemoving(null)
+                        },
                     }}
+                    onClose={() => setRemoving(null)}
                 />
             )}
         </BottomSheet>

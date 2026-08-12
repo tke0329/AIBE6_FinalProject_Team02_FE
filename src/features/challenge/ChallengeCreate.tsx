@@ -3,7 +3,7 @@ import { LocationInput } from '@/features/register/confirmApi'
 import { geocodeAddress } from '@/features/register/placeApi'
 import { resolveBadgeImage } from '@/shared/data/badgeAssets'
 import { useAppState } from '@/shared/store/AppStateProvider'
-import { Badge } from '@/shared/ui/atoms/Badge'
+import { Badge } from '@/shared/ui'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
     ArrowLeftIcon,
@@ -320,7 +320,9 @@ export function ChallengeCreate({
                                             animate={{ height: 'auto', opacity: 1 }}
                                             exit={{ height: 0, opacity: 0 }}
                                         >
-                                            <span className="mb-1 block text-xs font-bold text-neutral-800">종료일</span>
+                                            <span className="mb-1 block text-xs font-bold text-neutral-800">
+                                                종료일
+                                            </span>
                                             <input
                                                 type="date"
                                                 value={endsAt}
@@ -466,7 +468,12 @@ export function ChallengeCreate({
                                                             className="h-full w-full object-cover"
                                                         />
                                                     ) : (
-                                                        <UtensilsIcon size={18} strokeWidth={1.5} aria-hidden className="text-neutral-400" />
+                                                        <UtensilsIcon
+                                                            size={18}
+                                                            strokeWidth={1.5}
+                                                            aria-hidden
+                                                            className="text-neutral-400"
+                                                        />
                                                     )}
                                                 </span>
                                                 <span className="min-w-0 flex-1 text-sm font-bold text-neutral-900">
@@ -494,7 +501,9 @@ export function ChallengeCreate({
                         {step === BADGE && (
                             <div>
                                 <p className="text-sm font-bold text-watermelon-500">{STEP_LABEL[4]}</p>
-                                <h1 className="mt-1 font-display text-2xl leading-snug text-neutral-900">완주 보상 뱃지</h1>
+                                <h1 className="mt-1 font-display text-2xl leading-snug text-neutral-900">
+                                    완주 보상 뱃지
+                                </h1>
                                 <p className="mt-2 text-sm text-neutral-400">프리셋을 고르거나 직접 만들어요.</p>
 
                                 <div className="mt-5 grid grid-cols-2 gap-3">
@@ -519,10 +528,17 @@ export function ChallengeCreate({
                                                             className="h-full w-full object-cover"
                                                         />
                                                     ) : (
-                                                        <MedalIcon size={22} strokeWidth={1.5} aria-hidden className="text-watermelon-500" />
+                                                        <MedalIcon
+                                                            size={22}
+                                                            strokeWidth={1.5}
+                                                            aria-hidden
+                                                            className="text-watermelon-500"
+                                                        />
                                                     )}
                                                 </span>
-                                                <span className="text-sm font-bold text-neutral-900">{preset.name}</span>
+                                                <span className="text-sm font-bold text-neutral-900">
+                                                    {preset.name}
+                                                </span>
                                             </button>
                                         )
                                     })}
@@ -566,7 +582,12 @@ export function ChallengeCreate({
                                 )}
                                 <div className="mt-3 flex items-center gap-3 rounded-2xl bg-white p-3">
                                     <Badge variant="reward" imageSrc={rewardImage} label={`보상 뱃지 ${rewardName}`}>
-                                        <TrophyIcon size={24} strokeWidth={1.5} aria-hidden className="text-watermelon-500" />
+                                        <TrophyIcon
+                                            size={24}
+                                            strokeWidth={1.5}
+                                            aria-hidden
+                                            className="text-watermelon-500"
+                                        />
                                     </Badge>
                                     <span>
                                         <p className="text-xs text-neutral-400">완주 보상 미리보기</p>
