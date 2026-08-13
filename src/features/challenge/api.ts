@@ -84,6 +84,16 @@ export function fetchChallenges(
     return apiFetch<PageResponse<ChallengeSummary>>(`/api/v1/challenges?${q.toString()}`)
 }
 
+/** 챌린지 이름 검색 (무한스크롤 — 탐색 목록과 동일한 페이지 구조) */
+export function searchChallenges(keyword: string, page = 0, size = 10) {
+    const q = new URLSearchParams({
+        keyword,
+        page: String(page),
+        size: String(size),
+    })
+    return apiFetch<PageResponse<ChallengeSummary>>(`/api/v1/challenges/search?${q.toString()}`)
+}
+
 export type MyChallengeRelation = 'CREATED' | 'JOINED' | 'COMPLETED'
 
 /** 내 챌린지 (개설한 / 참여 중 / 완료한) */

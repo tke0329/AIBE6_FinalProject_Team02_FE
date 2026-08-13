@@ -9,6 +9,7 @@ import {
     fetchCreationTickets,
     fetchMyChallenges,
     joinChallenge,
+    searchChallenges,
 } from '@/features/challenge/api'
 import { ChallengeData } from '@/features/challenge/types'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -70,6 +71,8 @@ function ChallengeHome() {
     const [exploreHasNext, setExploreHasNext] = useState(false)
     const [exploreLoading, setExploreLoading] = useState(false)
     const [exploreError, setExploreError] = useState(false)
+    const [exploreQuery, setExploreQuery] = useState('') // 검색 입력값(원본)
+    const [debouncedQuery, setDebouncedQuery] = useState('') // 디바운스된 검색어(실제 요청)
     const [alertMessage, setAlertMessage] = useState<string | null>(null)
     const reqRef = useRef(0) // 최신 탐색 요청만 반영(정렬/상태 빠른 전환 경합 방어)
     const joiningRef = useRef<Set<string>>(new Set()) // 참여 요청 중복 방지
@@ -105,10 +108,13 @@ function ChallengeHome() {
     }
 
     const loadExplore = useCallback(
-        (status: 'ONGOING' | 'FINISHED', sort: ChallengeSort, page: number, append: boolean) => {
+        (status: 'ONGOING' | 'FINISHED', sort: ChallengeSort, page: number, append: boolean, query: string) => {
             const token = ++reqRef.current
             setExploreLoading(true)
-            fetchChallenges(status, sort, page, PAGE_SIZE)
+            const request = query.trim()
+                ? searchChallenges(query.trim(), page, PAGE_SIZE) // 검색어 있으면 검색 API
+                : fetchChallenges(status, sort, page, PAGE_SIZE) // 없으면 기존 탐색
+            request
                 .then((res) => {
                     if (token !== reqRef.current) return // 더 최신 요청이 있으면 무시
                     const mapped = res.content.map(toChallengeData)
@@ -147,16 +153,23 @@ function ChallengeHome() {
             .catch(() => {})
     }, [])
 
-    // 상태·정렬 바뀌면 첫 페이지부터 다시 로드
+    // 검색어 디바운스: 입력이 멈추고 300ms 뒤에 실제 검색어로 확정
     useEffect(() => {
-        loadExplore(exploreStatus, exploreSort, 0, false)
-    }, [exploreStatus, exploreSort, loadExplore])
+        const t = setTimeout(() => setDebouncedQuery(exploreQuery), 300)
+        return () => clearTimeout(t)
+    }, [exploreQuery])
+
+    // 상태·정렬·검색어 바뀌면 첫 페이지부터 다시 로드
+    useEffect(() => {
+        loadExplore(exploreStatus, exploreSort, 0, false, debouncedQuery)
+    }, [exploreStatus, exploreSort, debouncedQuery, loadExplore])
 
     const onExploreLoadMore = () => {
-        if (!exploreLoading && exploreHasNext) loadExplore(exploreStatus, exploreSort, explorePage + 1, true)
+        if (!exploreLoading && exploreHasNext)
+            loadExplore(exploreStatus, exploreSort, explorePage + 1, true, debouncedQuery)
     }
 
-    const onExploreRetry = () => loadExplore(exploreStatus, exploreSort, 0, false)
+    const onExploreRetry = () => loadExplore(exploreStatus, exploreSort, 0, false, debouncedQuery)
 
     // 탐색 목록에서 바로 참여 → 낙관적으로 "참여 중"(중복 요청 방지 + 실패 시 롤백)
     const onJoinChallenge = async (c: ChallengeData) => {
@@ -184,6 +197,8 @@ function ChallengeHome() {
                 myCompleted={myCompleted}
                 createdThisMonth={createdThisMonth}
                 exploreItems={exploreItems}
+                exploreQuery={exploreQuery}
+                onExploreQueryChange={setExploreQuery}
                 exploreSort={exploreSort}
                 exploreStatus={exploreStatus}
                 exploreHasNext={exploreHasNext}

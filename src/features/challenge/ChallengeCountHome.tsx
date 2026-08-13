@@ -1,7 +1,7 @@
 'use client'
 
 import { Badge, BottomNav, DexHelpSheet, HelpIcon, NavTab, ProgressBar, TabBar } from '@/shared/ui'
-import { CrownIcon, MedalIcon, PlusIcon, TrophyIcon } from 'lucide-react'
+import { CrownIcon, MedalIcon, PlusIcon, SearchIcon, TrophyIcon, XIcon } from 'lucide-react'
 import { useState } from 'react'
 import { ChallengeSort } from './api'
 import { ChallengeData } from './types'
@@ -64,6 +64,8 @@ interface Props {
     onCreateChallenge: () => void
     // 탐색(서버 정렬 + 페이지)
     exploreItems: ChallengeData[]
+    exploreQuery: string
+    onExploreQueryChange: (q: string) => void
     exploreSort: ChallengeSort
     exploreStatus: ExploreStatus
     exploreHasNext: boolean
@@ -89,6 +91,8 @@ export function ChallengeCountHome({
     onOpenChallenge,
     onCreateChallenge,
     exploreItems,
+    exploreQuery,
+    onExploreQueryChange,
     exploreSort,
     exploreStatus,
     exploreHasNext,
@@ -108,6 +112,7 @@ export function ChallengeCountHome({
     const ended = exploreStatus === 'FINISHED'
     const isRanking = !ended && exploreSort !== 'LATEST'
     const podium = isRanking ? exploreItems.slice(0, 3) : []
+    const searching = exploreQuery.trim().length > 0 // 검색 모드 여부
     return (
         <div className="relative flex h-full flex-col bg-surface-app">
             <header className="px-5 pt-4">
@@ -167,31 +172,38 @@ export function ChallengeCountHome({
                     </>
                 ) : (
                     <>
-                        <div className="flex items-center justify-between">
-                            <p className="text-sm font-bold text-neutral-900">전체 챌린지</p>
-                            <TabBar
-                                label="진행 상태"
-                                variant="pill"
-                                items={STATUS_TABS}
-                                value={exploreStatus}
-                                onChange={onExploreStatusChange}
-                            />
-                        </div>
-                        {ended ? (
-                            <p className="mt-3 text-xs text-neutral-400">최근 완료순</p>
-                        ) : (
+                        <SearchBox value={exploreQuery} onChange={onExploreQueryChange} />
+                        {!searching && (
                             <>
-                                <TabBar
-                                    label="탐색 정렬"
-                                    variant="pill"
-                                    items={SORT_TABS}
-                                    value={exploreSort}
-                                    onChange={onExploreSortChange}
-                                    className="mt-3"
-                                />
-                                {isRanking && <p className="mt-2 text-xs text-neutral-400">최근 7일 기준 랭킹</p>}
-                                {isRanking && podium.length > 0 && (
-                                    <Podium sort={exploreSort} challenges={podium} onOpen={onOpenChallenge} />
+                                <div className="mt-3 flex items-center justify-between">
+                                    <p className="text-sm font-bold text-neutral-900">전체 챌린지</p>
+                                    <TabBar
+                                        label="진행 상태"
+                                        variant="pill"
+                                        items={STATUS_TABS}
+                                        value={exploreStatus}
+                                        onChange={onExploreStatusChange}
+                                    />
+                                </div>
+                                {ended ? (
+                                    <p className="mt-3 text-xs text-neutral-400">최근 완료순</p>
+                                ) : (
+                                    <>
+                                        <TabBar
+                                            label="탐색 정렬"
+                                            variant="pill"
+                                            items={SORT_TABS}
+                                            value={exploreSort}
+                                            onChange={onExploreSortChange}
+                                            className="mt-3"
+                                        />
+                                        {isRanking && (
+                                            <p className="mt-2 text-xs text-neutral-400">최근 7일 기준 랭킹</p>
+                                        )}
+                                        {isRanking && podium.length > 0 && (
+                                            <Podium sort={exploreSort} challenges={podium} onOpen={onOpenChallenge} />
+                                        )}
+                                    </>
                                 )}
                             </>
                         )}
@@ -200,13 +212,13 @@ export function ChallengeCountHome({
                                 exploreItems.map((challenge, index) => (
                                     <ExploreCard
                                         key={challenge.id}
-                                        rank={isRanking ? index + 1 : undefined}
+                                        rank={!searching && isRanking ? index + 1 : undefined}
                                         metric={
-                                            ended
+                                            searching || ended
                                                 ? `${challenge.participants}명 참가`
                                                 : scoreText(exploreSort, challenge)
                                         }
-                                        ended={ended}
+                                        ended={!searching && ended}
                                         challenge={challenge}
                                         onOpen={() => onOpenChallenge(challenge)}
                                         onJoin={() => onJoinChallenge(challenge)}
@@ -225,7 +237,11 @@ export function ChallengeCountHome({
                             ) : (
                                 <div className="rounded-2xl bg-white p-6 text-center shadow-soft">
                                     <p className="text-sm font-bold text-neutral-900">
-                                        {ended ? '종료된 챌린지가 없어요' : '아직 진행 중인 챌린지가 없어요'}
+                                        {searching
+                                            ? '검색 결과가 없어요'
+                                            : ended
+                                              ? '종료된 챌린지가 없어요'
+                                              : '아직 진행 중인 챌린지가 없어요'}
                                     </p>
                                 </div>
                             )}
@@ -244,6 +260,32 @@ export function ChallengeCountHome({
             </main>
             <BottomNav active="챌린지" onTab={onTab} />
             {helpOpen && <DexHelpSheet kind="challenge" onClose={() => setHelpOpen(false)} />}
+        </div>
+    )
+}
+/** 챌린지 이름 검색 입력 (입력하면 무한스크롤 검색으로 전환) */
+function SearchBox({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+    return (
+        <div className="flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-4 shadow-soft">
+            <SearchIcon size={16} className="shrink-0 text-neutral-400" aria-hidden />
+            <input
+                type="search"
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                placeholder="챌린지 이름 검색"
+                aria-label="챌린지 이름 검색"
+                className="min-h-touch flex-1 bg-transparent text-sm text-neutral-900 outline-none placeholder:text-neutral-400"
+            />
+            {value && (
+                <button
+                    type="button"
+                    onClick={() => onChange('')}
+                    aria-label="검색어 지우기"
+                    className="shrink-0 text-neutral-400"
+                >
+                    <XIcon size={16} />
+                </button>
+            )}
         </div>
     )
 }
