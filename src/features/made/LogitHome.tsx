@@ -1,14 +1,16 @@
-import React, { useState } from 'react'
-import { ArrowLeftIcon, MenuIcon, PencilIcon, PlusIcon, SparklesIcon } from 'lucide-react'
 import { BottomNav, DexHelpSheet, HelpIcon, NavTab } from '@/shared/ui'
+import { ArrowLeftIcon, MenuIcon, MessageSquareTextIcon, PencilIcon } from 'lucide-react'
+import { useState } from 'react'
 import { DateStrip } from './DateStrip'
 import { DayCardView } from './DayCardView'
+import { EmptyCaptionSheet } from './EmptyCaptionSheet'
 import { LogitCalendar } from './LogitCalendar'
 import { MealSlotSection } from './MealSlotSection'
 import { RecordDetailSheet } from './RecordDetailSheet'
 import { SlotEditSheet } from './SlotEditSheet'
-import { useLogitFeed } from './useLogitFeed'
 import type { MadeDexId } from './types'
+import { useEmptyCaption } from './useEmptyCaption'
+import { useLogitFeed } from './useLogitFeed'
 
 interface Props {
     dexId: MadeDexId
@@ -18,15 +20,19 @@ interface Props {
     /** 기록 화면으로. 어느 날짜의 어느 끼니인지 들고 간다 */
     onRecord: (date: string, slotId?: number) => void
     onEditRecord: (recordId: number) => void
+    /** 아바타를 누른 사람의 프로필로. 나면 마이페이지로 보낸다 */
+    onOpenProfile: (userId: number, me: boolean) => void
     onTab: (tab: NavTab) => void
 }
 
-export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRecord, onTab }: Props) {
+export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRecord, onOpenProfile, onTab }: Props) {
     const feed = useLogitFeed(dexId)
+    const emptyCaption = useEmptyCaption(dexId, feed.date)
     const [dayCardOpen, setDayCardOpen] = useState(false)
     const [helpOpen, setHelpOpen] = useState(false)
     const [slotsOpen, setSlotsOpen] = useState(false)
     const [calendarOpen, setCalendarOpen] = useState(false)
+    const [captionOpen, setCaptionOpen] = useState(false)
     const [openedRecordIds, setOpenedRecordIds] = useState<number[] | null>(null)
 
     const slots = feed.feed?.slots ?? []
@@ -84,50 +90,61 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
 
                 {!feed.error && feed.feed && (
                     <>
+                        {/* 편집은 끼니 목록 **위**에 둔다. 아래에 있으면 끼니가 많은 날 스크롤을
+                            끝까지 내려야 나와서 있는 줄도 모른다 */}
+                        <div className="grid grid-cols-2 gap-2 pt-3">
+                            <button
+                                type="button"
+                                onClick={() => setSlotsOpen(true)}
+                                className="flex min-h-touch items-center justify-center gap-1.5 rounded-full border border-edge-default px-2 text-sm font-bold text-content-secondary"
+                            >
+                                <PencilIcon size={15} aria-hidden className="shrink-0" />
+                                <span className="truncate">구성 편집</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setCaptionOpen(true)}
+                                className="flex min-h-touch items-center justify-center gap-1.5 rounded-full border border-edge-default px-2 text-sm font-bold text-content-secondary"
+                            >
+                                <MessageSquareTextIcon size={15} aria-hidden className="shrink-0" />
+                                <span className="truncate">빈 칸 문구</span>
+                            </button>
+                        </div>
+
                         {slots.map((slot) => (
                             <MealSlotSection
                                 key={slot.slotId}
                                 slot={slot}
                                 onOpen={(card) => setOpenedRecordIds(card.recordIds)}
                                 canRecord={canRecord}
+                                emptyCaption={emptyCaption.caption}
                                 onRecord={(target) => onRecord(feed.date, target.slotId)}
+                                onOpenProfile={(card) => onOpenProfile(card.userId, card.me)}
                             />
                         ))}
-
-                        <button
-                            type="button"
-                            onClick={() => setSlotsOpen(true)}
-                            className="mt-6 flex min-h-touch w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-edge-default text-sm font-bold text-content-secondary"
-                        >
-                            <PencilIcon size={15} aria-hidden />
-                            구성 편집
-                        </button>
                     </>
                 )}
             </main>
 
-            <div className="absolute bottom-20 left-4 right-4 flex flex-col gap-2">
-                {!feed.error && feed.feed && (
+            {/*
+             * 하단에는 냉장고 만들기 하나만, 오른쪽 절반 크기로 둔다.
+             *
+             *   - `식사 기록하기`를 뺐다 — 끼니 카드마다 `+ 기록하기`가 이미 있어서
+             *     같은 일을 하는 큰 버튼이 화면 아래를 덮고 있었다
+             *   - 남은 하나도 폭을 꽉 채우지 않는다. 하루에 한 번 누르는 동작이 화면
+             *     아래를 통째로 가릴 이유가 없다
+             */}
+            {!feed.error && feed.feed && (
+                <div className="pointer-events-none absolute bottom-20 left-4 right-4 flex justify-end">
                     <button
                         type="button"
                         onClick={() => setDayCardOpen(true)}
-                        className="flex h-cta items-center justify-center gap-2 rounded-full border border-edge-default bg-surface-card text-sm font-bold text-content-primary shadow-card"
+                        className="pointer-events-auto flex min-h-touch w-1/2 items-center justify-center gap-1.5 rounded-full border border-edge-default bg-surface-card px-3 text-sm font-bold text-content-primary shadow-card active:scale-[0.98]"
                     >
-                        <SparklesIcon size={18} aria-hidden className="text-content-link" />
-                        오늘의 냉장고 만들기
+                        <span className="truncate">냉장고 만들기</span>
                     </button>
-                )}
-                {canRecord && (
-                    <button
-                        type="button"
-                        onClick={() => onRecord(feed.date)}
-                        className="flex h-cta items-center justify-center gap-1 rounded-full bg-action-primary text-sm font-bold text-content-on-action shadow-card"
-                    >
-                        <PlusIcon size={18} aria-hidden />
-                        식사 기록하기
-                    </button>
-                )}
-            </div>
+                </div>
+            )}
 
             <BottomNav active="제작" onTab={onTab} />
 
@@ -148,6 +165,14 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
 
             {slotsOpen && (
                 <SlotEditSheet madeDexId={dexId} onClose={() => setSlotsOpen(false)} onChanged={feed.reload} />
+            )}
+
+            {captionOpen && (
+                <EmptyCaptionSheet
+                    caption={emptyCaption.caption}
+                    onSave={emptyCaption.save}
+                    onClose={() => setCaptionOpen(false)}
+                />
             )}
 
             {openedRecordIds && (
@@ -181,7 +206,9 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
                             date={feed.date}
                             title={title}
                             canRecord={canRecord}
+                            emptyCaption={emptyCaption.caption}
                             onRecord={() => onRecord(feed.date)}
+                            onOpenProfile={onOpenProfile}
                         />
                     </main>
                 </div>

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
 import { BottomSheet, Dialog } from '@/shared/ui'
 import { PhotoCarousel } from './PhotoCarousel'
+import { RecordSocial } from './RecordSocial'
 import { deleteRecord, fetchRecord } from './logitApi'
 import { madeErrorMessage } from './errors'
 import { timeLabel } from './logitTypes'
@@ -23,6 +24,7 @@ export function RecordDetailSheet({ madeDexId, recordIds, onClose, onEdit, onDel
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [confirming, setConfirming] = useState(false)
+    const [expanded, setExpanded] = useState(false)
 
     const recordId = recordIds[index]
 
@@ -56,7 +58,12 @@ export function RecordDetailSheet({ madeDexId, recordIds, onClose, onEdit, onDel
     }
 
     return (
-        <BottomSheet title={record?.slotName ?? '기록'} onClose={onClose} maxHeightClass="max-h-[88%]">
+        // 댓글을 모두 펼치면 시트를 위로 더 올린다 — 접힌 상태에서는 사진이 주인공이어야 한다
+        <BottomSheet
+            title={record?.slotName ?? '기록'}
+            onClose={onClose}
+            maxHeightClass={expanded ? 'max-h-[96%]' : 'max-h-[88%]'}
+        >
             <div className="no-scrollbar flex-1 overflow-y-auto px-5 pb-6 pt-3">
                 {recordIds.length > 1 && (
                     <div className="flex items-center justify-between pb-3">
@@ -100,6 +107,13 @@ export function RecordDetailSheet({ madeDexId, recordIds, onClose, onEdit, onDel
                             {record.loggedAt && `${timeLabel(record.loggedAt)} · `}
                             {record.mine ? '내' : `${record.authorNickname ?? '이름 없는 참여자'}님의`} 기록
                         </p>
+
+                        {/* 내 기록에도 붙인다 — 남이 남긴 반응을 내가 보는 자리이기도 하다 */}
+                        <RecordSocial
+                            recordId={record.recordId}
+                            expanded={expanded}
+                            onExpand={() => setExpanded(true)}
+                        />
 
                         {record.mine && (
                             <div className="grid grid-cols-2 gap-2 pt-5">

@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowLeftIcon, CameraIcon, CheckCircleIcon, MapPinIcon, StarIcon, XIcon } from 'lucide-react'
+import { Dialog, ProgressBar } from '@/shared/ui'
 import { Confetti } from './Confetti'
 
 interface Props {
@@ -8,7 +9,15 @@ interface Props {
     placeName?: string | null
     onUnlock: (file: File, coords: { lat: number; lng: number }) => Promise<{ completed: boolean }>
     onSubmitReview: (payload: { content: string | null; rating: number | null }) => Promise<void>
-    onClose: (completed: boolean) => void
+    /**
+     * 닫힘을 알린다.
+     *
+     *   - `unlocked` — **해금이 실제로 됐는지.** 예전에는 `completed` 하나만 넘겼는데,
+     *     부모가 그걸 "닫혔으면 해금된 것"으로 읽어서 사진만 올리고 X를 눌러도 기록
+     *     모달(리뷰 쓰기 포함)이 열렸다. 두 사실은 다르니 따로 넘긴다
+     *   - `completed` — 이 해금으로 챌린짓을 **완주**했는지 (완주 보상 팝업용)
+     */
+    onClose: (result: { unlocked: boolean; completed: boolean }) => void
 }
 
 const PHOTO = 0
@@ -38,6 +47,9 @@ export function CertifyWizard({ name, placeName, onUnlock, onSubmitReview, onClo
     const [busy, setBusy] = useState(false)
     const [error, setError] = useState('')
     const [completed, setCompleted] = useState(false)
+    // 해금이 실제로 성공했는지 — 리뷰 단계에 도달한 것과 같은 뜻이지만, 닫힘을 알릴 때 명시로 넘긴다
+    const [unlocked, setUnlocked] = useState(false)
+    const close = () => onClose({ unlocked, completed })
 
     const onFile = (e: React.ChangeEvent<HTMLInputElement>) => {
         const f = e.target.files?.[0]
@@ -74,6 +86,7 @@ export function CertifyWizard({ name, placeName, onUnlock, onSubmitReview, onClo
         setError('')
         try {
             const res = await onUnlock(file, coords)
+            setUnlocked(true)
             setCompleted(res.completed)
             go(REVIEW)
         } catch (e) {
@@ -88,7 +101,7 @@ export function CertifyWizard({ name, placeName, onUnlock, onSubmitReview, onClo
         setError('')
         try {
             await onSubmitReview({ content: review.trim() || null, rating: rating || null })
-            onClose(completed)
+            close()
         } catch (e) {
             setError(e instanceof Error ? e.message : '리뷰 등록에 실패했어요')
         } finally {
@@ -110,22 +123,15 @@ export function CertifyWizard({ name, placeName, onUnlock, onSubmitReview, onClo
                     <span className="w-[22px]" />
                 )}
                 <span className="font-display text-lg text-neutral-900">{name}</span>
-                <button
-                    onClick={() => onClose(completed)}
-                    disabled={busy}
-                    aria-label="닫기"
-                    className="ml-auto disabled:opacity-40"
-                >
+                <button onClick={close} disabled={busy} aria-label="닫기" className="ml-auto disabled:opacity-40">
                     <XIcon size={22} className="text-neutral-400" />
                 </button>
             </header>
 
-            <div className="mx-5 h-1.5 overflow-hidden rounded-full bg-neutral-100">
-                <motion.div
-                    className="h-full rounded-full bg-watermelon-500"
-                    animate={{ width: `${((step + 1) / 3) * 100}%` }}
-                    transition={{ type: 'spring', stiffness: 220, damping: 30 }}
-                />
+            {/* 앱의 진행 바는 한 종류다 — 직접 그리지 않고 공통 ProgressBar를 쓴다.
+                채움은 초록(§1.1.1) — 어느 화면에 있든 차오르는 것은 "된 것"이다 */}
+            <div className="mx-5">
+                <ProgressBar value={(step + 1) / 3} label={`해금 진행 ${step + 1}/3단계`} />
             </div>
             <p className="mt-2 px-5 text-xs font-bold text-neutral-800">
                 {step + 1} / 3 · {titles[step]}
@@ -181,7 +187,7 @@ export function CertifyWizard({ name, placeName, onUnlock, onSubmitReview, onClo
                                     </p>
                                     <div className="mt-3">
                                         {coords ? (
-                                            <p className="flex items-center gap-1 text-sm font-bold text-lime-text">
+                                            <p className="flex items-center gap-1 text-sm font-bold text-rind-text">
                                                 <CheckCircleIcon size={16} /> 현재 위치 확인됨
                                             </p>
                                         ) : (
@@ -244,7 +250,17 @@ export function CertifyWizard({ name, placeName, onUnlock, onSubmitReview, onClo
                 </AnimatePresence>
             </div>
 
-            {error && <p className="px-5 pb-1 text-xs font-medium text-red-500">{error}</p>}
+            {/*
+             * 실패는 모달로 띄운다.
+             *
+             * 예전에는 스크롤 영역과 푸터 **사이에 끼운 작은 빨간 한 줄**이었다. 목표
+             * 위치에서 멀다는 안내가 여기 뜨면, 방금 누른 버튼에서 멀고 글자도 작아서
+             * 못 보고 다시 누르는 일이 생긴다.
+             *
+             * 여기 오는 오류는 전부 **더 나아갈 수 없는 것**이다 (위치 권한 거부 ·
+             * 목표에서 너무 멀다 · 인증 실패). 그러면 흐름을 멈추고 이유를 말하는 쪽이 맞다.
+             */}
+            {error && <Dialog title="인증하지 못했어요" message={error} onClose={() => setError('')} />}
 
             <div className="border-t border-neutral-100 bg-white px-5 py-4">
                 {step === PHOTO && (
@@ -252,7 +268,7 @@ export function CertifyWizard({ name, placeName, onUnlock, onSubmitReview, onClo
                         type="button"
                         onClick={() => go(LOCATION)}
                         disabled={!file}
-                        className="h-cta w-full rounded-full bg-watermelon-500 font-display text-lg text-white shadow-card disabled:bg-action-disabled-bg disabled:text-action-disabled-text disabled:shadow-none"
+                        className="h-cta w-full rounded-full bg-watermelon-500 font-display text-lg text-content-on-action shadow-card disabled:bg-action-disabled-bg disabled:text-action-disabled-text disabled:shadow-none"
                     >
                         다음
                     </button>
@@ -262,7 +278,7 @@ export function CertifyWizard({ name, placeName, onUnlock, onSubmitReview, onClo
                         type="button"
                         onClick={submitUnlock}
                         disabled={!coords || busy}
-                        className="h-cta w-full rounded-full bg-watermelon-500 font-display text-lg text-white shadow-card disabled:bg-action-disabled-bg disabled:text-action-disabled-text disabled:shadow-none"
+                        className="h-cta w-full rounded-full bg-watermelon-500 font-display text-lg text-content-on-action shadow-card disabled:bg-action-disabled-bg disabled:text-action-disabled-text disabled:shadow-none"
                     >
                         {busy ? '인증 중…' : '인증하기'}
                     </button>
@@ -273,13 +289,13 @@ export function CertifyWizard({ name, placeName, onUnlock, onSubmitReview, onClo
                             type="button"
                             onClick={submitReview}
                             disabled={busy}
-                            className="h-cta w-full rounded-full bg-watermelon-500 font-display text-lg text-white shadow-card disabled:opacity-60"
+                            className="h-cta w-full rounded-full bg-watermelon-500 font-display text-lg text-content-on-action shadow-card disabled:opacity-60"
                         >
                             {busy ? '등록 중…' : '리뷰 등록'}
                         </button>
                         <button
                             type="button"
-                            onClick={() => onClose(completed)}
+                            onClick={close}
                             disabled={busy}
                             className="text-xs font-medium text-neutral-400 underline underline-offset-2 disabled:opacity-40"
                         >

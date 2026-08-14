@@ -7,7 +7,7 @@ import { fetchMadeDexDetail, leaveMadeDex } from '@/features/made/api'
 import { madeErrorMessage } from '@/features/made/errors'
 import { parseMadeDexId } from '@/features/made/types'
 import type { MadeDexDetail } from '@/features/made/types'
-import { copyToClipboard } from '@/shared/lib/clipboard'
+import { goBackOr, pushInApp } from '@/shared/lib/backNav'
 import { ROUTES } from '@/shared/lib/routes'
 
 /** `/made/[dexId]/info` 도감 정보 + 도감 관리 */
@@ -65,11 +65,11 @@ export default function MadeDexInfoPage() {
             detail={detail}
             leaving={leaving}
             error={error}
-            onBack={() => router.push(ROUTES.madeDex(dexId))}
+            onBack={() => goBackOr(router, ROUTES.madeDex(dexId))}
             onLeave={() => void leave()}
-            onEditInfo={() => router.push(ROUTES.madeEdit(dexId))}
-            onManageInvites={() => router.push(ROUTES.madeParticipants(dexId))}
-            onManageParticipants={() => router.push(ROUTES.madeParticipants(dexId))}
+            onEditInfo={() => pushInApp(router, ROUTES.madeEdit(dexId))}
+            // 초대 코드와 참여자 관리는 원래 한 화면이다 — 메뉴만 둘로 갈라져 있었다
+            onManageMembers={() => pushInApp(router, ROUTES.madeParticipants(dexId))}
         />
     )
 }

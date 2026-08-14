@@ -13,6 +13,7 @@ import {
 } from '@/features/challenge/api'
 import { ChallengeData } from '@/features/challenge/types'
 import { resolveBadgeImage } from '@/shared/data/badgeAssets'
+import { goBackOr, pushInApp } from '@/shared/lib/backNav'
 import { ROUTES } from '@/shared/lib/routes'
 import { uploadImageToS3 } from '@/shared/lib/upload'
 import { useAppState } from '@/shared/store/AppStateProvider'
@@ -71,11 +72,12 @@ function ChallengeDetailPageInner() {
     const [showReward, setShowReward] = useState(false)
     const [alertMessage, setAlertMessage] = useState<string | null>(null)
     const [confirmLeave, setConfirmLeave] = useState(false)
-    const reqRef = useRef(0) // 최신 요청만 반영 — 다른 챌린지 응답이 늦게 도착해 덮는 것 방지
+    const reqRef = useRef(0) // 최신 요청만 반영 — 다른 챌린짓 응답이 늦게 도착해 덮는 것 방지
 
+    /** 상세 재조회. **프로미스를 돌려준다** — 해금 직후에는 이게 끝난 뒤라야 화면이 진실을 안다 */
     const load = useCallback(() => {
         const token = ++reqRef.current
-        fetchChallengeDetail(id)
+        return fetchChallengeDetail(id)
             .then((d) => {
                 if (token !== reqRef.current) return // 더 최신 요청이 있으면 무시
                 setChallenge(toChallengeData(d))
@@ -126,15 +128,8 @@ function ChallengeDetailPageInner() {
         <div className="relative h-full">
             <ChallengeDetail
                 challenge={challengeWithReward}
-                onBack={() => {
-                    // 목록에서 들어온 경우만 뒤로가기(그 자리로). 공유·딥링크 진입은 앱 목록으로
-                    if (typeof window !== 'undefined' && sessionStorage.getItem('challenge:fromList') === '1') {
-                        sessionStorage.removeItem('challenge:fromList')
-                        router.back()
-                    } else {
-                        router.push(ROUTES.challenge)
-                    }
-                }}
+                // 앞 항목이 있으면 그 자리로. 공유·딥링크로 첫 화면으로 열린 경우만 목록으로 밀어 넣는다
+                onBack={() => goBackOr(router, ROUTES.challenge)}
                 onJoin={async () => {
                     try {
                         await joinChallenge(id)
@@ -148,7 +143,14 @@ function ChallengeDetailPageInner() {
                     // 위치·에러 처리는 해금 위저드가 담당. 여기선 업로드 → 해금만 (실패는 throw)
                     const { key } = await uploadImageToS3(file, file.name)
                     const res = await unlockSlot(id, slotId, key, coords?.lat ?? null, coords?.lng ?? null)
-                    load() // 진행도 갱신
+                    /*
+                     * 재조회를 **기다린 뒤에** 성공을 알린다.
+                     *
+                     * 안 기다리면 위저드가 먼저 끝나고 그 뒤에 목록이 갱신된다. 그 틈에
+                     * 화면은 "아직 미해금"으로 보므로, 상세를 여는 쪽이 별도의 "방금 해금함"
+                     * 상태를 들고 있어야 했다. 진실을 두 곳에 두지 않으려고 여기서 맞춘다
+                     */
+                    await load()
                     return { completed: res.completed }
                 }}
                 onUnlockCompleted={() => {
@@ -157,21 +159,21 @@ function ChallengeDetailPageInner() {
                 }}
                 onRegister={() => {
                     startRegistration('challenge', challenge.id)
-                    router.push(ROUTES.register)
+                    pushInApp(router, ROUTES.register)
                 }}
             />
             {showReward && rewardBadge && (
                 <RewardModal
                     badge={rewardBadge}
                     onClose={() => setShowReward(false)}
-                    onGoToBadges={() => router.push(ROUTES.myBadges)}
+                    onGoToBadges={() => pushInApp(router, ROUTES.myBadges)}
                 />
             )}
             {alertMessage && <Dialog title="오류" message={alertMessage} onClose={() => setAlertMessage(null)} />}
             {confirmLeave && (
                 <Dialog
-                    title="챌린지 포기"
-                    message="이 챌린지를 포기할까요? 내 인증 기록도 사라져요."
+                    title="챌린짓 포기"
+                    message="이 챌린짓을 포기할까요? 내 인증 기록도 사라져요."
                     cancelText="계속하기"
                     danger
                     onClose={() => setConfirmLeave(false)}
@@ -181,7 +183,8 @@ function ChallengeDetailPageInner() {
                             setConfirmLeave(false)
                             try {
                                 await leaveChallenge(id)
-                                router.push(ROUTES.challenge)
+                                // replace — 포기한 챌린짓 상세로 뒤로가기가 되돌아가면 안 된다
+                                router.replace(ROUTES.challenge)
                             } catch (e) {
                                 setAlertMessage(e instanceof Error ? e.message : '나가기에 실패했어요')
                             }

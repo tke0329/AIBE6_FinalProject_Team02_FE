@@ -5,7 +5,6 @@ import { INITIAL_CHALLENGES } from '@/features/challenge/data'
 import { ChallengeData, ChallengeTarget, RewardBadge } from '@/features/challenge/types'
 import { fetchBasicDexEntries, fetchMyBasicDexEntries, markNewBadgeSeen as postNewBadgeSeen } from '@/features/dex/api'
 import { MadeDexId, parseMadeDexId } from '@/features/made/types'
-import { fetchOnboardingStatus, postOnboardingComplete } from '@/features/onboarding/api'
 import { AI_CANDIDATES, DEX_ENTRIES, DexEntry } from '@/shared/data/dex'
 import type { BadgeId } from '@/shared/ui'
 
@@ -43,10 +42,6 @@ interface AppStore {
     profilePhoto: string
     setProfilePhoto: (photo: string) => void
 
-    // 온보딩
-    onboardingSeen: boolean | null
-    completeOnboarding: () => void
-
     // 챌린지
     challenges: ChallengeData[]
     createdThisMonth: number
@@ -60,6 +55,12 @@ interface AppStore {
         targets: ChallengeTarget[]
         periodType: 'PERMANENT' | 'LIMITED'
         endsAt: string
+        /**
+         * 개설 마법사가 머물던 단계. 뱃지 커스텀 화면(/challenge/new/badge)에 갔다가
+         * **저장하지 않고 뒤로 와도** 보상 단계로 돌아오게 하려고 둔다.
+         * 예전에는 customBadge가 있는지로 추측해서, 취소하면 1단계로 튕겼다
+         */
+        step: number
     }
     setChallengeDraft: (draft: {
         title: string
@@ -67,6 +68,12 @@ interface AppStore {
         targets: ChallengeTarget[]
         periodType: 'PERMANENT' | 'LIMITED'
         endsAt: string
+        /**
+         * 개설 마법사가 머물던 단계. 뱃지 커스텀 화면(/challenge/new/badge)에 갔다가
+         * **저장하지 않고 뒤로 와도** 보상 단계로 돌아오게 하려고 둔다.
+         * 예전에는 customBadge가 있는지로 추측해서, 취소하면 1단계로 튕겼다
+         */
+        step: number
     }) => void
     resetChallengeDraft: () => void
 
@@ -95,15 +102,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     const [entriesLoading, setEntriesLoading] = useState(true)
     const [equippedBadge, setEquippedBadge] = useState<BadgeId>('silver-spoon')
     const [profilePhoto, setProfilePhoto] = useState('신')
-    const [onboardingSeen, setOnboardingSeen] = useState<boolean | null>(null)
-
-    // 진입 시 서버에서 온보딩 완료 여부 확인
-    // 미로그인/실패 시 온보딩 노출로 폴백
-    useEffect(() => {
-        fetchOnboardingStatus()
-            .then((status) => setOnboardingSeen(status.onboardingCompleted))
-            .catch(() => setOnboardingSeen(false))
-    }, [])
 
     const { me, loading: authLoading } = useAuth()
     const userId = me?.id
@@ -137,7 +135,13 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         targets: ChallengeTarget[]
         periodType: 'PERMANENT' | 'LIMITED'
         endsAt: string
-    }>({ title: '', description: '', targets: [], periodType: 'PERMANENT', endsAt: '' })
+        /**
+         * 개설 마법사가 머물던 단계. 뱃지 커스텀 화면(/challenge/new/badge)에 갔다가
+         * **저장하지 않고 뒤로 와도** 보상 단계로 돌아오게 하려고 둔다.
+         * 예전에는 customBadge가 있는지로 추측해서, 취소하면 1단계로 튕겼다
+         */
+        step: number
+    }>({ title: '', description: '', targets: [], periodType: 'PERMANENT', endsAt: '', step: 0 })
     const resetChallengeDraft = useCallback(
         () =>
             setChallengeDraft({
@@ -146,6 +150,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
                 targets: [],
                 periodType: 'PERMANENT',
                 endsAt: '',
+                step: 0,
             }),
         [],
     )
@@ -279,15 +284,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
             setEquippedBadge,
             profilePhoto,
             setProfilePhoto,
-            onboardingSeen,
-            completeOnboarding: async () => {
-                setOnboardingSeen(true) // 낙관적 갱신 — UX를 막지 않음
-                try {
-                    await postOnboardingComplete()
-                } catch {
-                    // 미로그인/실패해도 화면은 진행 (서버 반영은 다음 로그인 때)
-                }
-            },
             challenges,
             createdThisMonth,
             findChallenge,
@@ -314,7 +310,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         [
             equippedBadge,
             profilePhoto,
-            onboardingSeen,
             challenges,
             createdThisMonth,
             findChallenge,

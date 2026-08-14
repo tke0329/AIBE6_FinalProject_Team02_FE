@@ -37,7 +37,7 @@ export function BadgeCollection({ badges, pending, onEquip, onBack }: Props) {
                         <div className="flex h-full flex-col items-center justify-center py-20 text-center">
                             <p className="text-sm text-neutral-800">아직 획득한 뱃지가 없어요.</p>
                             <p className="mt-1 text-xs text-neutral-400">
-                                미션과 챌린지를 완료하면 뱃지를 모을 수 있어요.
+                                미션과 챌린짓을 완료하면 뱃지를 모을 수 있어요.
                             </p>
                         </div>
                     ) : (

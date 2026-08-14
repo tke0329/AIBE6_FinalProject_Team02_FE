@@ -1,7 +1,5 @@
 'use client'
 
-import { ChallengeCountHome } from '@/features/challenge/ChallengeCountHome'
-import { getTabHref, ROUTES } from '@/shared/lib/routes'
 import {
     ChallengeSort,
     ChallengeSummary,
@@ -11,10 +9,13 @@ import {
     joinChallenge,
     searchChallenges,
 } from '@/features/challenge/api'
+import { ChallengeCountHome } from '@/features/challenge/ChallengeCountHome'
 import { ChallengeData } from '@/features/challenge/types'
+import { pushInApp } from '@/shared/lib/backNav'
+import { getTabHref, ROUTES } from '@/shared/lib/routes'
+import { Dialog } from '@/shared/ui'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
-import { Dialog } from '@/shared/ui'
 
 const MONTHLY_LIMIT = 3
 const PAGE_SIZE = 10
@@ -111,6 +112,17 @@ function ChallengeHome() {
         (status: 'ONGOING' | 'FINISHED', sort: ChallengeSort, page: number, append: boolean, query: string) => {
             const token = ++reqRef.current
             setExploreLoading(true)
+            /**
+             * 새로 부르는 목록이면 **먼저 비운다.**
+             *
+             * 안 비우면 정렬을 바꾼 직후 한동안 **이전 정렬의 목록이 그대로 남는다.**
+             * 그 사이에 순위 등장 연출이 옛 데이터로 이미 재생돼 버리고, 진짜 순위가
+             * 도착할 때는 같은 카드가 이미 붙어 있어 다시 튀어오르지 않는다 —
+             * "순위 애니메이션이 없다"의 원인이 이것이었다.
+             *
+             * 비워 두면 실제 순위가 도착하는 순간이 곧 등장 시점이 된다
+             */
+            if (!append) setExploreItems([])
             const request = query.trim()
                 ? searchChallenges(query.trim(), page, PAGE_SIZE) // 검색어 있으면 검색 API
                 : fetchChallenges(status, sort, page, PAGE_SIZE) // 없으면 기존 탐색
@@ -209,12 +221,9 @@ function ChallengeHome() {
                 onExploreLoadMore={onExploreLoadMore}
                 onExploreRetry={onExploreRetry}
                 onJoinChallenge={onJoinChallenge}
-                onOpenChallenge={(challenge) => {
-                    // 목록에서 진입했음을 표시 → 상세 뒤로가기가 이 목록으로 복귀(공유·딥링크와 구분)
-                    sessionStorage.setItem('challenge:fromList', '1')
-                    router.push(ROUTES.challengeDetail(challenge.id))
-                }}
-                onCreateChallenge={() => router.push(ROUTES.challengeNew)}
+                // pushInApp — 앱 안에서 push했음을 남긴다 → 도착 화면의 ←가 back()으로 이 자리에 복귀
+                onOpenChallenge={(challenge) => pushInApp(router, ROUTES.challengeDetail(challenge.id))}
+                onCreateChallenge={() => pushInApp(router, ROUTES.challengeNew)}
                 onTab={(tab) => router.push(getTabHref(tab))}
             />
             {alertMessage && <Dialog title="오류" message={alertMessage} onClose={() => setAlertMessage(null)} />}

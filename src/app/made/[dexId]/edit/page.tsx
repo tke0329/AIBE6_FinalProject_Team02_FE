@@ -8,6 +8,7 @@ import { fetchMadeDexDetail, updateMadeDex } from '@/features/made/api'
 import { madeErrorMessage } from '@/features/made/errors'
 import { parseMadeDexId } from '@/features/made/types'
 import type { MadeDexDetail } from '@/features/made/types'
+import { goBackOr } from '@/shared/lib/backNav'
 import { ROUTES } from '@/shared/lib/routes'
 import { uploadImageToS3 } from '@/shared/lib/upload'
 
@@ -67,5 +68,5 @@ export default function MadeDexEditPage() {
         )
     }
 
-    return <MadeDexEditForm detail={detail} onSave={save} onBack={() => router.push(ROUTES.madeInfo(dexId))} />
+    return <MadeDexEditForm detail={detail} onSave={save} onBack={() => goBackOr(router, ROUTES.madeInfo(dexId))} />
 }

@@ -8,7 +8,7 @@ import React from 'react'
  * 바꾸면 라우팅·화면 16곳이 함께 움직이는데 사용자에게 달라지는 건 없다.
  * 보이는 이름은 아래 `TABS`의 `label`이 정한다.
  */
-export type NavTab = '기본' | '제작' | '챌린지' | '마이'
+export type NavTab = '기본' | '제작' | '챌린짓' | '마이'
 
 interface BottomNavProps {
     active: NavTab
@@ -23,7 +23,7 @@ interface BottomNavProps {
  */
 const TABS: Array<{ id: NavTab; label: string; icon: string }> = [
     { id: '제작', label: '로그잇', icon: '/images/bottom_nav/logit.png' },
-    { id: '챌린지', label: '챌린짓', icon: '/images/bottom_nav/challengit.png' },
+    { id: '챌린짓', label: '챌린짓', icon: '/images/bottom_nav/challengit.png' },
     { id: '기본', label: '베이짓', icon: '/images/bottom_nav/basit.png' },
     { id: '마이', label: '마이', icon: '/images/bottom_nav/my.png' },
 ]

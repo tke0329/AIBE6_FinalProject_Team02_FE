@@ -1,5 +1,17 @@
 import { BottomNav, NavTab, ServerBadge } from '@/shared/ui'
-import { AwardIcon, BookOpenIcon, CameraIcon, ChevronRightIcon, LogOutIcon, PencilIcon, UsersIcon } from 'lucide-react'
+import {
+    AwardIcon,
+    BellIcon,
+    CameraIcon,
+    ChevronRightIcon,
+    HeartIcon,
+    LogOutIcon,
+    MessageSquareIcon,
+    PencilIcon,
+    StarIcon,
+    UserMinusIcon,
+    UsersIcon,
+} from 'lucide-react'
 import React from 'react'
 
 interface Props {
@@ -12,7 +24,6 @@ interface Props {
     } | null
     onChangePhoto: () => void
     onEditNickname: () => void
-    onReplayOnboarding: () => void
     onOpenBadges: () => void
     onOpenFriends: () => void
     onLogout: () => void
@@ -20,13 +31,28 @@ interface Props {
     onTab: (tab: NavTab) => void
 }
 
+/**
+ * 마이페이지.
+ *
+ * ## 메뉴를 세 묶음으로 갈랐다
+ *
+ * 예전에는 친구·닉네임 수정·로그아웃이 한 상자에 있고 회원 탈퇴만 아래 회색 글씨로 떨어져
+ * 있었다. 성격이 다른 것들이 섞여 있어서 **찾을 때 목록 전체를 훑어야 했다.**
+ *
+ *   - **내 활동** — 내가 남긴 것 (리뷰·댓글·좋아요)
+ *   - **소셜**   — 남과 이어지는 것 (친구·알림)
+ *   - **내 계정 관리** — 계정 자체를 손대는 것 (닉네임·로그아웃·탈퇴)
+ *
+ * 탈퇴를 「내 계정 관리」 안으로 들인 이유는 **숨겨 두면 더 위험하기 때문**이다.
+ * 아래 회색 글씨는 "여긴 뭐지" 하고 눌러 보게 만든다. 제자리에 두고 빨간 글씨로
+ * 무엇인지 밝히는 쪽이 실수로 들어갈 확률이 낮다 (확인 절차는 WithdrawConfirmSheet가 맡는다).
+ */
 export function MyPage({
     nickname,
     profileImageUrl,
     equippedBadge,
     onChangePhoto,
     onEditNickname,
-    onReplayOnboarding,
     onOpenBadges,
     onOpenFriends,
     onLogout,
@@ -36,9 +62,9 @@ export function MyPage({
     return (
         <div className="flex h-full flex-col bg-surface-app">
             <header className="flex items-center px-5 py-4">
-                <h1 className="font-display text-xl text-neutral-900">마이페이지</h1>
+                <h1 className="font-display text-xl text-content-primary">마이페이지</h1>
             </header>
-            <main className="no-scrollbar flex-1 overflow-y-auto px-5 pb-6">
+            <main className="no-scrollbar flex-1 overflow-y-auto px-5 pb-8">
                 <div className="flex w-full items-center gap-4">
                     <button
                         onClick={onChangePhoto}
@@ -56,7 +82,8 @@ export function MyPage({
                         </span>
                     </button>
                     <div className="min-w-0 text-left">
-                        <span className="flex items-center gap-2">
+                        {/* gap-1 — 뱃지는 닉네임에 딸린 표식이라 붙어 있어야 "내 뱃지"로 읽힌다 */}
+                        <span className="flex items-center gap-1">
                             {equippedBadge && (
                                 <ServerBadge
                                     code={equippedBadge.code}
@@ -65,86 +92,125 @@ export function MyPage({
                                     size={50}
                                 />
                             )}
-                            <span className="font-display text-2xl text-neutral-900">{nickname}</span>
+                            <span className="font-display text-2xl text-content-primary">{nickname}</span>
                         </span>
-                        <span className="block text-sm text-neutral-800">먹을수록 채워지는 나의 도감</span>
+                        <span className="block text-sm text-content-secondary">먹을수록 채워지는 나의 도감</span>
                     </div>
                 </div>
-                <button onClick={onOpenBadges} className="mt-4 w-full rounded-2xl bg-white p-4 text-left shadow-soft">
+
+                <button
+                    onClick={onOpenBadges}
+                    className="mt-4 w-full rounded-2xl bg-surface-card p-4 text-left shadow-card"
+                >
                     <div className="flex items-center gap-2">
-                        <AwardIcon size={18} className="text-watermelon-500" />
-                        <span className="font-medium text-neutral-900">뱃지</span>
-                        <ChevronRightIcon size={16} className="ml-auto text-neutral-400" />
+                        <AwardIcon size={18} aria-hidden className="text-watermelon-500" />
+                        <span className="font-medium text-content-primary">뱃지</span>
+                        <ChevronRightIcon size={16} aria-hidden className="ml-auto text-content-muted" />
                     </div>
                     <div className="mt-3 flex items-center gap-2">
-                        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-watermelon-50">
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-watermelon-50">
                             {equippedBadge ? (
+                                // 40px 칸 안이라 32 — size가 높이라서 50이면 칸을 넘친다
                                 <ServerBadge
                                     code={equippedBadge.code}
                                     imageUrl={equippedBadge.imageUrl}
                                     name={equippedBadge.name}
-                                    size={50}
+                                    size={32}
                                 />
                             ) : (
-                                <AwardIcon size={20} className="text-neutral-400" />
+                                <AwardIcon size={20} aria-hidden className="text-content-muted" />
                             )}
                         </span>
-                        <span className="text-sm text-neutral-800">
+                        <span className="text-sm text-content-secondary">
                             {equippedBadge ? `대표 뱃지 · ${equippedBadge.name}` : '대표 뱃지 없음'}
                         </span>
                     </div>
                 </button>
-                <div className="mt-4 overflow-hidden rounded-2xl bg-white shadow-soft">
+
+                <MenuGroup title="내 활동">
+                    <MenuItem icon={<StarIcon size={18} aria-hidden />} label="내가 쓴 리뷰" comingSoon />
+                    <MenuItem icon={<MessageSquareIcon size={18} aria-hidden />} label="내가 쓴 댓글" comingSoon />
+                    <MenuItem icon={<HeartIcon size={18} aria-hidden />} label="좋아요한 글" comingSoon />
+                </MenuGroup>
+
+                <MenuGroup title="소셜">
+                    <MenuItem icon={<UsersIcon size={18} aria-hidden />} label="친구" onClick={onOpenFriends} />
+                    <MenuItem icon={<BellIcon size={18} aria-hidden />} label="알림" comingSoon />
+                </MenuGroup>
+
+                <MenuGroup title="내 계정 관리">
                     <MenuItem
-                        onClick={onOpenFriends}
-                        icon={<UsersIcon size={18} className="text-neutral-800" />}
-                        label="친구"
-                    />
-                    <MenuItem
-                        onClick={onReplayOnboarding}
-                        icon={<BookOpenIcon size={18} className="text-neutral-800" />}
-                        label="튜토리얼 다시 보기"
-                    />
-                    <MenuItem
-                        onClick={onEditNickname}
-                        icon={<PencilIcon size={18} className="text-neutral-800" />}
+                        icon={<PencilIcon size={18} aria-hidden />}
                         label="닉네임 수정"
                         hint="1개월에 1회 가능"
+                        onClick={onEditNickname}
                     />
+                    <MenuItem icon={<LogOutIcon size={18} aria-hidden />} label="로그아웃" onClick={onLogout} />
                     <MenuItem
-                        onClick={onLogout}
-                        icon={<LogOutIcon size={18} className="text-neutral-800" />}
-                        label="로그아웃"
+                        icon={<UserMinusIcon size={18} aria-hidden />}
+                        label="회원 탈퇴"
+                        onClick={onWithdraw}
+                        danger
                     />
-                </div>
-                <button onClick={onWithdraw} className="mt-6 min-h-touch w-full text-center text-xs text-neutral-800">
-                    회원 탈퇴
-                </button>
+                </MenuGroup>
             </main>
             <BottomNav active="마이" onTab={onTab} />
         </div>
     )
 }
+
+/** 대주제 하나 + 그 아래 목록 한 상자 */
+function MenuGroup({ title, children }: { title: string; children: React.ReactNode }) {
+    return (
+        <section className="mt-6" aria-label={title}>
+            <h2 className="px-1 pb-2 text-sm font-bold text-content-secondary">{title}</h2>
+            <div className="overflow-hidden rounded-2xl bg-surface-card shadow-card">{children}</div>
+        </section>
+    )
+}
+
 function MenuItem({
     icon,
     label,
     hint,
     onClick,
+    danger = false,
+    /**
+     * 아직 만들지 않은 항목. **자리를 미리 보여 준다.**
+     * 목록에서 통째로 빼면 나중에 생겼을 때 어디에 붙을지 사용자가 다시 익혀야 한다 —
+     * 자리를 잡아 두고 "준비 중"이라고 말해 두는 편이 낫다. 눌리지 않으므로 헛걸음도 없다
+     */
+    comingSoon = false,
 }: {
     icon: React.ReactNode
     label: string
     hint?: string
     onClick?: () => void
+    danger?: boolean
+    comingSoon?: boolean
 }) {
+    const tone = danger ? 'text-feedback-error' : comingSoon ? 'text-content-muted' : 'text-content-primary'
     return (
         <button
-            onClick={onClick}
-            className="flex min-h-touch w-full items-center gap-3 border-b border-neutral-50 px-4 py-3 text-left last:border-0"
+            type="button"
+            onClick={comingSoon ? undefined : onClick}
+            disabled={comingSoon}
+            className="flex min-h-touch w-full items-center gap-3 border-b border-neutral-50 px-4 py-3 text-left last:border-0 disabled:cursor-default"
         >
-            {icon}
-            <span className="flex-1 text-sm font-medium text-neutral-900">{label}</span>
-            {hint && <span className="text-xs text-neutral-800">{hint}</span>}
-            <ChevronRightIcon size={16} className="text-neutral-400" />
+            <span aria-hidden className={`shrink-0 ${tone}`}>
+                {icon}
+            </span>
+            <span className={`flex-1 text-sm font-medium ${tone}`}>{label}</span>
+            {comingSoon ? (
+                <span className="shrink-0 rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-content-muted">
+                    준비 중
+                </span>
+            ) : (
+                <>
+                    {hint && <span className="shrink-0 text-xs text-content-secondary">{hint}</span>}
+                    <ChevronRightIcon size={16} aria-hidden className="shrink-0 text-content-muted" />
+                </>
+            )}
         </button>
     )
 }

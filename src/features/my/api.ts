@@ -54,8 +54,8 @@ export function withdrawAccount(): Promise<void> {
 export interface MyBadge {
     id: number
     name: string
-    code: string | null // 시스템 뱃지 식별자 → public 에셋 매핑 (챌린지 커스텀은 null)
-    imageUrl: string | null // 챌린지 커스텀 업로드(S3). 시스템 뱃지는 null → code로 렌더
+    code: string | null // 시스템 뱃지 식별자 → public 에셋 매핑 (챌린짓 커스텀은 null)
+    imageUrl: string | null // 챌린짓 커스텀 업로드(S3). 시스템 뱃지는 null → code로 렌더
     description: string | null // 획득 조건 문구
     acquiredAt: string // ISO
     equipped: boolean // 현재 대표 뱃지 여부

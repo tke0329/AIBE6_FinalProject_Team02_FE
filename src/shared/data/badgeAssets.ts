@@ -24,7 +24,7 @@ export const BADGE_ASSETS: Record<string, string> = {
 
     // 챌린지 보상 프리셋
     CHALLENGE_PRESET_EXPLORER: '/badge/challenge_default_badge/Food_Explorer.png', // 맛집 탐험가
-    CHALLENGE_PRESET_FINISHER: '/badge/challenge_default_badge/Challenge_Finisher.png', // 챌린지 완주자
+    CHALLENGE_PRESET_FINISHER: '/badge/challenge_default_badge/Challenge_Finisher.png', // 챌린짓 완주자
     CHALLENGE_PRESET_PIONEER: '/badge/challenge_default_badge/Neighborhood_Adventurer.png', // 동네 개척자
 
     // 제작 도감
@@ -46,7 +46,7 @@ export type BadgeGroup = 'CHALLENGE' | 'MADE_DEX' | 'SPOON' | 'CATEGORY' | 'ETC'
 
 /** code로 그룹을 판정. 챌린지 커스텀은 code가 없으므로(S3 이미지) 챌린지로. */
 export function badgeGroupOf(code: string | null | undefined): BadgeGroup {
-    if (!code) return 'CHALLENGE' // 챌린지 커스텀(개설자 제작, imageUrl로 렌더)
+    if (!code) return 'CHALLENGE' // 챌린짓 커스텀(개설자 제작, imageUrl로 렌더)
     if (code.startsWith('CHALLENGE_PRESET')) return 'CHALLENGE'
     if (code === 'FIRST_MADE_DEX') return 'MADE_DEX'
     if (code.startsWith('SPOON_')) return 'SPOON' // 쇠·동·은·금·다이아
@@ -59,9 +59,9 @@ export const BADGE_GROUP_ORDER: BadgeGroup[] = ['CHALLENGE', 'MADE_DEX', 'SPOON'
 
 /** 섹션 제목 */
 export const BADGE_GROUP_LABEL: Record<BadgeGroup, string> = {
-    CHALLENGE: '챌린지',
-    MADE_DEX: '제작 도감',
-    SPOON: '기본 도감 수집률',
-    CATEGORY: '기본 도감 카테고리',
+    CHALLENGE: '챌린짓',
+    MADE_DEX: '로그잇',
+    SPOON: '베이짓 수집률',
+    CATEGORY: '베이짓 카테고리',
     ETC: '기타',
 }

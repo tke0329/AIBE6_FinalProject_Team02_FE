@@ -14,6 +14,16 @@ interface Props {
  * 서버에서 온 뱃지(운영진/챌린지)를 렌더.
  * 이미지 소스: 업로드(S3) 우선 → code 정적 에셋 → 둘 다 없으면 아이콘.
  * (하드코딩 BadgeId 기반 EquippedBadge와 별개 — 서버 데이터 전용)
+ *
+ * ## `size`는 **높이**다. 폭은 그림 비율대로 흐른다
+ *
+ * 예전에는 정사각 상자에 `object-contain`으로 넣었다. 그런데 수저 뱃지 원본이
+ * **85×128 세로 그림**이라, 50px 상자에 넣으면 폭이 33px로 줄고 **좌우에 8.5px씩
+ * 빈 상자가 남았다.** 여기에 그림 자체의 투명 여백(좌우 6~19%)까지 더해져,
+ * `gap`을 아무리 줄여도 닉네임과 20px 가까이 떨어져 보였다.
+ *
+ * 높이만 고정하면 상자가 그림에 딱 붙어 `gap`이 실제 간격이 된다.
+ * (하단 네비 아이콘도 같은 이유로 높이만 고정한다 — BottomNav 주석)
  */
 export function ServerBadge({ code = null, imageUrl = null, name, size = 17 }: Props) {
     const src = resolveBadgeImage(code, imageUrl)
@@ -24,8 +34,13 @@ export function ServerBadge({ code = null, imageUrl = null, name, size = 17 }: P
                 src={src}
                 alt={name}
                 title={name}
-                className="inline-block shrink-0 rounded-full object-contain"
-                style={{ width: size, height: size }}
+                /*
+                 * 원형 마스크는 **올린 이미지에만.** 챌린짓 커스텀 뱃지는 정사각 캔버스라
+                 * 동그라미가 맞지만, 기본 뱃지는 배경이 비어 있는 세로 그림이라
+                 * 원으로 자르면 바깥 기둥이 잘려 나간다 (수저 뱃지가 50→37px로 잘리고 있었다)
+                 */
+                className={`inline-block w-auto shrink-0 object-contain ${imageUrl ? 'rounded-full' : ''}`}
+                style={{ height: size }}
             />
         )
     }

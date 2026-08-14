@@ -11,7 +11,7 @@ interface Props {
 
 const helpCopy: Record<HelpKind, { title: string; items: Array<{ icon: React.ReactNode; text: string }> }> = {
     basic: {
-        title: '기본 도감 사용법',
+        title: '베이짓 사용법',
         items: [
             {
                 icon: <SparklesIcon size={17} aria-hidden />,
@@ -28,7 +28,7 @@ const helpCopy: Record<HelpKind, { title: string; items: Array<{ icon: React.Rea
         ],
     },
     made: {
-        title: '제작 도감 사용법',
+        title: '로그잇 사용법',
         items: [
             {
                 icon: <UsersIcon size={17} aria-hidden />,
@@ -45,7 +45,7 @@ const helpCopy: Record<HelpKind, { title: string; items: Array<{ icon: React.Rea
         ],
     },
     challenge: {
-        title: '챌린지 도감 사용법',
+        title: '챌린짓 도감 사용법',
         items: [
             {
                 icon: <UsersIcon size={17} aria-hidden />,
@@ -53,11 +53,11 @@ const helpCopy: Record<HelpKind, { title: string; items: Array<{ icon: React.Rea
             },
             {
                 icon: <SparklesIcon size={17} aria-hidden />,
-                text: '내 챌린지에서 진행 상황을, 탐색에서 새 챌린지를 확인해요.',
+                text: '내 챌린짓에서 진행 상황을, 탐색에서 새 챌린짓을 확인해요.',
             },
             {
                 icon: <TrophyIcon size={17} aria-hidden />,
-                text: '챌린지 상세에서 내 기록과 참가자 랭킹을 볼 수 있어요.',
+                text: '챌린짓 상세에서 내 기록과 참가자 랭킹을 볼 수 있어요.',
             },
         ],
     },

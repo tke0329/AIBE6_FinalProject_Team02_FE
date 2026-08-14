@@ -63,6 +63,11 @@ export interface DayCardFilmLayout {
     /** 요약 화면 모자이크. 끼니별 대표부터 최대 6장 */
     mosaic: DayCardPhoto[]
     grid: FilmGrid
+    /**
+     * 그 끼니에 담지 않은 사람의 칸에 쓸 글. 화면에서 하루마다 정한다.
+     * 서버에 없는 값이라 레이아웃을 만들 때 받아 온다 (`useEmptyCaption`)
+     */
+    emptyCaption: string
 }
 
 const DATE_LABEL = new Intl.DateTimeFormat('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' })
@@ -181,7 +186,7 @@ function pickMosaic(scenes: SlotScene[]): DayCardPhoto[] {
     return picked
 }
 
-export function buildFilmLayout(dayCard: LogitDayCard, title: string): DayCardFilmLayout {
+export function buildFilmLayout(dayCard: LogitDayCard, title: string, emptyCaption: string): DayCardFilmLayout {
     // 기록이 없는 끼니는 건너뛴다 — 빈 화면을 2초씩 보여 줄 이유가 없다
     const recorded = dayCard.slots.filter((slot) => slot.items.length > 0)
     const grid = planGrid(Math.max(dayCard.members.length, 1))
@@ -209,5 +214,6 @@ export function buildFilmLayout(dayCard: LogitDayCard, title: string): DayCardFi
         stats: dayCard.stats,
         mosaic,
         grid: filmGrid,
+        emptyCaption,
     }
 }

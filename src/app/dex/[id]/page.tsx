@@ -6,6 +6,7 @@ import { DexDetail } from '@/features/dex/DexDetail'
 import type { CategoryFilter } from '@/features/dex/useDexFilter'
 import { fetchMyBasicDexDetail } from '@/features/dex/api'
 import { useDexState } from '@/shared/store/AppStateProvider'
+import { goBackOr, pushInApp } from '@/shared/lib/backNav'
 import { getTabHref, ROUTES } from '@/shared/lib/routes'
 import { useAppState } from '@/shared/store/AppStateProvider'
 import { CATEGORY_META, DexEntry } from '@/shared/data/dex'
@@ -72,11 +73,12 @@ export default function DexDetailPage() {
             entries={entries}
             collectedEntries={collectedEntries}
             activeCategory={activeCategory}
-            onBack={() => router.push(ROUTES.basicDex(activeCategory))}
+            onBack={() => goBackOr(router, ROUTES.basicDex(activeCategory))}
             onRegister={() => {
                 startRegistration('basic')
                 setSelectedFoodId(entry.id)
-                router.push(ROUTES.registerWithFood(entry.id, ROUTES.dexDetail(entry.id, activeCategory)))
+                // pushInApp — 표시를 남겨야 등록 화면의 ←가 `back`으로 이 상세에 되돌아온다
+                pushInApp(router, ROUTES.registerWithFood(entry.id, ROUTES.dexDetail(entry.id, activeCategory)))
             }}
             onOpenEntry={(nextId) => router.replace(ROUTES.dexDetail(nextId, activeCategory))}
             onTab={(tab) => router.push(getTabHref(tab))}

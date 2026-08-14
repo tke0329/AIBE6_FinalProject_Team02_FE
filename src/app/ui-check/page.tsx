@@ -42,7 +42,7 @@ import {
 const TEXT_ROLES = [
     ['display', '해금! 삼겹살'],
     ['screenTitle', '나의 음식 도감'],
-    ['sectionTitle', '이번 주 챌린지'],
+    ['sectionTitle', '이번 주 챌린짓'],
     ['body', '오늘 먹은 음식을 기록하면 도감이 채워져요.'],
     ['bodyStrong', '본문 중 강조하고 싶은 문장'],
     ['secondary', '사진은 최대 5장까지 올릴 수 있어요'],
@@ -134,6 +134,18 @@ export default function UiCheckPage() {
                         <Avatar name="사아자" size="md" />
                         <Avatar name="차카타" size="lg" ring="ring-2 ring-edge-active" />
                     </div>
+                    <Text variant="caption" as="p">
+                        colorKey(=userId)를 주면 사람마다 색이 붙어요 (§1.6). 글자는 어느 색 위에서도 같은 색 하나로
+                        12.2:1 이상이에요
+                    </Text>
+                    <div className="flex flex-wrap items-end gap-2">
+                        {[1, 2, 3, 4, 5, 6, 7].map((userId) => (
+                            <Avatar key={userId} name={`${userId}번`} size="md" colorKey={userId} />
+                        ))}
+                    </div>
+                    <Text variant="caption" as="p">
+                        colorKey를 빼면 예전 회색이에요 — 사람이 아닌 자리에 써요
+                    </Text>
                 </section>
 
                 <section className="flex flex-col gap-3">
@@ -230,18 +242,18 @@ export default function UiCheckPage() {
                         <HelpIcon label="도움말 열기" onClick={() => setSheetOpen(true)} />
                     </div>
                     <ProgressBar value={0.4} label="수집률 40%" />
-                    <ProgressBar value={0.85} tone="lime" label="달성률 85%" />
+                    <ProgressBar value={0.85} tone="point" label="달성률 85%" />
                 </section>
 
                 <section className="flex flex-col gap-3">
                     <Text variant="sectionTitle">SearchBar · TabBar</Text>
                     <SearchBar label="음식 검색" value={search} onChange={setSearch} placeholder="음식 이름" />
                     <TabBar
-                        label="챌린지 구분"
+                        label="챌린짓 구분"
                         value={segment}
                         onChange={setSegment}
                         items={[
-                            { id: 'mine', label: '내 챌린지' },
+                            { id: 'mine', label: '내 챌린짓' },
                             { id: 'explore', label: '탐색' },
                         ]}
                     />
@@ -292,7 +304,7 @@ export default function UiCheckPage() {
             )}
 
             {dialog === 'alert' && (
-                <Dialog title="개설 실패" message="같은 이름의 챌린지가 이미 있어요." onClose={() => setDialog(null)} />
+                <Dialog title="개설 실패" message="같은 이름의 챌린짓이 이미 있어요." onClose={() => setDialog(null)} />
             )}
             {dialog === 'confirm' && (
                 <Dialog

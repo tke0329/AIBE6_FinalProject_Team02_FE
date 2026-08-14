@@ -59,21 +59,28 @@ export function normalizeCategory(serverCategory: string): FoodCategory | undefi
     return SERVER_CATEGORY_LABELS[serverCategory]
 }
 
+/**
+ * 카테고리 표 (베이짓).
+ *
+ * **색 점(`dotClass`)을 뺐다.** 아홉 카테고리에 아홉 색을 붙였는데 그 색이 무엇을
+ * 뜻하는지는 어디에도 없었다 — 이름 옆에 있어도 이름을 읽어야 알 수 있으니
+ * 알려 주는 것이 없고, 앱의 색 규칙(§1.1 핑크=액션 / 초록=된 것) 밖의 색이
+ * 아홉 개나 화면에 흩어져 오히려 눈이 갈 곳을 잃었다.
+ */
 export const CATEGORY_META: Array<{
     category: FoodCategory
     shortLabel: string
-    dotClass: string
     total: number
 }> = [
-    { category: '밥·죽·한 그릇', shortLabel: '밥·죽', dotClass: 'bg-amber-500', total: 25 },
-    { category: '면', shortLabel: '면', dotClass: 'bg-watermelon-500', total: 25 },
-    { category: '국·탕·찌개', shortLabel: '국·탕', dotClass: 'bg-lime-text', total: 30 },
-    { category: '고기 구이·볶음', shortLabel: '고기', dotClass: 'bg-red-500', total: 25 },
-    { category: '튀김·치킨·까스', shortLabel: '튀김·치킨', dotClass: 'bg-watermelon-400', total: 15 },
-    { category: '해산물·회', shortLabel: '해산물', dotClass: 'bg-teal-500', total: 25 },
-    { category: '분식·길거리', shortLabel: '분식', dotClass: 'bg-rose-500', total: 20 },
-    { category: '빵·버거·피자·브런치', shortLabel: '브런치', dotClass: 'bg-red-400', total: 20 },
-    { category: '디저트·음료', shortLabel: '디저트', dotClass: 'bg-purple-500', total: 15 },
+    { category: '밥·죽·한 그릇', shortLabel: '밥·죽', total: 25 },
+    { category: '면', shortLabel: '면', total: 25 },
+    { category: '국·탕·찌개', shortLabel: '국·탕', total: 30 },
+    { category: '고기 구이·볶음', shortLabel: '고기', total: 25 },
+    { category: '튀김·치킨·까스', shortLabel: '튀김·치킨', total: 15 },
+    { category: '해산물·회', shortLabel: '해산물', total: 25 },
+    { category: '분식·길거리', shortLabel: '분식', total: 20 },
+    { category: '빵·버거·피자·브런치', shortLabel: '브런치', total: 20 },
+    { category: '디저트·음료', shortLabel: '디저트', total: 15 },
 ]
 
 /** Representative menu slots from the CatchEat dex. */

@@ -21,8 +21,8 @@ export function MadeDexList({ dexes, loading, error, onCreateNew, onOpenDex, onE
         <div className="relative flex h-full flex-col bg-surface-app">
             <header className="flex items-start justify-between gap-3 px-5 pb-2 pt-4">
                 <div>
-                    <h1 className="font-display text-xl text-content-primary">제작 도감</h1>
-                    <p className="mt-1 text-sm text-content-secondary">함께 만든 도감을 둘러보세요</p>
+                    <h1 className="font-display text-xl text-content-primary">로그잇</h1>
+                    <p className="mt-1 text-sm text-content-secondary">함께 먹은 하루를 모아 보세요</p>
                 </div>
                 <button
                     type="button"
@@ -89,7 +89,7 @@ export function MadeDexList({ dexes, loading, error, onCreateNew, onOpenDex, onE
                             <div className="flex min-h-40 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-edge-default bg-white text-center">
                                 <BookMarkedIcon size={30} strokeWidth={1.5} aria-hidden className="text-neutral-400" />
                                 <p className="mt-2 text-sm font-bold text-content-primary">
-                                    아직 참여 중인 제작 도감이 없어요
+                                    아직 참여 중인 로그잇이 없어요
                                 </p>
                                 <p className="mt-1 text-xs text-content-secondary">
                                     새로 만들거나 초대 코드로 참여해 보세요.
@@ -104,12 +104,12 @@ export function MadeDexList({ dexes, loading, error, onCreateNew, onOpenDex, onE
                     onClick={onCreateNew}
                     className="mt-4 flex min-h-touch w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-watermelon-400 bg-watermelon-50 py-4 text-sm font-bold text-content-link"
                 >
-                    <PlusIcon size={18} aria-hidden />새 도감 만들기
+                    <PlusIcon size={18} aria-hidden />새 로그잇 만들기
                 </button>
 
                 <div className="mt-4 flex items-start gap-2 rounded-2xl bg-neutral-100 p-3 text-xs text-content-muted">
                     <UsersIcon size={16} aria-hidden className="mt-0.5 shrink-0 text-content-secondary" />
-                    초대 코드로 참여하면 함께 카드를 등록할 수 있어요. 한 도감에 최대 12명까지 모일 수 있어요.
+                    초대 코드로 참여하면 함께 카드를 등록할 수 있어요. 한 로그잇에 최대 12명까지 모일 수 있어요.
                 </div>
             </main>
 

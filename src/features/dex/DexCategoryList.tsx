@@ -6,6 +6,11 @@ import { ChevronRightIcon, LayoutGridIcon, PlusIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import type { CategoryFilter } from './useDexFilter'
 
+/** 위쪽 수집률 바가 먼저 차오르고, 그다음 카테고리들이 따라 온다 */
+const FILL_LEAD = 0.25
+/** 카테고리 사이 간격(초). 아홉 줄이라 0.06을 넘기면 마지막 줄이 눈에 띄게 늦는다 */
+const FILL_GAP = 0.06
+
 interface Props {
     entries: DexEntry[]
     collectedIds: number[]
@@ -34,10 +39,10 @@ export function DexCategoryList({ entries, collectedIds, onOpenCategory, onRegis
             <header className="px-5 pt-4">
                 <div className="flex items-center justify-between gap-3">
                     <div className="flex min-w-0 items-center gap-1.5">
-                        <h1 className="truncate font-display text-2xl text-neutral-900">기본 도감</h1>
+                        <h1 className="font-display text-2xl text-neutral-900">베이짓</h1>
                         <button
                             onClick={() => setHelpOpen(true)}
-                            aria-label="기본 도감 도움말"
+                            aria-label="베이짓 도움말"
                             className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-[12px] font-bold text-neutral-400"
                         >
                             ?
@@ -79,19 +84,21 @@ export function DexCategoryList({ entries, collectedIds, onOpenCategory, onRegis
                 </button>
                 <h2 className="mb-2 mt-5 text-sm font-bold text-neutral-900">카테고리</h2>
                 <div className="space-y-2.5">
-                    {rows.map((row) => (
+                    {rows.map((row, index) => (
                         <button
                             key={row.category}
                             onClick={() => onOpenCategory(row.category)}
                             className="flex w-full items-center gap-3 rounded-2xl bg-white p-4 text-left shadow-soft active:scale-[0.99]"
                         >
-                            <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${row.dotClass}`} />
                             <span className="min-w-0 flex-1">
-                                <span className="block truncate font-display text-base text-neutral-900">
-                                    {row.category}
-                                </span>
+                                {/* 자르지 않는다 — '빵·버거·피자·브런치'처럼 긴 이름이 낱말 가운데서 사라진다 */}
+                                <span className="block font-display text-base text-neutral-900">{row.category}</span>
                                 <div className="mt-2">
-                                    <ProgressBar value={row.total > 0 ? row.mine / row.total : 0} animate={false} />
+                                    {/* 위에서부터 차례로 차오른다 — 목록이 한꺼번에 채워지면 움직임이 안 읽힌다 */}
+                                    <ProgressBar
+                                        value={row.total > 0 ? row.mine / row.total : 0}
+                                        delay={FILL_LEAD + index * FILL_GAP}
+                                    />
                                 </div>
                             </span>
                             <span className="shrink-0 text-right">

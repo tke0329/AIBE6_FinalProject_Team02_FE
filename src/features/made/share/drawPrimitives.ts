@@ -57,6 +57,65 @@ export function truncate(ctx: CanvasRenderingContext2D, text: string, maxWidth: 
     return `${chars.join('')}…`
 }
 
+/**
+ * 여러 줄로 접는다. 칸 안에 짧은 한국어 문구를 넣을 때 쓴다.
+ *
+ * **띄어쓰기를 먼저 찾는다.** 글자 단위로 끊으면 "든든해 / 요"처럼 낱말이 갈리는데,
+ * 그게 globals.css에서 `word-break: keep-all`로 막은 것과 같은 문제다. 캔버스에는
+ * 그런 속성이 없어 직접 해야 한다.
+ *
+ * 띄어쓰기 없는 한 낱말이 한 줄보다 길면 그때만 글자로 끊는다.
+ * `maxLines`를 넘치는 부분은 마지막 줄에 …로 접는다
+ */
+export function wrapLines(ctx: CanvasRenderingContext2D, text: string, maxWidth: number, maxLines: number): string[] {
+    const words = text.split(/\s+/).filter(Boolean)
+    if (words.length === 0) return []
+
+    const lines: string[] = []
+    let line = ''
+
+    for (const word of words) {
+        const candidate = line ? `${line} ${word}` : word
+        if (ctx.measureText(candidate).width <= maxWidth) {
+            line = candidate
+            continue
+        }
+        if (line) lines.push(line)
+        // 낱말 하나가 한 줄보다 길다. 여기서만 글자로 끊는다
+        if (ctx.measureText(word).width <= maxWidth) {
+            line = word
+        } else {
+            const chars = Array.from(word)
+            let piece = ''
+            for (const char of chars) {
+                if (ctx.measureText(piece + char).width > maxWidth && piece) {
+                    lines.push(piece)
+                    piece = char
+                } else {
+                    piece += char
+                }
+            }
+            line = piece
+        }
+    }
+    if (line) lines.push(line)
+
+    if (lines.length <= maxLines) return lines
+
+    /*
+     * 넘쳤다. 마지막에 보이는 줄 끝에 …를 붙여 "뒤에 더 있다"를 알린다.
+     * `truncate`를 그냥 쓰면 안 된다 — 그 줄은 이미 폭에 맞게 만들어져서
+     * 자를 것이 없다고 판단해 …가 붙지 않는다
+     */
+    const kept = lines.slice(0, maxLines)
+    const chars = Array.from(kept[maxLines - 1])
+    while (chars.length > 1 && ctx.measureText(`${chars.join('')}…`).width > maxWidth) {
+        chars.pop()
+    }
+    kept[maxLines - 1] = `${chars.join('')}…`
+    return kept
+}
+
 /** 대표 뒤에 비스듬히 깔리는 장 */
 export function drawStackLayer(
     ctx: CanvasRenderingContext2D,

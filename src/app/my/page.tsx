@@ -4,6 +4,7 @@ import { useAuth } from '@/features/auth/AuthContext'
 import { getMyBadges, getMyProfile, withdrawAccount } from '@/features/my/api'
 import { MyPage } from '@/features/my/MyPage'
 import { WithdrawConfirmSheet } from '@/features/my/WithdrawConfirmSheet'
+import { pushInApp } from '@/shared/lib/backNav'
 import { getTabHref, ROUTES } from '@/shared/lib/routes'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -12,6 +13,7 @@ import { useEffect, useState } from 'react'
 export default function MyPageRoute() {
     const router = useRouter()
     const { me, logout } = useAuth()
+    const nickname = me?.nickname ?? ''
 
     // 프로필 사진(표시용 URL) — 없으면 MyPage가 닉네임 첫 글자로 대체
     const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null)
@@ -59,20 +61,20 @@ export default function MyPageRoute() {
     return (
         <>
             <MyPage
-                nickname={me?.nickname ?? ''}
+                nickname={nickname}
                 profileImageUrl={profileImageUrl}
                 equippedBadge={equippedBadge}
-                onChangePhoto={() => router.push(ROUTES.myPhoto)}
-                onEditNickname={() => router.push(ROUTES.myNickname)}
-                onReplayOnboarding={() => router.push(`${ROUTES.onboarding}?from=my`)}
-                onOpenBadges={() => router.push(ROUTES.myBadges)}
-                onOpenFriends={() => router.push(ROUTES.friends)}
+                onChangePhoto={() => pushInApp(router, ROUTES.myPhoto)}
+                onEditNickname={() => pushInApp(router, ROUTES.myNickname)}
+                onOpenBadges={() => pushInApp(router, ROUTES.myBadges)}
+                onOpenFriends={() => pushInApp(router, ROUTES.friends)}
                 onLogout={handleLogout}
                 onWithdraw={() => setConfirmOpen(true)}
                 onTab={(tab) => router.push(getTabHref(tab))}
             />
             {confirmOpen && (
                 <WithdrawConfirmSheet
+                    nickname={nickname}
                     pending={withdrawing}
                     error={withdrawError}
                     onConfirm={handleWithdraw}

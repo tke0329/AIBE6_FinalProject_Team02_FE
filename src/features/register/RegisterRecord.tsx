@@ -1,13 +1,51 @@
 'use client'
 
-import { AlertCircleIcon, ArrowLeftIcon, BookmarkIcon, CheckIcon, ClockIcon } from 'lucide-react'
-import { useMemo, useRef, useState } from 'react'
+import {
+    AlertCircleIcon,
+    ArrowLeftIcon,
+    BookmarkIcon,
+    CheckIcon,
+    ChevronLeftIcon,
+    ChevronRightIcon,
+    ClockIcon,
+} from 'lucide-react'
+import React, { useMemo, useRef, useState } from 'react'
 import { MemoTemplatePanel } from './MemoTemplatePanel'
 import { PlacePicker } from './PlacePicker'
 import { RegisterPhoto, useRegisterFlow } from './RegisterFlowContext'
 import { CardInput, LocationInput } from './confirmApi'
 
 const MEMO_MAX = 100
+
+/**
+ * 사진 위에 얹는 순서 변경 버튼.
+ *
+ * 24px이라 최소 터치 타깃(44px)에 못 미치지만, `no-touch-expand`를 붙이지 않아
+ * globals.css의 아이콘 버튼 규칙이 히트 영역을 44px로 넓혀 준다. 보이는 크기만 작다
+ */
+function OrderButton({
+    label,
+    disabled,
+    onClick,
+    children,
+}: {
+    label: string
+    disabled: boolean
+    onClick: () => void
+    children: React.ReactNode
+}) {
+    return (
+        <button
+            type="button"
+            aria-label={label}
+            disabled={disabled}
+            onClick={onClick}
+            className="flex h-6 w-6 items-center justify-center rounded-full bg-white/90 text-content-primary disabled:opacity-30"
+        >
+            {children}
+        </button>
+    )
+}
 
 interface Props {
     submitting: boolean
@@ -16,9 +54,15 @@ interface Props {
     onSubmit: (cards: CardInput[], location: LocationInput | null) => void
 }
 
+/**
+ * `photoKeys`의 **순서가 곧 카드에 실리는 순서**다. 첫 장이 대표 사진이 된다.
+ *
+ * 예전에는 `thumbnailKey`를 따로 들고 "대표" 버튼으로 골랐는데, 순서라는 개념이
+ * 없으니 대표만 정해도 나머지가 어떤 차례로 실리는지 알 수 없었다. 순서 하나로 합치면
+ * 대표를 고르는 일이 "맨 앞으로 옮기기"가 되어 눈에 보이는 대로 동작한다
+ */
 interface Draft {
     photoKeys: string[]
-    thumbnailKey: string | null
     memo: string
 }
 
@@ -48,11 +92,15 @@ export function RegisterRecord({ submitting, error, onBack, onSubmit }: Props) {
     const total = recordSlots.length
     const last = step === total - 1
 
-    const draft = drafts[slot?.slotId] ?? {
-        photoKeys: [],
-        thumbnailKey: null,
-        memo: '',
-    }
+    /**
+     * **올린 사진이 처음부터 다 들어가 있다.**
+     *
+     * 예전 기본값은 빈 목록이었고, 안 고르면 분석 사진 한 장만 붙었다. 그런데 사진을
+     * 여러 장 올린 사람은 그 여러 장을 남기려고 올린 것이다 — 기본값이 그 반대라
+     * 매번 전부 다시 눌러야 했다. 빼는 쪽이 고르는 쪽보다 드물다
+     */
+    const defaultDraft = useMemo<Draft>(() => ({ photoKeys: uploaded.map((photo) => photo.key), memo: '' }), [uploaded])
+    const draft = drafts[slot?.slotId] ?? defaultDraft
 
     const patch = (change: Partial<Draft>) =>
         setDrafts((current) => ({
@@ -60,28 +108,32 @@ export function RegisterRecord({ submitting, error, onBack, onSubmit }: Props) {
             [slot.slotId]: { ...draft, ...change },
         }))
 
-    const togglePhoto = (key: string) => {
-        const next = draft.photoKeys.includes(key)
-            ? draft.photoKeys.filter((selected) => selected !== key)
-            : [...draft.photoKeys, key]
+    /** 뺐다가 다시 넣으면 맨 뒤로 간다 — 순서를 되돌리는 방법이기도 하다 */
+    const togglePhoto = (key: string) =>
         patch({
-            photoKeys: next,
-            // 썸네일로 쓰던 사진을 빼면 지정도 함께 푼다
-            thumbnailKey: next.includes(draft.thumbnailKey ?? '') ? draft.thumbnailKey : null,
+            photoKeys: draft.photoKeys.includes(key)
+                ? draft.photoKeys.filter((selected) => selected !== key)
+                : [...draft.photoKeys, key],
         })
+
+    /** 이웃과 자리를 바꾼다. 끝에서 더 밀면 아무 일도 안 한다 */
+    const movePhoto = (key: string, direction: -1 | 1) => {
+        const from = draft.photoKeys.indexOf(key)
+        const to = from + direction
+        if (from < 0 || to < 0 || to >= draft.photoKeys.length) return
+        const next = [...draft.photoKeys]
+        ;[next[from], next[to]] = [next[to], next[from]]
+        patch({ photoKeys: next })
     }
 
     const submit = () => {
         const cards: CardInput[] = recordSlots.map((passed) => {
-            const saved = drafts[passed.slotId] ?? {
-                photoKeys: [],
-                thumbnailKey: null,
-                memo: '',
-            }
+            const saved = drafts[passed.slotId] ?? defaultDraft
             return {
                 slotId: passed.slotId,
                 cardPhotoKeys: saved.photoKeys,
-                thumbnailKey: saved.thumbnailKey,
+                // 대표는 첫 장이다 (Draft 주석 참고)
+                thumbnailKey: saved.photoKeys[0] ?? null,
                 memo: saved.memo.trim() || null,
             }
         })
@@ -121,53 +173,86 @@ export function RegisterRecord({ submitting, error, onBack, onSubmit }: Props) {
                 )}
 
                 <section className="mt-5" aria-label="카드 사진 고르기">
-                    <p className="text-sm font-medium text-content-secondary">
-                        카드에 넣을 사진 <span className="text-xs">(선택)</span>
+                    <p className="text-sm font-medium text-content-secondary">카드에 넣을 사진</p>
+                    <p className="mt-0.5 text-xs text-content-secondary">
+                        올린 사진이 모두 들어가요. 뺄 사진은 눌러서 빼고, <strong>1번이 대표 사진</strong>이에요
                     </p>
-                    <p className="mt-0.5 text-xs text-content-secondary">안 고르면 분석 사진이 자동으로 들어가요</p>
 
                     <div className="mt-2.5 grid grid-cols-3 gap-2.5">
                         {uploaded.map((photo) => {
-                            const picked = draft.photoKeys.includes(photo.key)
-                            const isThumbnail = draft.thumbnailKey === photo.key
+                            const order = draft.photoKeys.indexOf(photo.key)
+                            const picked = order >= 0
                             return (
                                 <div key={photo.id} className="relative">
                                     <button
                                         type="button"
                                         onClick={() => togglePhoto(photo.key)}
                                         aria-pressed={picked}
-                                        aria-label={`${photo.file.name} ${picked ? '빼기' : '넣기'}`}
+                                        aria-label={
+                                            picked
+                                                ? `${order + 1}번째 사진 빼기`
+                                                : `사진 넣기 (맨 뒤 ${draft.photoKeys.length + 1}번)`
+                                        }
                                         className={`aspect-square w-full overflow-hidden rounded-2xl border-2 ${
-                                            picked ? 'border-edge-active' : 'border-transparent'
+                                            picked ? 'border-edge-active' : 'border-transparent opacity-45 grayscale'
                                         }`}
                                     >
                                         {/* eslint-disable-next-line @next/next/no-img-element -- blob: 미리보기 */}
                                         <img src={photo.previewUrl} alt="" className="h-full w-full object-cover" />
                                     </button>
 
+                                    {/* 순번. 대표(1번)만 채운 색이라 어느 것이 표지인지 한눈에 보인다 */}
                                     {picked && (
-                                        <button
-                                            type="button"
-                                            onClick={() => patch({ thumbnailKey: photo.key })}
-                                            className={`absolute bottom-1 left-1 rounded-full px-2 py-0.5 text-xs font-bold ${
-                                                isThumbnail
+                                        <span
+                                            aria-hidden
+                                            className={`absolute left-1 top-1 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold tabular-nums ${
+                                                order === 0
                                                     ? 'bg-action-primary text-content-on-action'
-                                                    : 'bg-white/90 text-content-secondary'
+                                                    : 'bg-white/90 text-content-primary'
                                             }`}
                                         >
-                                            {isThumbnail ? '대표' : '선택됨'}
-                                        </button>
+                                            {order + 1}
+                                        </span>
                                     )}
 
                                     {photo.id === analysisPhoto?.id && (
-                                        <span className="absolute right-1 top-1 rounded-full bg-white/90 px-2 py-0.5 text-xs font-bold text-content-secondary">
+                                        <span className="absolute right-1 top-1 rounded-full bg-white/90 px-2 py-0.5 text-xs font-bold text-content-primary">
                                             분석
                                         </span>
+                                    )}
+
+                                    {/*
+                                        끌어서 옮기는 대신 화살표 두 개로 순서를 바꾼다.
+                                        좁은 3열 격자에서 드래그는 스크롤과 다투고, 키보드로는 아예 못 쓴다
+                                    */}
+                                    {picked && draft.photoKeys.length > 1 && (
+                                        <div className="absolute inset-x-1 bottom-1 flex justify-between">
+                                            <OrderButton
+                                                label={`${order + 1}번째 사진 앞으로`}
+                                                disabled={order === 0}
+                                                onClick={() => movePhoto(photo.key, -1)}
+                                            >
+                                                <ChevronLeftIcon size={14} aria-hidden />
+                                            </OrderButton>
+                                            <OrderButton
+                                                label={`${order + 1}번째 사진 뒤로`}
+                                                disabled={order === draft.photoKeys.length - 1}
+                                                onClick={() => movePhoto(photo.key, 1)}
+                                            >
+                                                <ChevronRightIcon size={14} aria-hidden />
+                                            </OrderButton>
+                                        </div>
                                     )}
                                 </div>
                             )
                         })}
                     </div>
+
+                    {draft.photoKeys.length === 0 && (
+                        <p className="mt-2 text-xs font-medium text-feedback-error">
+                            사진을 하나도 안 넣으면 카드에 사진이 없어요
+                        </p>
+                    )}
                 </section>
 
                 <section className="mt-6" aria-label="메모">

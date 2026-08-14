@@ -2,7 +2,6 @@
 
 import { useAuth } from '@/features/auth/AuthContext'
 import { ROUTES } from '@/shared/lib/routes'
-import { useAppState } from '@/shared/store/AppStateProvider'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 
@@ -12,18 +11,20 @@ import { useEffect } from 'react'
 const PUBLIC_PATHS: string[] = [ROUTES.login, ROUTES.oauthCallback, '/ui-check']
 
 /**
- * 앱 전역 인증/온보딩 라우팅 가드
- * 퍼널 순서: 비로그인→/login, 닉네임 없음→/nickname-setup, 온보딩 미완료→/onboarding, 완료→요청 페이지
+ * 앱 전역 인증 라우팅 가드
+ * 퍼널 순서: 비로그인→/login, 닉네임 없음→/nickname-setup, 완료→요청 페이지
+ *
+ * **온보딩 단계는 없앴다.** 로그인 직후 튜토리얼을 끼워 넣으면 서비스 흐름이 끊겨
+ * 어색하다는 판단(2026-08-13). 서버의 `onboardingCompleted`는 남아 있지만 화면은
+ * 더 이상 읽지 않는다
  */
 export function AuthGate({ children }: { children: React.ReactNode }) {
     const router = useRouter()
     const pathname = usePathname()
     const { isAuthenticated, loading, me } = useAuth()
-    const { onboardingSeen } = useAppState()
 
     const isPublic = PUBLIC_PATHS.includes(pathname)
-    // 판단에 필요한 두 상태가 모두 확정됐는지 (auth 확인 끝 + 온보딩 상태 수신)
-    const ready = !loading && onboardingSeen !== null
+    const ready = !loading
 
     // 이 사용자가 있어야 할 경로. null이면 현재 경로 그대로 OK.
     let redirectTo: string | null = null
@@ -31,15 +32,11 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
         if (!isAuthenticated) {
             redirectTo = ROUTES.login
         } else if (me?.nickname == null) {
-            // 신규: 닉네임을 온보딩보다 먼저 정한다
             redirectTo = ROUTES.nicknameSetup
         } else if (pathname === ROUTES.nicknameSetup) {
-            // 닉네임 세팅을 마쳤는데 아직 세팅 화면이면 다음 단계로 내보낸다
-            redirectTo = onboardingSeen === false ? ROUTES.onboarding : ROUTES.home
-        } else if (onboardingSeen === false) {
-            redirectTo = ROUTES.onboarding
+            // 닉네임 세팅을 마쳤는데 아직 세팅 화면이면 진입점으로 내보낸다
+            redirectTo = ROUTES.home
         }
-        // 이미 목적지에 있으면 리다이렉트 불필요 (온보딩 다시보기 등 통과)
         if (redirectTo === pathname) redirectTo = null
     }
 

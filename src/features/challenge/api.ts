@@ -48,8 +48,8 @@ export interface ChallengeSummary {
     startsAt: string
     endsAt: string | null
     participantCount: number
-    totalSlots: number // 전체 목표 수 (내 챌린지 진행도용, 탐색은 0)
-    unlockedCount: number // 내가 해금한 수 (내 챌린지 진행도용, 탐색은 0)
+    totalSlots: number // 전체 목표 수 (내 챌린짓 진행도용, 탐색은 0)
+    unlockedCount: number // 내가 해금한 수 (내 챌린짓 진행도용, 탐색은 0)
     rankScore: number | null // 현재 정렬 지표값(최근 7일 조회/참여/해금). 최신순·완료면 null
     joined: boolean // 요청 유저의 참여 여부(탐색 목록 참여중 표시)
     imageUrl: string | null // 대표 이미지(프리사인 URL)
@@ -159,7 +159,7 @@ export function unlockSlot(
     id: string | number,
     slotId: string | number,
     imageKey: string,
-    lat: number | null = null, // 위치 인증 챌린지면 현재 위치
+    lat: number | null = null, // 위치 인증 챌린짓면 현재 위치
     lng: number | null = null,
 ) {
     return apiFetch<UnlockResult>(`/api/v1/challenges/${id}/unlocks`, {

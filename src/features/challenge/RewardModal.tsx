@@ -22,7 +22,7 @@ export function RewardModal({ badge, onClose, onGoToBadges }: Props) {
                 className="w-full max-w-xs rounded-3xl bg-surface-raised p-6 text-center shadow-card"
                 onClick={(event) => event.stopPropagation()}
             >
-                <p className="font-display text-xl text-neutral-900">챌린지 완주!</p>
+                <p className="font-display text-xl text-neutral-900">챌린짓 완주!</p>
                 <p className="mt-1 text-sm text-neutral-400">보상 뱃지를 획득했어요</p>
                 <div className="mx-auto mt-5 flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-watermelon-50 shadow-card">
                     {image ? (
@@ -35,7 +35,7 @@ export function RewardModal({ badge, onClose, onGoToBadges }: Props) {
                 <div className="mt-6 flex flex-col gap-2">
                     <button
                         onClick={onGoToBadges}
-                        className="w-full rounded-2xl bg-watermelon-500 py-3 font-display text-white shadow-card"
+                        className="w-full rounded-2xl bg-watermelon-500 py-3 font-display text-content-on-action shadow-card"
                     >
                         보관함에서 보기
                     </button>

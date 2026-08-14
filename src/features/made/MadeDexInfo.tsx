@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { ArrowLeftIcon, ChevronRightIcon, KeyRoundIcon, LockIcon, SettingsIcon, UsersIcon } from 'lucide-react'
+import { ArrowLeftIcon, ChevronRightIcon, LockIcon, SettingsIcon, UsersIcon } from 'lucide-react'
 
 import { BottomSheet } from '@/shared/ui'
 import { DEFAULT_MADE_DEX_COVER, madeDexDayCount, MadeDexDetail } from './types'
@@ -13,20 +13,17 @@ interface Props {
     onLeave: () => void
     /** 도감 관리 메뉴 — 그룹장에게만 보인다 */
     onEditInfo: () => void
-    onManageInvites: () => void
-    onManageParticipants: () => void
+    /**
+     * 초대 코드 + 참여자 관리. **하나다.**
+     *
+     * 예전에는 `onManageInvites` · `onManageParticipants` 둘이었는데 **가는 곳이 같았다**
+     * (`/made/[dexId]/participants`). 그 화면 하나가 코드 발급과 참여자 관리를 다 한다.
+     * 메뉴만 둘로 보여서, 어느 쪽을 눌러도 같은 화면이 나오는 것이 고장처럼 읽혔다
+     */
+    onManageMembers: () => void
 }
 
-export function MadeDexInfo({
-    detail,
-    leaving,
-    error,
-    onBack,
-    onLeave,
-    onEditInfo,
-    onManageInvites,
-    onManageParticipants,
-}: Props) {
+export function MadeDexInfo({ detail, leaving, error, onBack, onLeave, onEditInfo, onManageMembers }: Props) {
     const [leaveOpen, setLeaveOpen] = useState(false)
 
     const owner = detail.myRole === 'OWNER'
@@ -39,16 +36,10 @@ export function MadeDexInfo({
             onClick: onEditInfo,
         },
         {
-            label: '초대 코드 관리하기',
-            hint: '코드 발급과 링크 공유',
-            Icon: KeyRoundIcon,
-            onClick: onManageInvites,
-        },
-        {
-            label: '참여자 관리하기',
-            hint: '그룹장 넘기기와 내보내기',
+            label: '초대 코드 및 참여자 관리하기',
+            hint: '코드 발급 · 그룹장 넘기기 · 내보내기',
             Icon: UsersIcon,
-            onClick: onManageParticipants,
+            onClick: onManageMembers,
         },
     ]
 

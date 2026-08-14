@@ -227,7 +227,7 @@ function Row({
                 onClick={() => onOpenUser(user.userId)}
             >
                 <Avatar user={user} />
-                <span className="flex items-center gap-2 truncate">
+                <span className="flex items-center gap-1 truncate">
                     {user.equippedBadge && (
                         <ServerBadge
                             code={user.equippedBadge.code}

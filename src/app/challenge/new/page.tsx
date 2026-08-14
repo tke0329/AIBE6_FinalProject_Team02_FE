@@ -2,6 +2,7 @@
 
 import { ChallengeCreate } from '@/features/challenge/ChallengeCreate'
 import { createChallenge, createRewardBadge, fetchCreationTickets } from '@/features/challenge/api'
+import { goBackOr, pushInApp } from '@/shared/lib/backNav'
 import { ROUTES } from '@/shared/lib/routes'
 import { uploadImageToS3 } from '@/shared/lib/upload'
 import { useAppState } from '@/shared/store/AppStateProvider'
@@ -43,7 +44,9 @@ export default function ChallengeCreatePage() {
                 onBack={() => {
                     setCustomBadge(null)
                     resetChallengeDraft()
-                    router.push(ROUTES.challenge)
+                    // 왔던 목록의 그 자리로. 개설 완료 후 '확인'도 이 경로다 —
+                    // push였을 때는 목록이 하나 더 쌓여 브라우저 뒤로가기가 다 쓴 위저드로 되돌아갔다
+                    goBackOr(router, ROUTES.challenge)
                 }}
                 onCreate={async (challenge) => {
                     try {
@@ -63,19 +66,16 @@ export default function ChallengeCreatePage() {
                             }),
                         )
 
-                        // 보상 뱃지는 개설 확정 시점에 생성 (중도 이탈 시 뱃지 row 안 생기게)
+                        /*
+                         * 보상 뱃지는 개설 확정 시점에 생성 (중도 이탈 시 뱃지 row 안 생기게).
+                         *
+                         * 프리셋 분기는 없앴다 — 개설에서 프리셋을 고를 수 없게 됐다
+                         * (`ChallengeCreate`의 BADGE 단계 주석). 안 만들었으면 null 그대로 보내고,
+                         * 서버는 `rewardBadgeId`를 선택으로 받는다
+                         */
                         const badge = challenge.rewardBadge
                         let rewardBadgeId: number | null = null
-                        if (badge?.code) {
-                            // 프리셋 복제
-                            rewardBadgeId = (
-                                await createRewardBadge({
-                                    name: badge.name,
-                                    presetCode: badge.code,
-                                })
-                            ).badgeId
-                        } else if (badge?.customImage) {
-                            // 유저 제작(이미지 S3 업로드 후 key로 생성)
+                        if (badge?.customImage) {
                             const blob = dataUrlToBlob(badge.customImage)
                             const { key } = await uploadImageToS3(blob, 'reward-badge.png')
                             rewardBadgeId = (await createRewardBadge({ name: badge.name, imageKey: key })).badgeId
@@ -101,11 +101,12 @@ export default function ChallengeCreatePage() {
                         })
                         // 성공 → 위저드가 완료 화면을 보여주고, '확인'(onBack)에서 초기화·목록 이동
                     } catch (e) {
-                        setAlertMessage(e instanceof Error ? e.message : '챌린지 개설에 실패했어요')
+                        setAlertMessage(e instanceof Error ? e.message : '챌린짓 개설에 실패했어요')
                     }
                 }}
-                onCustomBadge={() => router.push(ROUTES.challengeNewBadge)}
-                onUsePreset={() => setCustomBadge(null)}
+                onCustomBadge={() => {
+                    pushInApp(router, ROUTES.challengeNewBadge)
+                }}
             />
             {alertMessage && <Dialog title="개설 실패" message={alertMessage} onClose={() => setAlertMessage(null)} />}
         </>
