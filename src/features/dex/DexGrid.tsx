@@ -1,17 +1,9 @@
+import { GuideTour } from '@/features/onboarding/GuideTour'
+import { useGuide } from '@/features/onboarding/useGuide'
 import { createReport } from '@/features/report/api'
 import { DexEntry } from '@/shared/data/dex'
 import { getLocalDexIllustrationUrl } from '@/shared/lib/dexIllustrations'
-import {
-    BottomNav,
-    DexHelpSheet,
-    FoodCard,
-    HelpIcon,
-    NavTab,
-    ProgressBar,
-    SearchBar,
-    StarRank,
-    TabBar,
-} from '@/shared/ui'
+import { BottomNav, FoodCard, HelpIcon, NavTab, ProgressBar, SearchBar, StarRank, TabBar } from '@/shared/ui'
 import { ArrowLeftIcon, ChevronDownIcon, PlusIcon } from 'lucide-react'
 import { useState } from 'react'
 import { DexLockedSheet } from './DexLockedSheet'
@@ -84,7 +76,6 @@ export function DexGrid({
     onRegister,
     onTab,
 }: DexGridProps) {
-    const [helpOpen, setHelpOpen] = useState(false)
     const [reporting, setReporting] = useState(false)
     const [reportedName, setReportedName] = useState<string | null>(null)
     const [unlockMenuOpen, setUnlockMenuOpen] = useState(false)
@@ -127,6 +118,8 @@ export function DexGrid({
     const displayPercentage = activeCategory === '전체' ? percentage : sectionPercentage
     const displayCollected = activeCategory === '전체' ? collectedIds.length : sectionCollected
     const displayTotal = activeCategory === '전체' ? entries.length : sectionTotal
+    // 카드가 그려진 뒤에 켠다 — 빈 격자면 짚을 요소가 없어 투어가 헛돈다
+    const guide = useGuide('basit-grid', visibleEntries.length > 0)
 
     return (
         <div className="relative flex h-full flex-col bg-surface-app">
@@ -142,7 +135,7 @@ export function DexGrid({
                             <ArrowLeftIcon size={19} aria-hidden />
                         </button>
                         <h1 className="truncate font-display text-xl text-content-primary">베이짓</h1>
-                        <HelpIcon label="베이짓" onClick={() => setHelpOpen(true)} />
+                        <HelpIcon label="베이짓" onClick={guide.replay} />
                     </div>
                     <button
                         type="button"
@@ -164,13 +157,15 @@ export function DexGrid({
                     <p className="mt-2 text-xs text-content-secondary">카테고리를 골라 원하는 음식만 찾아보세요</p>
                 </div>
 
-                <SearchBar
-                    label="음식 이름 검색"
-                    placeholder="음식 이름으로 검색해보세요"
-                    value={query}
-                    onChange={setQuery}
-                    className="mt-3"
-                />
+                <div data-tour="basit-search">
+                    <SearchBar
+                        label="음식 이름 검색"
+                        placeholder="음식 이름으로 검색해보세요"
+                        value={query}
+                        onChange={setQuery}
+                        className="mt-3"
+                    />
+                </div>
 
                 <TabBar
                     label="음식 카테고리"
@@ -187,6 +182,7 @@ export function DexGrid({
                 <div className="relative mt-3 flex justify-end">
                     <button
                         type="button"
+                        data-tour="basit-filter"
                         aria-haspopup="listbox"
                         aria-expanded={unlockMenuOpen}
                         onClick={() => setUnlockMenuOpen((open) => !open)}
@@ -272,7 +268,7 @@ export function DexGrid({
                         </div>
                     ) : (
                         <div className="grid grid-cols-[repeat(auto-fill,minmax(104px,1fr))] gap-3">
-                            {visibleEntries.map((entry) => {
+                            {visibleEntries.map((entry, index) => {
                                 const unlocked = collected.has(entry.id)
                                 const isNew = unlocked && entry.recentlyUnlocked === true
                                 /*
@@ -287,6 +283,8 @@ export function DexGrid({
                                 return (
                                     <FoodCard
                                         key={entry.id}
+                                        // 첫 칸만 짚는다 — 격자가 다 같은 모양이라 하나면 충분
+                                        dataTour={index === 0 ? 'basit-card' : undefined}
                                         name={entry.name}
                                         emoji={entry.emoji}
                                         illustrationUrl={entry.illustrationUrl ?? getLocalDexIllustrationUrl(entry)}
@@ -325,7 +323,7 @@ export function DexGrid({
             </main>
 
             <BottomNav active="기본" onTab={onTab} />
-            {helpOpen && <DexHelpSheet kind="basic" onClose={() => setHelpOpen(false)} />}
+            <GuideTour guide={guide} />
             {lockedEntry && (
                 <DexLockedSheet
                     entry={lockedEntry}

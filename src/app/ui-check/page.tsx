@@ -18,6 +18,7 @@ import {
     Button,
     Card,
     Chip,
+    CoachTour,
     Dialog,
     EmptyState,
     EquippedBadge,
@@ -60,6 +61,7 @@ export default function UiCheckPage() {
     const [segment, setSegment] = useState<'mine' | 'explore'>('mine')
     const [picked, setPicked] = useState<string[]>(['한식'])
     const [sheetOpen, setSheetOpen] = useState(false)
+    const [tourOpen, setTourOpen] = useState(false)
 
     const toggleChip = (tag: string) =>
         setPicked((current) => (current.includes(tag) ? current.filter((t) => t !== tag) : [...current, tag]))
@@ -247,7 +249,9 @@ export default function UiCheckPage() {
 
                 <section className="flex flex-col gap-3">
                     <Text variant="sectionTitle">SearchBar · TabBar</Text>
-                    <SearchBar label="음식 검색" value={search} onChange={setSearch} placeholder="음식 이름" />
+                    <div data-tour="demo-search">
+                        <SearchBar label="음식 검색" value={search} onChange={setSearch} placeholder="음식 이름" />
+                    </div>
                     <TabBar
                         label="챌린짓 구분"
                         value={segment}
@@ -262,7 +266,13 @@ export default function UiCheckPage() {
                 <section className="flex flex-col gap-3">
                     <Text variant="sectionTitle">FoodCard — 3열 그리드 (가장 좁은 레이아웃)</Text>
                     <div className="grid grid-cols-3 gap-3">
-                        <FoodCard name="삼겹살" emoji="🥓" state="unlocked" accessibleName="삼겹살 수집함" />
+                        <FoodCard
+                            name="삼겹살"
+                            emoji="🥓"
+                            state="unlocked"
+                            accessibleName="삼겹살 수집함"
+                            dataTour="demo-card"
+                        />
                         <FoodCard name="김치찌개" emoji="🍲" state="recent" accessibleName="김치찌개 최근 수집" />
                         <FoodCard name="???" state="locked" accessibleName="미수집 칸" />
                     </div>
@@ -282,6 +292,17 @@ export default function UiCheckPage() {
                 </section>
 
                 <section className="flex flex-col gap-2">
+                    <Text variant="sectionTitle">CoachTour — 도메인 온보딩</Text>
+                    <Button size="md" fullWidth onClick={() => setTourOpen(true)}>
+                        투어 열기
+                    </Button>
+                    <Text variant="caption" as="p">
+                        스포트라이트가 대상에 정확히 얹히는지 봐요. **데스크톱 폭에서 특히** — 오버레이 기준이 뷰포트가
+                        아니라 폰 컬럼이라 좌표를 환산하고 있어요
+                    </Text>
+                </section>
+
+                <section className="flex flex-col gap-2">
                     <Text variant="sectionTitle">Dialog</Text>
                     <Button size="md" fullWidth onClick={() => setDialog('alert')}>
                         알림
@@ -294,6 +315,19 @@ export default function UiCheckPage() {
                     </Button>
                 </section>
             </div>
+
+            {tourOpen && (
+                <CoachTour
+                    label="갤러리 투어 예시"
+                    onClose={() => setTourOpen(false)}
+                    steps={[
+                        { title: '앵커 없는 단계', body: '가운데 카드로 떠요. 각 도감의 인트로가 이 모양이에요.' },
+                        { anchor: 'demo-card', title: '음식 칸', body: '스포트라이트가 대상에 정확히 얹혀야 해요.' },
+                        { anchor: 'demo-search', title: '검색', body: '스크롤이 필요한 대상도 화면 안으로 들어와요.' },
+                        { anchor: '없는-앵커', title: '이 단계는 안 보여요', body: 'DOM에 없는 앵커는 건너뛰어요.' },
+                    ]}
+                />
+            )}
 
             {sheetOpen && (
                 <BottomSheet title="이건 하단 시트예요" onClose={() => setSheetOpen(false)}>

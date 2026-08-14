@@ -11,13 +11,15 @@ interface Props {
     onOpen: (card: LogitFeedCard) => void
     onRecord: (slot: LogitFeedSlot) => void
     onOpenProfile: (card: LogitFeedCard) => void
+    /** 온보딩 투어가 짚을 앵커. 첫 끼니에만 붙는다 */
+    dataTour?: string
 }
 
 /** 점이 이보다 많아지면 세지 못한다 — 숫자로 바꾼다 */
 const DOT_LIMIT = 6
 
 /** §2.1 세로축은 슬롯, 가로축은 사람. 이 축을 뒤집지 않는다 */
-export function MealSlotSection({ slot, canRecord, emptyCaption, onOpen, onRecord, onOpenProfile }: Props) {
+export function MealSlotSection({ slot, canRecord, emptyCaption, onOpen, onRecord, onOpenProfile, dataTour }: Props) {
     const trackRef = useRef<HTMLDivElement>(null)
     const [index, setIndex] = useState(0)
 
@@ -31,7 +33,7 @@ export function MealSlotSection({ slot, canRecord, emptyCaption, onOpen, onRecor
     }
 
     return (
-        <section aria-label={slot.name} className="pt-5">
+        <section aria-label={slot.name} data-tour={dataTour} className="pt-5">
             <header className="flex items-baseline gap-2 pb-2">
                 <h2 className="font-display text-lg text-content-primary">{slot.name}</h2>
                 {slot.hidden && <p className="text-sm text-content-muted">지금은 쓰지 않는 끼니</p>}

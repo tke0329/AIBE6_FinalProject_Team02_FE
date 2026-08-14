@@ -1,17 +1,8 @@
 'use client'
 
-import {
-    Badge,
-    BottomNav,
-    DexHelpSheet,
-    HelpIcon,
-    LoadingView,
-    NavTab,
-    ProgressBar,
-    SearchBar,
-    Skeleton,
-    TabBar,
-} from '@/shared/ui'
+import { GuideTour } from '@/features/onboarding/GuideTour'
+import { useGuide } from '@/features/onboarding/useGuide'
+import { Badge, BottomNav, HelpIcon, LoadingView, NavTab, ProgressBar, SearchBar, Skeleton, TabBar } from '@/shared/ui'
 import { motion, useReducedMotion } from 'framer-motion'
 import { CrownIcon, MedalIcon, PlusIcon, TrophyIcon } from 'lucide-react'
 import { useState } from 'react'
@@ -117,7 +108,8 @@ export function ChallengeCountHome({
     onJoinChallenge,
 }: Props) {
     const [myTab, setMyTab] = useState<MyTab>('참여 중')
-    const [helpOpen, setHelpOpen] = useState(false)
+    // 탭·개설 버튼은 데이터와 무관하게 항상 있어서 지연시킬 이유가 없다
+    const guide = useGuide('challengit')
     // 내 챌린지 탭은 서버에서 relation별로 받아온 목록을 그대로 사용
     const mine = myTab === '참여 중' ? myJoined : myTab === '개설한' ? myCreated : myCompleted
     // 종료 탭은 랭킹 미적용(최근 완료순). 랭킹은 진행중 + 최신순 외 정렬일 때만
@@ -130,16 +122,18 @@ export function ChallengeCountHome({
             <header className="px-5 pt-4">
                 <div className="flex items-center gap-1">
                     <h1 className="font-display text-xl text-neutral-900">챌린짓 도감</h1>
-                    <HelpIcon label="챌린짓 도감" onClick={() => setHelpOpen(true)} />
+                    <HelpIcon label="챌린짓 도감" onClick={guide.replay} />
                 </div>
-                <TabBar
-                    label="챌린짓 보기 전환"
-                    variant="segmented"
-                    items={MAIN_TABS}
-                    value={mainTab}
-                    onChange={onMainTabChange}
-                    className="mt-3"
-                />
+                <div data-tour="challengit-tabs">
+                    <TabBar
+                        label="챌린짓 보기 전환"
+                        variant="segmented"
+                        items={MAIN_TABS}
+                        value={mainTab}
+                        onChange={onMainTabChange}
+                        className="mt-3"
+                    />
+                </div>
             </header>
             <main className="no-scrollbar flex-1 overflow-y-auto px-5 pb-5 pt-4">
                 {mainTab === 'mine' ? (
@@ -153,6 +147,7 @@ export function ChallengeCountHome({
                                 onChange={setMyTab}
                             />
                             <button
+                                data-tour="challengit-create"
                                 onClick={onCreateChallenge}
                                 className="ml-auto flex min-h-touch items-center gap-1 rounded-full bg-watermelon-500 px-4 text-xs font-bold text-content-on-action"
                             >
@@ -185,12 +180,14 @@ export function ChallengeCountHome({
                 ) : (
                     <>
                         {/* 공통 SearchBar를 쓴다 — 이 파일에 있던 SearchBox는 같은 것을 다시 그린 것이었다 */}
-                        <SearchBar
-                            label="챌린짓 이름 검색"
-                            placeholder="챌린짓 이름으로 검색해보세요"
-                            value={exploreQuery}
-                            onChange={onExploreQueryChange}
-                        />
+                        <div data-tour="challengit-search">
+                            <SearchBar
+                                label="챌린짓 이름 검색"
+                                placeholder="챌린짓 이름으로 검색해보세요"
+                                value={exploreQuery}
+                                onChange={onExploreQueryChange}
+                            />
+                        </div>
                         {/* 검색 중에는 상태·정렬·순위를 감춘다 — 검색 결과에는 랭킹 개념이 없다 */}
                         {!searching && (
                             <>
@@ -283,7 +280,7 @@ export function ChallengeCountHome({
                 )}
             </main>
             <BottomNav active="챌린짓" onTab={onTab} />
-            {helpOpen && <DexHelpSheet kind="challenge" onClose={() => setHelpOpen(false)} />}
+            <GuideTour guide={guide} />
         </div>
     )
 }

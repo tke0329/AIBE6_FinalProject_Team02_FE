@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeftIcon, AwardIcon, MapPinIcon, PlusIcon, SearchIcon, TrophyIcon } from 'lucide-react'
-import { Badge, BottomSheet, Button, FoodCard, ProgressBar, TabBar, Text } from '@/shared/ui'
+import { GuideTour } from '@/features/onboarding/GuideTour'
+import { useGuide } from '@/features/onboarding/useGuide'
+import { Badge, BottomSheet, Button, FoodCard, HelpIcon, ProgressBar, TabBar, Text } from '@/shared/ui'
 import { isOverlayEntry, OVERLAY_PARAM } from '@/shared/lib/backNav'
 import { ChallengeData, ChallengeTarget } from './types'
 import { ReviewSection } from './ReviewSection'
@@ -42,6 +44,8 @@ export function ChallengeDetail({
     const targets = challenge.targetRestaurants ?? []
     const completed = new Set(challenge.completedTargetIds ?? [])
     const badge = challenge.rewardBadge
+    // 목표 격자가 그려진 뒤에 켠다 — 이 화면에서 가장 핵심인 앵커라 없으면 투어가 앙상하다
+    const guide = useGuide('challengit-detail', targets.length > 0)
     /**
      * 어떤 음식의 시트를 열었는지. **파라미터는 하나다.**
      *
@@ -158,6 +162,7 @@ export function ChallengeDetail({
                     <ArrowLeftIcon size={22} />
                 </button>
                 <span className="font-display text-lg text-neutral-900">챌린짓 상세</span>
+                <HelpIcon label="챌린짓 상세" onClick={guide.replay} />
                 {joined && onLeave && (
                     <button
                         onClick={onLeave}
@@ -195,7 +200,7 @@ export function ChallengeDetail({
                         <span>지정 목표 음식 {targets.length}개</span>
                     </div>
                     {joined && (
-                        <div className="mt-3">
+                        <div data-tour="challengit-detail-progress" className="mt-3">
                             <div className="mb-1 flex justify-between text-xs text-neutral-800">
                                 <span>내 진행</span>
                                 <span>{challenge.mine ?? `나 0/${targets.length}`}</span>
@@ -209,6 +214,7 @@ export function ChallengeDetail({
                     // 눌러서 크게 볼 수 있다 — 뱃지가 이 크기로는 무엇이 그려졌는지 안 보인다
                     <button
                         type="button"
+                        data-tour="challengit-detail-badge"
                         onClick={() => setBadgeOpen(true)}
                         aria-label={`${badge.name} 보상 뱃지 크게 보기`}
                         className="no-touch-expand mt-4 flex w-full items-center gap-3 rounded-2xl border border-mint-border bg-mint-soft p-4 text-left text-mint-ink active:scale-[0.99]"
@@ -223,17 +229,19 @@ export function ChallengeDetail({
                         <SearchIcon size={17} aria-hidden className="shrink-0 opacity-60" />
                     </button>
                 )}
-                <TabBar
-                    label="챌린짓 상세 보기 전환"
-                    variant="segmented"
-                    items={(['해금 목록', '리뷰'] as DetailTab[]).map((tab) => ({
-                        id: tab,
-                        label: tab,
-                    }))}
-                    value={activeTab}
-                    onChange={setActiveTab}
-                    className="mt-4"
-                />
+                <div data-tour="challengit-detail-tabs">
+                    <TabBar
+                        label="챌린짓 상세 보기 전환"
+                        variant="segmented"
+                        items={(['해금 목록', '리뷰'] as DetailTab[]).map((tab) => ({
+                            id: tab,
+                            label: tab,
+                        }))}
+                        value={activeTab}
+                        onChange={setActiveTab}
+                        className="mt-4"
+                    />
+                </div>
                 {activeTab === '해금 목록' && (
                     <section className="mt-4">
                         <div className="mb-3 flex items-center justify-between">
@@ -244,7 +252,7 @@ export function ChallengeDetail({
                         </div>
                         {targets.length ? (
                             <div className="grid grid-cols-[repeat(auto-fill,minmax(104px,1fr))] gap-3">
-                                {targets.map((target) => {
+                                {targets.map((target, index) => {
                                     const unlocked = isUnlocked(target.id)
                                     // 여는 주소는 하나다. 해금됨 → 내 기록 / 미해금 → 미리보기는 데이터가 가른다
                                     return (
@@ -252,6 +260,8 @@ export function ChallengeDetail({
                                         // 클릭을 받으려고 덮어 두던 div 두 겹이 필요 없어졌다
                                         <FoodCard
                                             key={target.id}
+                                            // 첫 칸만 짚는다 — 격자가 다 같은 모양이라 하나면 충분
+                                            dataTour={index === 0 ? 'challengit-detail-target' : undefined}
                                             name={target.name}
                                             store={target.storeName ?? target.placeName ?? undefined}
                                             illustrationUrl={
@@ -291,7 +301,7 @@ export function ChallengeDetail({
                     </section>
                 )}
             </main>
-            <div className="border-t border-neutral-200 bg-white px-5 py-4">
+            <div data-tour="challengit-detail-cta" className="border-t border-neutral-200 bg-white px-5 py-4">
                 {ended ? (
                     <p className="flex h-cta w-full items-center justify-center rounded-full bg-neutral-100 font-display text-base text-neutral-400">
                         종료된 챌린짓예요
@@ -307,6 +317,9 @@ export function ChallengeDetail({
                     </Button>
                 )}
             </div>
+
+            <GuideTour guide={guide} />
+
             {/*
                 손으로 만든 모달 두 개를 공통 BottomSheet로 바꿨다.
                 포커스 가두기·Escape·손잡이 끌어 닫기가 이 앱의 모든 시트와 같아진다 —

@@ -9,6 +9,12 @@ export interface Me {
     nickname: string | null
     email: string | null
     role: 'USER' | 'ADMIN'
+    /**
+     * 이미 본 도메인 온보딩 키. me에 실려 오는 이유는 **추가 요청을 없애기 위해서다** —
+     * 따로 받으면 그 응답 전에 화면이 먼저 그려져 이미 본 투어가 잠깐 떴다 사라진다.
+     * 구버전 BE 응답에는 없을 수 있어 optional
+     */
+    seenGuides?: string[]
 }
 
 interface AuthContextValue {

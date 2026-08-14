@@ -34,8 +34,11 @@ export type { NavTab } from './molecules/BottomNav'
 export { BottomSheet } from './molecules/BottomSheet'
 export { Calendar } from './molecules/Calendar'
 export { Card } from './molecules/Card'
+/* 실제 화면 위에 스포트라이트를 얹어 단계별로 짚는 투어.
+   도감 3종의 첫 진입 온보딩과 `?` 다시보기가 공유한다 */
+export { CoachTour } from './molecules/CoachTour'
+export type { TourStep } from './molecules/CoachTour'
 export { Dialog } from './molecules/Dialog'
-export { DexHelpSheet } from './molecules/DexHelpSheet'
 export { EmptyState } from './molecules/EmptyState'
 export { FoodCard } from './molecules/FoodCard'
 /* 사진을 끌어 옮기고 확대해 정사각으로 자르는 창.

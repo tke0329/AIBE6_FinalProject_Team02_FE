@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { ChevronRightIcon, KeyRoundIcon, PlusIcon, UsersIcon, BookMarkedIcon } from 'lucide-react'
-import { BottomNav, NavTab } from '@/shared/ui'
+import { BottomNav, HelpIcon, NavTab } from '@/shared/ui'
+import { GuideTour } from '@/features/onboarding/GuideTour'
+import { useGuide } from '@/features/onboarding/useGuide'
 import { MadeDexCodeSheet } from './MadeDexCodeSheet'
 import { DEFAULT_MADE_DEX_COVER, MadeDexId, MadeDexSummary } from './types'
 
@@ -16,16 +18,22 @@ interface Props {
 
 export function MadeDexList({ dexes, loading, error, onCreateNew, onOpenDex, onEnterCode, onTab }: Props) {
     const [joinOpen, setJoinOpen] = useState(false)
+    // 목록이 그려진 뒤에 켠다 — 로딩 중이면 짚을 요소가 없어 투어가 헛돈다
+    const guide = useGuide('logit-list', !loading)
 
     return (
         <div className="relative flex h-full flex-col bg-surface-app">
             <header className="flex items-start justify-between gap-3 px-5 pb-2 pt-4">
                 <div>
-                    <h1 className="font-display text-xl text-content-primary">로그잇</h1>
+                    <div className="flex items-center gap-1">
+                        <h1 className="font-display text-xl text-content-primary">로그잇</h1>
+                        <HelpIcon label="로그잇" onClick={guide.replay} />
+                    </div>
                     <p className="mt-1 text-sm text-content-secondary">함께 먹은 하루를 모아 보세요</p>
                 </div>
                 <button
                     type="button"
+                    data-tour="logit-join"
                     onClick={() => setJoinOpen(true)}
                     className="flex min-h-touch shrink-0 items-center gap-1.5 rounded-full border border-watermelon-400 px-4 text-sm font-bold text-content-link active:scale-[0.98]"
                 >
@@ -52,10 +60,12 @@ export function MadeDexList({ dexes, loading, error, onCreateNew, onOpenDex, onE
                     </div>
                 ) : (
                     <div className="space-y-3">
-                        {dexes.map((dex) => (
+                        {dexes.map((dex, index) => (
                             <button
                                 key={dex.id}
                                 type="button"
+                                // 첫 카드만 짚는다. 신규 유저는 카드가 없어 이 단계가 통째로 생략된다
+                                data-tour={index === 0 ? 'logit-card' : undefined}
                                 onClick={() => onOpenDex(dex.id)}
                                 className="flex w-full items-center gap-3 rounded-2xl bg-surface-card p-4 text-left shadow-card active:scale-[0.99]"
                             >
@@ -101,6 +111,7 @@ export function MadeDexList({ dexes, loading, error, onCreateNew, onOpenDex, onE
 
                 <button
                     type="button"
+                    data-tour="logit-create"
                     onClick={onCreateNew}
                     className="mt-4 flex min-h-touch w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-watermelon-400 bg-watermelon-50 py-4 text-sm font-bold text-content-link"
                 >
@@ -116,6 +127,8 @@ export function MadeDexList({ dexes, loading, error, onCreateNew, onOpenDex, onE
             <BottomNav active="제작" onTab={onTab} />
 
             {joinOpen && <MadeDexCodeSheet onSubmit={onEnterCode} onClose={() => setJoinOpen(false)} />}
+
+            <GuideTour guide={guide} />
         </div>
     )
 }

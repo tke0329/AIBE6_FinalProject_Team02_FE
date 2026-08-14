@@ -40,6 +40,8 @@ interface FoodCardProps {
     lockedName?: string
     /** 음식 이름 위에 표시할 가게/장소 이름 */
     store?: string
+    /** 온보딩 투어가 짚을 앵커. 그리드에서 첫 카드에만 붙는다 */
+    dataTour?: string
 }
 
 export function FoodCard({
@@ -53,6 +55,7 @@ export function FoodCard({
     overlay,
     lockedName = name,
     store,
+    dataTour,
 }: FoodCardProps) {
     const locked = state === 'locked'
     const [imageFailed, setImageFailed] = useState(false)
@@ -80,6 +83,7 @@ export function FoodCard({
              */
             whileTap={{ scale: 0.96 }}
             onClick={onClick}
+            data-tour={dataTour}
             aria-label={accessibleName}
             className={`relative flex w-full min-w-0 flex-col rounded-2xl ${
                 state === 'recent' ? 'ring-2 ring-edge-recent' : ''

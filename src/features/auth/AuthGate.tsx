@@ -13,10 +13,6 @@ const PUBLIC_PATHS: string[] = [ROUTES.login, ROUTES.oauthCallback, '/ui-check']
 /**
  * 앱 전역 인증 라우팅 가드
  * 퍼널 순서: 비로그인→/login, 닉네임 없음→/nickname-setup, 완료→요청 페이지
- *
- * **온보딩 단계는 없앴다.** 로그인 직후 튜토리얼을 끼워 넣으면 서비스 흐름이 끊겨
- * 어색하다는 판단(2026-08-13). 서버의 `onboardingCompleted`는 남아 있지만 화면은
- * 더 이상 읽지 않는다
  */
 export function AuthGate({ children }: { children: React.ReactNode }) {
     const router = useRouter()

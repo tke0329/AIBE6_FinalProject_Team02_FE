@@ -1,4 +1,6 @@
-import { BottomNav, DexHelpSheet, HelpIcon, NavTab } from '@/shared/ui'
+import { GuideTour } from '@/features/onboarding/GuideTour'
+import { useGuide } from '@/features/onboarding/useGuide'
+import { BottomNav, HelpIcon, NavTab } from '@/shared/ui'
 import { ArrowLeftIcon, MenuIcon, MessageSquareTextIcon, PencilIcon } from 'lucide-react'
 import { useState } from 'react'
 import { DateStrip } from './DateStrip'
@@ -29,7 +31,6 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
     const feed = useLogitFeed(dexId)
     const emptyCaption = useEmptyCaption(dexId, feed.date)
     const [dayCardOpen, setDayCardOpen] = useState(false)
-    const [helpOpen, setHelpOpen] = useState(false)
     const [slotsOpen, setSlotsOpen] = useState(false)
     const [calendarOpen, setCalendarOpen] = useState(false)
     const [captionOpen, setCaptionOpen] = useState(false)
@@ -38,6 +39,8 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
     const slots = feed.feed?.slots ?? []
     // 로그잇은 오늘을 나누는 앱이다. 지난 날은 읽기만 한다
     const canRecord = feed.today !== '' && feed.date === feed.today
+    // 끼니가 그려진 뒤에 켠다 — 로딩 중이면 짚을 요소가 없어 투어가 헛돈다
+    const guide = useGuide('logit-home', !!feed.feed)
 
     return (
         <div className="relative flex h-full flex-col bg-surface-app">
@@ -47,7 +50,7 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
                         <ArrowLeftIcon size={21} aria-hidden />
                     </button>
                     <h1 className="min-w-0 flex-1 truncate font-display text-xl text-content-primary">{title}</h1>
-                    <HelpIcon label="로그잇" onClick={() => setHelpOpen(true)} />
+                    <HelpIcon label="로그잇" onClick={guide.replay} />
                     <button
                         type="button"
                         onClick={onOpenInfo}
@@ -58,13 +61,15 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
                     </button>
                 </div>
 
-                <DateStrip
-                    date={feed.date}
-                    today={feed.today}
-                    onChange={feed.select}
-                    onOpenCalendar={() => setCalendarOpen(true)}
-                    className="pt-2"
-                />
+                <div data-tour="logit-date">
+                    <DateStrip
+                        date={feed.date}
+                        today={feed.today}
+                        onChange={feed.select}
+                        onOpenCalendar={() => setCalendarOpen(true)}
+                        className="pt-2"
+                    />
+                </div>
             </header>
 
             <main className="no-scrollbar flex-1 overflow-y-auto px-5 pb-48">
@@ -95,6 +100,7 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
                         <div className="grid grid-cols-2 gap-2 pt-3">
                             <button
                                 type="button"
+                                data-tour="logit-edit"
                                 onClick={() => setSlotsOpen(true)}
                                 className="flex min-h-touch items-center justify-center gap-1.5 rounded-full border border-edge-default px-2 text-sm font-bold text-content-secondary"
                             >
@@ -111,9 +117,11 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
                             </button>
                         </div>
 
-                        {slots.map((slot) => (
+                        {slots.map((slot, index) => (
                             <MealSlotSection
                                 key={slot.slotId}
+                                // 첫 끼니만 짚는다 — 끼니가 여럿이어도 설명은 한 번이면 된다
+                                dataTour={index === 0 ? 'logit-slot' : undefined}
                                 slot={slot}
                                 onOpen={(card) => setOpenedRecordIds(card.recordIds)}
                                 canRecord={canRecord}
@@ -138,6 +146,7 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
                 <div className="pointer-events-none absolute bottom-20 left-4 right-4 flex justify-end">
                     <button
                         type="button"
+                        data-tour="logit-daycard"
                         onClick={() => setDayCardOpen(true)}
                         className="pointer-events-auto flex min-h-touch w-1/2 items-center justify-center gap-1.5 rounded-full border border-edge-default bg-surface-card px-3 text-sm font-bold text-content-primary shadow-card active:scale-[0.98]"
                     >
@@ -161,7 +170,7 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
                 />
             )}
 
-            {helpOpen && <DexHelpSheet kind="made" onClose={() => setHelpOpen(false)} />}
+            <GuideTour guide={guide} />
 
             {slotsOpen && (
                 <SlotEditSheet madeDexId={dexId} onClose={() => setSlotsOpen(false)} onChanged={feed.reload} />
