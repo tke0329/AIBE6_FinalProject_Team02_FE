@@ -3,13 +3,16 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
+        "predev": "node scripts/build-illustration-manifest.mjs",
         "dev": "next dev",
+        "prebuild": "node scripts/build-illustration-manifest.mjs",
         "build": "next build",
         "start": "next start",
         "lint": "next lint",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
-        "build:font": "node scripts/build-font.mjs"
+        "build:font": "node scripts/build-font.mjs",
+        "build:illustrations": "node scripts/build-illustration-manifest.mjs"
     },
     "dependencies": {
         "clsx": "^2.1.1",

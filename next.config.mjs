@@ -27,6 +27,19 @@ const nextConfig = {
                 source: '/sw.js',
                 headers: [{ key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' }],
             },
+            {
+                /**
+                 * 기본도감 일러스트. `public/` 기본값은 `max-age=0`이라 방문할 때마다
+                 * 칸 수만큼 조건부 요청(304)이 왕복한다. 도감은 한 화면에 수십 칸이라
+                 * 그 왕복이 그대로 체감되므로 하루를 물려 둔다.
+                 *
+                 * 파일명에 해시가 없어서 그림을 교체하면 최대 하루까지 옛 그림이 남는다.
+                 * 급히 반영해야 하면 파일명을 바꾸고 매니페스트를 다시 구우면 된다
+                 * (`npm run build:illustrations`)
+                 */
+                source: '/illustrate/:path*',
+                headers: [{ key: 'Cache-Control', value: 'public, max-age=86400, stale-while-revalidate=604800' }],
+            },
         ]
     },
 }

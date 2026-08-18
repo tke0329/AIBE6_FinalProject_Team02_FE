@@ -51,7 +51,8 @@ export function DexDetail({
     const [touchStartY, setTouchStartY] = useState<number | null>(null)
     const [photoTouchStartX, setPhotoTouchStartX] = useState<number | null>(null)
     const [cardTouchStartX, setCardTouchStartX] = useState<number | null>(null)
-    const fallbackImage = entry.illustrationUrl ?? getLocalDexIllustrationUrl(entry)
+    // 그림이 아예 없으면 이모지를 넣는다 — 아래 렌더가 "URL이면 <Image>, 아니면 글자"로 갈린다
+    const fallbackImage = entry.illustrationUrl ?? getLocalDexIllustrationUrl(entry) ?? entry.emoji
     const currentCard = cards[cardIndex] ?? {
         photos: [fallbackImage],
         date: entry.firstDate ?? '',

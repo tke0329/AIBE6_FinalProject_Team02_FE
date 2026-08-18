@@ -17,9 +17,9 @@ import { goBackOr, pushInApp } from '@/shared/lib/backNav'
 import { ROUTES } from '@/shared/lib/routes'
 import { uploadImageToS3 } from '@/shared/lib/upload'
 import { useAppState } from '@/shared/store/AppStateProvider'
+import { Dialog } from '@/shared/ui'
 import { notFound, useParams, useRouter } from 'next/navigation'
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
-import { Dialog } from '@/shared/ui'
 
 function ddayLabel(endsAt: string) {
     const days = Math.ceil((new Date(endsAt).getTime() - Date.now()) / 86_400_000)
@@ -153,10 +153,10 @@ function ChallengeDetailPageInner() {
                     await load()
                     return { completed: res.completed }
                 }}
-                onUnlockCompleted={() => {
-                    // 위저드(리뷰 단계)까지 끝난 뒤 완주 보상 팝업
-                    if (!challenge?.completed) setShowReward(true)
-                }}
+                /*
+                 * 위저드(리뷰 단계)까지 끝난 뒤 완주 보상 팝업
+                 */
+                onUnlockCompleted={() => setShowReward(true)}
                 onRegister={() => {
                     startRegistration('challenge', challenge.id)
                     pushInApp(router, ROUTES.register)
