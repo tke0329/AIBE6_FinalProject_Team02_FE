@@ -3,7 +3,7 @@
 import { useAuth } from '@/features/auth/AuthContext'
 import { INITIAL_CHALLENGES } from '@/features/challenge/data'
 import { ChallengeData, ChallengeTarget, RewardBadge } from '@/features/challenge/types'
-import { fetchBasicDexEntries, fetchMyBasicDexEntries, markNewBadgeSeen as postNewBadgeSeen } from '@/features/dex/api'
+import { fetchMyBasicDexEntries, markNewBadgeSeen as postNewBadgeSeen } from '@/features/dex/api'
 import { MadeDexId, parseMadeDexId } from '@/features/made/types'
 import { AI_CANDIDATES, DEX_ENTRIES, DexEntry } from '@/shared/data/dex'
 import type { BadgeId } from '@/shared/ui'
@@ -106,16 +106,15 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     const { me, loading: authLoading } = useAuth()
     const userId = me?.id
 
-    // 비로그인 → 전체 목록(/basic), 로그인 → 내가 실제로 등록(해금)한 항목만
-    // collected=true인 목록(/me/basic). 등록 직후처럼 서버 상태가 바뀐 뒤에도
-    // 다시 불러 최신화할 수 있도록 콜백으로 분리해 둔다.
+    // 도감은 로그인 사용자만 조회한다(/me/basic). 비로그인은 AuthGate가 /login으로
+    // 보내므로 여기서 요청 자체를 하지 않는다 — 공개 /basic 엔드포인트는 없다.
     const refreshEntries = useCallback(async () => {
-        const fetchEntries = userId ? fetchMyBasicDexEntries : fetchBasicDexEntries
+        if (!userId) return
         try {
-            const basicEntries = await fetchEntries()
+            const basicEntries = await fetchMyBasicDexEntries()
             if (basicEntries.length > 0) setEntries(basicEntries)
         } catch {
-            // 실패하면 이전 목록(초기 진입 시엔 로컬 목업)을 그대로 유지한다.
+            // 실패하면 이전 목록을 그대로 유지한다.
         }
     }, [userId])
 

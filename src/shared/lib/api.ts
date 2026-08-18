@@ -37,27 +37,66 @@ export class ApiError extends Error {
     }
 }
 
-/** refresh 재발급 요청. 성공하면 새 쿠키가 자동으로 세팅된다. */
-async function reissue(): Promise<boolean> {
-    const res = await fetch(`${API_BASE}/api/v1/auth/reissue`, {
-        method: 'POST',
-        credentials: 'include',
-    })
-    return res.ok
+/**
+ * refresh 재발급 요청 (single-flight).
+ * access 만료 시 여러 요청이 동시에 401을 받아도 재발급은 한 번만 나가도록
+ * 진행 중인 재발급 Promise를 공유한다. (동시 재발급 → refresh 회전 경쟁 → 세션 드롭 방지)
+ */
+let reissueInFlight: Promise<boolean> | null = null
+function reissue(): Promise<boolean> {
+    if (!reissueInFlight) {
+        reissueInFlight = fetch(`${API_BASE}/api/v1/auth/reissue`, {
+            method: 'POST',
+            credentials: 'include',
+        })
+            .then((res) => res.ok)
+            .catch(() => false)
+            .finally(() => {
+                reissueInFlight = null
+            })
+    }
+    return reissueInFlight
+}
+
+// 쿠키 파싱 유틸리티 함수
+function getCsrfTokenFromCookie(): string | null {
+    if (typeof document === 'undefined') return null // SSR(서버 사이드) 방어
+
+    const value = `; ${document.cookie}`
+    // 운영(HTTPS) 환경의 __Host- 쿠키를 먼저 찾고, 없으면 로컬(HTTP) 환경의 일반 쿠키를 찾는다.
+    let parts = value.split(`; __Host-XSRF-TOKEN=`)
+    if (parts.length !== 2) {
+        parts = value.split(`; XSRF-TOKEN=`)
+    }
+
+    if (parts.length === 2) {
+        return decodeURIComponent(parts.pop()?.split(';').shift() || '')
+    }
+    return null
 }
 
 /**
  * 공용 요청 함수.
- * @param path  "/api/v1/..." 형태의 경로
- * @param init  fetch 옵션 (method, body 등)
  */
 export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
+    // GET 요청이 아닐 경우에만 CSRF 토큰을 헤더에 추가
+    const method = init.method?.toUpperCase() || 'GET'
+    const csrfHeaders: Record<string, string> = {}
+
+    if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(method)) {
+        const csrfToken = getCsrfTokenFromCookie()
+        if (csrfToken) {
+            csrfHeaders['X-XSRF-TOKEN'] = csrfToken
+        }
+    }
+
     const doFetch = () =>
         fetch(`${API_BASE}${path}`, {
             ...init,
-            credentials: 'include', // 쿠키 전송 필수
+            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
+                ...csrfHeaders, // CSRF 헤더 병합
                 ...init.headers,
             },
         })
@@ -69,7 +108,12 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
         const refreshed = await reissue()
         if (refreshed) res = await doFetch()
         // 재발급 실패했거나, 재시도했는데도 401이면 인증 만료로 처리
-        if (!refreshed || res.status === 401) throw new UnauthorizedError()
+        if (!refreshed || res.status === 401) {
+            try {
+                console.warn('[auth] involuntary_logout', { path })
+            } catch {}
+            throw new UnauthorizedError()
+        }
     }
 
     const body = (await res.json()) as ApiResponse<T>

@@ -5,6 +5,18 @@ import { motion, useReducedMotion } from 'framer-motion'
 // 환경변수 없으면 로컬 BE(8080)로 폴백
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8080'
 
+const TEST_LOGIN_ENABLED = process.env.NEXT_PUBLIC_TEST_LOGIN_ENABLED === 'true'
+const TEST_LOGIN_KEY = process.env.NEXT_PUBLIC_TEST_LOGIN_KEY ?? ''
+
+const startTestLogin = async () => {
+    const url = new URL(`${API_BASE}/api/v1/auth/test-login`)
+    if (TEST_LOGIN_KEY) url.searchParams.set('key', TEST_LOGIN_KEY)
+    const res = await fetch(url.toString(), { method: 'POST', credentials: 'include' })
+    if (res.ok)
+        window.location.href = '/oauth/callback' // 소셜과 동일한 로그인 후 흐름 재사용
+    else window.location.reload()
+}
+
 /** 네이버는 뺐다 (2026-08-13). 되살리려면 여기 + PROVIDERS + BE의 OAuth2 등록이 함께 필요하다 */
 type Provider = 'google' | 'kakao'
 
@@ -180,6 +192,15 @@ export function LoginPage({ errorMessage }: { errorMessage?: string }) {
                             {label}
                         </motion.button>
                     ))}
+                    {TEST_LOGIN_ENABLED && (
+                        <button
+                            type="button"
+                            onClick={startTestLogin}
+                            className="flex items-center justify-center h-12 w-full rounded-xl text-sm font-bold bg-neutral-900 text-white shadow-card transition-colors duration-200 outline-none hover:bg-neutral-800"
+                        >
+                            테스트 계정으로 로그인
+                        </button>
+                    )}
                 </div>
 
                 <p className="text-xs text-neutral-400 text-center leading-normal max-w-xs px-4">
