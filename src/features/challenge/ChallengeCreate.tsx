@@ -29,7 +29,7 @@ interface Props {
     onCustomBadge: () => void
 }
 
-const MIN_TARGETS = 5
+const MIN_TARGETS = 2
 /** 제목·소개글 길이 제한. 예전에는 소개글에만 있어서 제목이 무한히 길어질 수 있었다 */
 const TITLE_MAX = 30
 const DESC_MAX = 200
@@ -360,7 +360,7 @@ export function ChallengeCreate({ createdThisMonth, customBadge, onBack, onCreat
                                 <h1 className="mt-1 font-display text-2xl leading-snug text-neutral-900">
                                     어떤 음식을 모을까요?
                                 </h1>
-                                <p className="mt-2 text-sm text-neutral-400">최소 5개 · 가게명·음식·주소·사진</p>
+                                <p className="mt-2 text-sm text-neutral-400">최소 2개 · 가게명·음식·주소·사진</p>
 
                                 <div className="mt-5 rounded-2xl border border-neutral-100 bg-white p-4 shadow-soft">
                                     <div className="flex gap-3">

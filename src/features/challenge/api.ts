@@ -125,6 +125,7 @@ export interface ChallengeDetailData {
     participantCount: number
     joined: boolean
     completed: boolean
+    owner: boolean // 내가 개설자인지(삭제/종료 노출)
     imageUrl: string | null // 대표 이미지(프리사인 URL)
     slots: ChallengeSlotDetail[]
 }
@@ -132,6 +133,16 @@ export interface ChallengeDetailData {
 /** 챌린지 상세 */
 export function fetchChallengeDetail(id: string | number) {
     return apiFetch<ChallengeDetailData>(`/api/v1/challenges/${id}`)
+}
+
+/** 챌린지 삭제 (개설자) */
+export function deleteChallenge(id: string | number) {
+    return apiFetch<void>(`/api/v1/challenges/${id}`, { method: 'DELETE' })
+}
+
+/** 챌린지 수동 종료 (개설자) */
+export function closeChallenge(id: string | number) {
+    return apiFetch<void>(`/api/v1/challenges/${id}/close`, { method: 'POST' })
 }
 
 /** 챌린지 참여 */
