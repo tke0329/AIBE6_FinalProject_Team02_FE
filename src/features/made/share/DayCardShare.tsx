@@ -6,14 +6,20 @@ interface Props {
     dayCard: LogitDayCard
     /** 로그잇 이름. 카드 헤더에 날짜와 함께 올라간다 */
     title: string
+    /** 그 끼니에 담지 않은 사람의 칸에 뜰 글. 바뀌면 필름을 다시 굽는다 */
+    emptyCaption: string
 }
 
 /**
  * 공유용 하루 필름 (9:16)
  * 끼니가 차례로 전개되고, 재생이 끝나면 같은 그림을 MP4로 굽는다
  */
-export function DayCardShare({ dayCard, title }: Props) {
-    const { canvasRef, status, video, progress, shareFile, replay, width, height } = useDayCardFilm(dayCard, title)
+export function DayCardShare({ dayCard, title, emptyCaption }: Props) {
+    const { canvasRef, status, video, progress, shareFile, replay, width, height } = useDayCardFilm(
+        dayCard,
+        title,
+        emptyCaption,
+    )
 
     // 굽는 동안 눌리면 안 된다. iOS는 제스처 컨텍스트가 끊기면 공유를 거절하므로
     // 여기서 인코딩을 기다릴 수 없다 — 준비된 파일만 곧바로 넘긴다

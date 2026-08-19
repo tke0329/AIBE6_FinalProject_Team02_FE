@@ -1,4 +1,4 @@
-import { RotateCwIcon, RefrigeratorIcon } from 'lucide-react'
+import { ChevronRightIcon, RefrigeratorIcon } from 'lucide-react'
 import { LogitAvatar } from './LogitAvatar'
 import { DayCardShare } from './share/DayCardShare'
 import type { LogitDayCard } from './logitTypes'
@@ -14,17 +14,20 @@ interface Props {
     title: string
     /** 오늘이 아니면 기록을 받지 않는다 */
     canRecord: boolean
+    /** 담지 않은 사람의 칸에 뜰 글 (하루 단위) */
+    emptyCaption: string
     onRecord: () => void
+    onOpenProfile: (userId: number, me: boolean) => void
 }
 
 /** 냉장고 — 위쪽은 공유용 카드, 아래쪽은 카드에 담기지 않는 담긴 사람 */
-export function DayCardView({ madeDexId, date, title, canRecord, onRecord }: Props) {
+export function DayCardView({ madeDexId, date, title, canRecord, emptyCaption, onRecord, onOpenProfile }: Props) {
     const { dayCard, loading, error, reload } = useLogitDayCard(madeDexId, date)
     const hasItems = dayCard?.slots.some((slot) => slot.items.length > 0) ?? false
 
     return (
         <>
-            {dayCard && hasItems && <DayCardShare dayCard={dayCard} title={title} />}
+            {dayCard && hasItems && <DayCardShare dayCard={dayCard} title={title} emptyCaption={emptyCaption} />}
             <DayCardContent
                 dayCard={dayCard}
                 loading={loading}
@@ -32,6 +35,7 @@ export function DayCardView({ madeDexId, date, title, canRecord, onRecord }: Pro
                 canRecord={canRecord}
                 onReload={reload}
                 onRecord={onRecord}
+                onOpenProfile={onOpenProfile}
             />
         </>
     )
@@ -44,10 +48,19 @@ interface ContentProps {
     canRecord: boolean
     onReload: () => void
     onRecord: () => void
+    onOpenProfile: (userId: number, me: boolean) => void
 }
 
 /** 데이터와 분리한 냉장고 화면 */
-export function DayCardContent({ dayCard, loading, error, canRecord, onReload, onRecord }: ContentProps) {
+export function DayCardContent({
+    dayCard,
+    loading,
+    error,
+    canRecord,
+    onReload,
+    onRecord,
+    onOpenProfile,
+}: ContentProps) {
     if (error) {
         return (
             <div className="pt-10 text-center">
@@ -100,31 +113,38 @@ export function DayCardContent({ dayCard, loading, error, canRecord, onReload, o
     // 끼니 층·통계는 위의 공유 카드가 이미 보여 준다. 여기서는 카드에 없는 것만 남긴다
     return (
         <section className="pt-4">
-            <div className="flex items-center justify-between pb-2">
-                <h3 className="text-sm font-bold text-content-secondary">담긴 사람</h3>
-                <button
-                    type="button"
-                    onClick={onReload}
-                    aria-label="냉장고 새로고침"
-                    className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-card text-content-secondary shadow-card"
-                >
-                    <RotateCwIcon size={16} aria-hidden className={loading ? 'animate-spin' : ''} />
-                </button>
-            </div>
+            {/* 새로고침 단추를 두지 않는다 — "담긴 사람" 옆에 있어서 그 목록만 다시 받는 것처럼
+                보이는데 실제로는 냉장고 전체를 다시 받았다. 실패 복구는 아래 오류 화면의
+                "다시 시도"가 이미 맡고 있고, 남의 기록이 늘었는지는 날짜를 옮겼다 오면 갱신된다 */}
+            <h3 className="pb-2 text-sm font-bold text-content-secondary">담긴 사람</h3>
 
             <ul className="space-y-2">
                 {dayCard.participants.map((person) => (
-                    <li key={person.userId} className="flex items-center gap-3">
-                        <LogitAvatar name={authorName(person)} imageUrl={person.profileImageUrl} size="md" />
-                        <div className="min-w-0 flex-1">
-                            <p className="flex items-center gap-1 text-sm font-bold text-content-primary">
-                                <span className="truncate">{authorName(person)}</span>
-                                {person.me && <span className="text-xs text-content-link">나</span>}
-                            </p>
-                            <p className="truncate text-xs text-content-muted">
-                                {person.count}개{person.captions.length > 0 && ` · ${person.captions.join(', ')}`}
-                            </p>
-                        </div>
+                    <li key={person.userId}>
+                        {/* 줄 전체를 눌러 그 사람 프로필로 간다 — 동그라미만 표적이면 너무 작다 */}
+                        <button
+                            type="button"
+                            onClick={() => onOpenProfile(person.userId, person.me)}
+                            aria-label={person.me ? '내 프로필 보기' : `${authorName(person)}님의 프로필 보기`}
+                            className="no-touch-expand flex w-full items-center gap-3 rounded-2xl px-1 py-1 text-left active:scale-[0.99]"
+                        >
+                            <LogitAvatar
+                                name={authorName(person)}
+                                imageUrl={person.profileImageUrl}
+                                userId={person.userId}
+                                size="md"
+                            />
+                            <span className="min-w-0 flex-1">
+                                <span className="flex items-center gap-1 text-sm font-bold text-content-primary">
+                                    <span className="truncate">{authorName(person)}</span>
+                                    {person.me && <span className="text-xs text-content-link">나</span>}
+                                </span>
+                                <span className="block truncate text-xs text-content-muted">
+                                    {person.count}장{person.captions.length > 0 && ` · ${person.captions.join(', ')}`}
+                                </span>
+                            </span>
+                            <ChevronRightIcon size={16} aria-hidden className="shrink-0 text-content-muted" />
+                        </button>
                     </li>
                 ))}
             </ul>

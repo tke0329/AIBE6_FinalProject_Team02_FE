@@ -34,13 +34,24 @@ export type { NavTab } from './molecules/BottomNav'
 export { BottomSheet } from './molecules/BottomSheet'
 export { Calendar } from './molecules/Calendar'
 export { Card } from './molecules/Card'
+/* 실제 화면 위에 스포트라이트를 얹어 단계별로 짚는 투어.
+   도감 3종의 첫 진입 온보딩과 `?` 다시보기가 공유한다 */
+export { CoachTour } from './molecules/CoachTour'
+export type { TourStep } from './molecules/CoachTour'
 export { Dialog } from './molecules/Dialog'
-export { DexHelpSheet } from './molecules/DexHelpSheet'
 export { EmptyState } from './molecules/EmptyState'
 export { FoodCard } from './molecules/FoodCard'
+/* 사진을 끌어 옮기고 확대해 정사각으로 자르는 창.
+   프로필·챌린짓 대표·로그잇 표지·커스텀 뱃지가 전부 이걸 쓴다 — 자르는 규칙이
+   화면마다 달라지면 사용자가 매번 다시 배워야 한다 */
+export { ImageCropper } from './molecules/ImageCropper'
+export type { ImageCropperHandle } from './molecules/ImageCropper'
 export { LoadingView } from './molecules/LoadingView'
 export { TabBar } from './molecules/TabBar'
 export type { TabItem } from './molecules/TabBar'
+/* 여러 단계로 만드는 화면(로그잇 개설·챌린짓 개설)이 같은 머리글을 쓴다.
+   단계 전환 상수는 배럴이 아니라 shared/lib/wizardMotion 에 있다 — 이유는 그 파일에 적었다 */
+export { WizardHeader } from './molecules/WizardHeader'
 export type { LoadingSceneName } from './molecules/loadingScenes'
 
 /* --- 피드백 --- */

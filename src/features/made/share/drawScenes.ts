@@ -1,4 +1,4 @@
-import { clamp, drawCountBadge, drawCover, drawStackLayer, roundRectPath, truncate } from './drawPrimitives'
+import { clamp, drawCountBadge, drawCover, drawStackLayer, roundRectPath, truncate, wrapLines } from './drawPrimitives'
 import type { BitmapMap } from './loadBitmaps'
 import {
     CARD_HEIGHT,
@@ -32,8 +32,20 @@ import {
 import type { FilmFrame } from './shareTimeline'
 import type { DayCardFilmLayout, FilmGrid, SlotCell, SlotScene } from './slotSceneLayout'
 
-/** 그 끼니에 담지 않았음을 드러내는 문구 */
+/** 빈 칸 문구가 비어 있을 때의 마지막 대비. 화면에서는 useEmptyCaption이 기본값을 보장한다 */
 const EMPTY_LABEL = '🍚'
+
+/**
+ * 빈 칸 문구 — 칸 크기에 대한 글자 크기, 좌우 여백, 접는 줄 수.
+ *
+ * 0.09에서 **0.13으로 키웠다.** 칸이 195~300px이라 예전 값이면 18~27px이었는데,
+ * 720px 카드를 폰 화면으로 줄여 보면 그 크기가 뭉개져 안 읽혔다. 이제 25~39px이다.
+ *
+ * 20자가 들어와도 넘치지 않는다 — 25px에서 한 줄에 11자쯤 들어가고 세 줄까지 접는다
+ */
+const EMPTY_TEXT_RATIO = 0.13
+const EMPTY_TEXT_PADDING = 14
+const EMPTY_TEXT_MAX_LINES = 3
 
 function lerp(from: number, to: number, amount: number): number {
     return from + (to - from) * amount
@@ -49,7 +61,7 @@ function easeOutCubic(t: number): number {
     return 1 - Math.pow(1 - t, 3)
 }
 
-/** 냉장고 안. 크림이 아니라 차가운 회백색이라 문을 열 때 대비가 생긴다 */
+/** 냉장고 안. 따뜻한 크림색 — 문(연한 수박색)보다 밝아서 열릴 때 대비가 생긴다 */
 function drawInterior(ctx: CanvasRenderingContext2D, door: number): void {
     ctx.clearRect(0, 0, CARD_WIDTH, CARD_HEIGHT)
     ctx.fillStyle = COLOR_INNER
@@ -88,11 +100,11 @@ function drawHeader(ctx: CanvasRenderingContext2D, layout: DayCardFilmLayout): v
     ctx.textAlign = 'left'
     ctx.textBaseline = 'top'
 
-    ctx.font = displayFont(46)
+    ctx.font = displayFont(52)
     ctx.fillStyle = COLOR.title
     ctx.fillText(layout.dateLabel, PADDING, 44)
 
-    ctx.font = sansFont(26, 700)
+    ctx.font = sansFont(30, 700)
     ctx.fillStyle = COLOR.muted
     ctx.fillText(truncate(ctx, layout.title, CARD_WIDTH - PADDING * 2), PADDING, 104)
 }
@@ -119,18 +131,36 @@ function drawShelfBoards(ctx: CanvasRenderingContext2D, grid: FilmGrid): void {
     })
 }
 
-/** 담지 않은 사람의 칸. 어둡게 남겨 누가 걸렀는지 드러낸다 */
-function drawEmptyCell(ctx: CanvasRenderingContext2D, cell: SlotCell): void {
+/**
+ * 담지 않은 사람의 칸. 어둡게 남겨 누가 걸렀는지 드러낸다.
+ *
+ * 예전에는 밥 이모지(🍚) 하나였다. 이제 그 자리에 **하루마다 정할 수 있는 문구**가
+ * 온다 (`useEmptyCaption`). 글이 되었으니 크기와 줄바꿈을 다시 잡아야 한다.
+ *
+ *   - 이모지는 칸의 0.34배로 크게 먹여야 알아봤지만, 글은 그 크기로는 두 글자도 안 들어간다
+ *   - 20자까지 오므로 세 줄까지 접는다. 칸이 195~300px이라 이 안에서 읽힌다
+ *   - **굵게 그린다.** 어두운 칸 위에서 얇은 획은 뭉개진다. 이 글꼴은 굵기가 하나라
+ *     700은 합성 볼드인데, 25px 이상에서는 획이 두꺼워지는 쪽으로만 작용한다
+ */
+function drawEmptyCell(ctx: CanvasRenderingContext2D, cell: SlotCell, caption: string): void {
     ctx.fillStyle = COLOR_EMPTY_CELL
     roundRectPath(ctx, cell.x, cell.y, cell.size, cell.size, CELL_RADIUS)
     ctx.fill()
 
-    // 이모지 한 글자라 칸 크기를 크게 먹여야 알아볼 수 있다. 글자 라벨 기준(0.11)이면 점으로 보인다
+    const inner = cell.size - EMPTY_TEXT_PADDING * 2
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
-    ctx.font = sansFont(clamp(cell.size * 0.34, 24, 96))
+    ctx.font = sansFont(clamp(cell.size * EMPTY_TEXT_RATIO, 22, 40), 700)
     ctx.fillStyle = COLOR_EMPTY_TEXT
-    ctx.fillText(truncate(ctx, EMPTY_LABEL, cell.size - 16), cell.x + cell.size / 2, cell.y + cell.size / 2)
+
+    const lines = wrapLines(ctx, caption || EMPTY_LABEL, inner, EMPTY_TEXT_MAX_LINES)
+    // 글자 크기와 같은 비율로 늘려야 두 줄이 붙어 보이지 않는다
+    const step = clamp(cell.size * EMPTY_TEXT_RATIO * 1.35, 28, 54)
+    // 줄 묶음을 칸 가운데에 맞춘다. 위에서부터 쌓으면 한 줄일 때 위로 붙는다
+    const top = cell.y + cell.size / 2 - ((lines.length - 1) * step) / 2
+    lines.forEach((line, row) => {
+        ctx.fillText(line, cell.x + cell.size / 2, top + row * step)
+    })
 }
 
 /** 착지한 칸. 대표가 위에 남고 나머지는 뒤에 겹친 카드로만 표현된다 */
@@ -163,7 +193,7 @@ function drawLandedCell(ctx: CanvasRenderingContext2D, cell: SlotCell, bitmaps: 
 function drawCellName(ctx: CanvasRenderingContext2D, cell: SlotCell, hasPhoto: boolean): void {
     ctx.textAlign = 'center'
     ctx.textBaseline = 'top'
-    ctx.font = sansFont(clamp(SCENE_NAME_HEIGHT * 0.62, 13, 19))
+    ctx.font = sansFont(clamp(SCENE_NAME_HEIGHT * 0.72, 16, 24), 700)
     ctx.fillStyle = hasPhoto ? COLOR.body : COLOR.muted
     ctx.fillText(
         truncate(ctx, cell.author, cell.size),
@@ -205,16 +235,22 @@ function drawFlyingCell(
 }
 
 /** 한 끼니의 내용물. 냉장고 자체(내부·선반·헤더)는 바깥에서 이미 그려져 있다 */
-function drawSlotScene(ctx: CanvasRenderingContext2D, scene: SlotScene, bitmaps: BitmapMap, frame: FilmFrame): void {
+function drawSlotScene(
+    ctx: CanvasRenderingContext2D,
+    scene: SlotScene,
+    bitmaps: BitmapMap,
+    frame: FilmFrame,
+    emptyCaption: string,
+): void {
     ctx.textAlign = 'left'
     ctx.textBaseline = 'middle'
-    ctx.font = displayFont(34)
+    ctx.font = displayFont(42)
     ctx.fillStyle = COLOR.body
     ctx.fillText(scene.name, PADDING, SCENE_HEADER_HEIGHT + SCENE_LABEL_HEIGHT / 2)
 
     scene.cells.forEach((cell, index) => {
         if (frame.landed.has(index)) drawLandedCell(ctx, cell, bitmaps)
-        else drawEmptyCell(ctx, cell)
+        else drawEmptyCell(ctx, cell, emptyCaption)
         drawCellName(ctx, cell, cell.photo !== null)
     })
 
@@ -276,15 +312,78 @@ function drawDoorPanel(
     }
 }
 
-/** 양쪽 문. door=0이면 닫힘, 1이면 활짝 */
+/**
+ * 문이 열릴 때 안쪽에 드리우는 그림자. 문짝이 그냥 사라지는 것처럼 보이지 않게 한다.
+ *
+ * 반쯤 열렸을 때 가장 진하다 — 닫혀 있으면 안이 안 보이고, 활짝 열리면 문짝이
+ * 빛을 가리지 않는다. `sin(π·door)`가 그 모양이다
+ */
+function drawDoorCastShadow(ctx: CanvasRenderingContext2D, door: number): void {
+    if (door <= 0 || door >= 1) return
+
+    const reach = 120
+    const alpha = 0.26 * Math.sin(door * Math.PI)
+
+    ctx.save()
+    ctx.globalAlpha = alpha
+    for (const side of ['left', 'right'] as const) {
+        const from = side === 'left' ? 0 : CARD_WIDTH
+        const to = side === 'left' ? reach : CARD_WIDTH - reach
+        const shade = ctx.createLinearGradient(from, 0, to, 0)
+        shade.addColorStop(0, COLOR_DOOR_EDGE)
+        shade.addColorStop(1, 'rgba(0,0,0,0)')
+        ctx.fillStyle = shade
+        ctx.fillRect(Math.min(from, to), 0, reach, CARD_HEIGHT)
+    }
+    ctx.restore()
+}
+
+/**
+ * 돌아가는 문짝의 자유 모서리. 판의 두께가 빛을 받는 자리다.
+ * 이 한 줄이 있어야 문이 "면"이 아니라 "판"으로 보인다
+ */
+function drawDoorLip(ctx: CanvasRenderingContext2D, edgeX: number, door: number): void {
+    if (door <= 0.04 || door >= 0.98) return
+    ctx.save()
+    // 많이 젖혀질수록 두께가 정면으로 보여 두꺼워진다
+    ctx.globalAlpha = 0.85
+    ctx.fillStyle = COLOR_HANDLE
+    ctx.fillRect(edgeX - 2, 0, clamp(door * 9, 2, 8), CARD_HEIGHT)
+    ctx.restore()
+}
+
+/**
+ * 양쪽 문. door=0이면 닫힘, 1이면 활짝.
+ *
+ * ## 엘리베이터처럼 보였던 이유
+ *
+ * 예전에는 두 짝이 **바깥으로 밀려나면서**(shift) 폭이 **직선으로** 줄었다.
+ * 그 둘이 미끄럼문의 신호다 — 미끄러지는 문은 옆으로 이동하고, 여닫이문은
+ * 제자리에서 돌아간다.
+ *
+ * ## 바꾼 것
+ *
+ *   1. **경첩(바깥 모서리)을 고정한다.** 옆으로 밀지 않는다. 자유 모서리만 쓸려 나간다
+ *   2. **폭을 `cos`으로 줄인다.** 축을 중심으로 돌아가는 면의 투영 폭이 `cos θ`다.
+ *      직선이면 등속으로 미끄러지고, `cos`이면 처음엔 더디게 열리다 확 젖혀진다 —
+ *      손잡이를 당겼을 때 나는 그 느낌이다
+ *   3. 자유 모서리에 **판 두께**(`drawDoorLip`)와 안쪽 **그림자**를 얹는다
+ *
+ * 진짜 원근(사다리꼴)은 캔버스 2D로 한 번에 못 그린다. 스캔라인마다 나눠 그리면
+ * 되지만 프레임마다 도는 경로라 비용이 크다. 위 셋으로 충분히 여닫이로 읽힌다
+ */
 function drawDoors(ctx: CanvasRenderingContext2D, door: number, withHandles: boolean): void {
     if (door >= 1) return
+
     const half = CARD_WIDTH / 2
-    // 밀려나면서 좁아진다 — 2D 근사
-    const shift = half * 0.35 * door
-    const width = half * (1 - door * 0.65)
-    drawDoorPanel(ctx, -shift, width, 'left', withHandles)
-    drawDoorPanel(ctx, CARD_WIDTH - width + shift, width, 'right', withHandles)
+    const width = half * Math.cos(door * (Math.PI / 2))
+
+    drawDoorPanel(ctx, 0, width, 'left', withHandles)
+    drawDoorPanel(ctx, CARD_WIDTH - width, width, 'right', withHandles)
+
+    drawDoorLip(ctx, width, door)
+    drawDoorLip(ctx, CARD_WIDTH - width, door)
+    drawDoorCastShadow(ctx, door)
 }
 
 /** 닫힌 문에 붙은 메모지. 날짜와 로그잇 이름이 여기 올라간다 */
@@ -311,11 +410,11 @@ function drawDoorMemo(ctx: CanvasRenderingContext2D, layout: DayCardFilmLayout, 
 
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
-    ctx.font = displayFont(46)
+    ctx.font = displayFont(52)
     ctx.fillStyle = COLOR.title
     ctx.fillText(layout.dateLabel, 0, -24)
 
-    ctx.font = sansFont(26, 700)
+    ctx.font = sansFont(30, 700)
     ctx.fillStyle = COLOR.muted
     ctx.fillText(truncate(ctx, layout.title, width - 40), 0, 30)
     ctx.restore()
@@ -410,21 +509,26 @@ function drawSummaryScene(
 
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
-        ctx.font = displayFont(40)
+        ctx.font = displayFont(46)
         ctx.fillStyle = COLOR.title
-        ctx.fillText(`${Math.round(stat.value * frame.stats)}${stat.suffix}`, x + width / 2, statTop + 40)
+        ctx.fillText(`${Math.round(stat.value * frame.stats)}${stat.suffix}`, x + width / 2, statTop + 38)
 
-        ctx.font = sansFont(19)
-        ctx.fillStyle = COLOR.muted
-        ctx.fillText(truncate(ctx, stat.label, width - 16), x + width / 2, statTop + 78)
+        /*
+         * 라벨을 19 → 24로 키우고 굵게 바꿨다. 딩궁딩굴은 x-height가 Pretendard의 74%라
+         * 예전 값이면 720px 카드를 폰에서 볼 때 뭉개져 읽히지 않았다.
+         * 이 글꼴은 굵기가 하나라 700은 합성 볼드지만, 이 크기에서는 또렷해지는 쪽이다
+         */
+        ctx.font = sansFont(24, 700)
+        ctx.fillStyle = COLOR.body
+        ctx.fillText(truncate(ctx, stat.label, width - 12), x + width / 2, statTop + 79)
     })
 
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'top'
-    // 민트 문 위에서는 주황 워드마크가 묻힌다. 짙은 글자로 둔다
-    ctx.font = displayFont(26)
-    ctx.fillStyle = COLOR.title
-    ctx.fillText('캣칫', CARD_WIDTH / 2, statTop + STAT_HEIGHT + 20)
+    /*
+     * `캣칫` 워드마크를 두지 않는다.
+     *
+     * 헤더에 이미 날짜와 로그잇 이름이 있어서 서비스 이름까지 넣으면 글자가 세 줄이 된다.
+     * 공유되는 자리라 이름을 남기고 싶었지만, 지금은 통계 아래 여백이 더 필요하다
+     */
 }
 
 /** 한 프레임. 화면 재생과 MP4 인코딩이 이 함수 하나를 공유한다 */
@@ -450,7 +554,7 @@ export function drawFilmFrame(
                 ctx.globalAlpha = 1 - frame.progress
                 ctx.translate(0, -frame.progress * 80)
             }
-            drawSlotScene(ctx, scene, bitmaps, frame)
+            drawSlotScene(ctx, scene, bitmaps, frame, layout.emptyCaption)
             ctx.restore()
         }
     }

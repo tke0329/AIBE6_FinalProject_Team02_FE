@@ -3,13 +3,17 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
+        "predev": "node scripts/build-illustration-manifest.mjs",
         "dev": "next dev",
+        "prebuild": "node scripts/build-illustration-manifest.mjs",
         "build": "next build",
         "start": "next start",
         "lint": "next lint",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
-        "build:font": "node scripts/build-font.mjs"
+        "build:font": "node scripts/build-font.mjs",
+        "test": "jest",
+        "build:illustrations": "node scripts/build-illustration-manifest.mjs"
     },
     "dependencies": {
         "clsx": "^2.1.1",
@@ -23,6 +27,7 @@
         "tailwind-merge": "^3.6.0"
     },
     "devDependencies": {
+        "@types/jest": "^30.0.0",
         "@types/node": "^20.17.0",
         "@types/react": "^18.3.12",
         "@types/react-dom": "^18.3.1",
@@ -30,6 +35,7 @@
         "eslint": "^8.57.1",
         "eslint-config-next": "^15.5.0",
         "eslint-config-prettier": "^10.1.8",
+        "jest": "^30.4.2",
         "postcss": "^8.4.49",
         "prettier": "^3.9.6",
         "subset-font": "^2.5.0",

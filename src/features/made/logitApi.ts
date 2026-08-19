@@ -1,6 +1,7 @@
 import { apiFetch } from '@/shared/lib/api'
 import type {
     DayCardCalendar,
+    LogitComment,
     LogitDayCard,
     LogitFeed,
     LogitRecordCreateRequest,
@@ -107,5 +108,54 @@ export function fetchRecord(madeDexId: MadeDexId, recordId: number): Promise<Log
 export function deleteRecord(madeDexId: MadeDexId, recordId: number): Promise<void> {
     return apiFetch<void>(`${base(madeDexId)}/records/${recordId}`, {
         method: 'DELETE',
+    })
+}
+
+export function toggleRecordLike(madeDexId: MadeDexId, recordId: number) {
+    return apiFetch<{ isLike: boolean; likeCount: number }>(`${base(madeDexId)}/records/${recordId}/like`, {
+        method: 'POST',
+    })
+}
+
+function commentsBase(madeDexId: MadeDexId, recordId: number): string {
+    return `${base(madeDexId)}/records/${recordId}/comments`
+}
+
+export function fetchRecordComments(madeDexId: MadeDexId, recordId: number): Promise<LogitComment[]> {
+    return apiFetch<LogitComment[]>(commentsBase(madeDexId, recordId))
+}
+
+export function createRecordComment(
+    madeDexId: MadeDexId,
+    recordId: number,
+    content: string,
+): Promise<{ commentId: number }> {
+    return apiFetch<{ commentId: number }>(commentsBase(madeDexId, recordId), {
+        method: 'POST',
+        body: JSON.stringify({ content }),
+    })
+}
+
+export function updateRecordComment(
+    madeDexId: MadeDexId,
+    recordId: number,
+    commentId: number,
+    content: string,
+): Promise<void> {
+    return apiFetch<void>(`${commentsBase(madeDexId, recordId)}/${commentId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ content }),
+    })
+}
+
+export function deleteRecordComment(madeDexId: MadeDexId, recordId: number, commentId: number): Promise<void> {
+    return apiFetch<void>(`${commentsBase(madeDexId, recordId)}/${commentId}`, {
+        method: 'DELETE',
+    })
+}
+
+export function toggleRecordCommentLike(madeDexId: MadeDexId, recordId: number, commentId: number) {
+    return apiFetch<{ isLike: boolean; likeCount: number }>(`${commentsBase(madeDexId, recordId)}/${commentId}/like`, {
+        method: 'POST',
     })
 }

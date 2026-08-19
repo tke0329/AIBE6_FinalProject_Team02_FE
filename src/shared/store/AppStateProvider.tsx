@@ -3,9 +3,8 @@
 import { useAuth } from '@/features/auth/AuthContext'
 import { INITIAL_CHALLENGES } from '@/features/challenge/data'
 import { ChallengeData, ChallengeTarget, RewardBadge } from '@/features/challenge/types'
-import { fetchBasicDexEntries, fetchMyBasicDexEntries, markNewBadgeSeen as postNewBadgeSeen } from '@/features/dex/api'
+import { fetchMyBasicDexEntries, markNewBadgeSeen as postNewBadgeSeen } from '@/features/dex/api'
 import { MadeDexId, parseMadeDexId } from '@/features/made/types'
-import { fetchOnboardingStatus, postOnboardingComplete } from '@/features/onboarding/api'
 import { AI_CANDIDATES, DEX_ENTRIES, DexEntry } from '@/shared/data/dex'
 import type { BadgeId } from '@/shared/ui'
 
@@ -43,10 +42,6 @@ interface AppStore {
     profilePhoto: string
     setProfilePhoto: (photo: string) => void
 
-    // 온보딩
-    onboardingSeen: boolean | null
-    completeOnboarding: () => void
-
     // 챌린지
     challenges: ChallengeData[]
     createdThisMonth: number
@@ -60,6 +55,12 @@ interface AppStore {
         targets: ChallengeTarget[]
         periodType: 'PERMANENT' | 'LIMITED'
         endsAt: string
+        /**
+         * 개설 마법사가 머물던 단계. 뱃지 커스텀 화면(/challenge/new/badge)에 갔다가
+         * **저장하지 않고 뒤로 와도** 보상 단계로 돌아오게 하려고 둔다.
+         * 예전에는 customBadge가 있는지로 추측해서, 취소하면 1단계로 튕겼다
+         */
+        step: number
     }
     setChallengeDraft: (draft: {
         title: string
@@ -67,6 +68,12 @@ interface AppStore {
         targets: ChallengeTarget[]
         periodType: 'PERMANENT' | 'LIMITED'
         endsAt: string
+        /**
+         * 개설 마법사가 머물던 단계. 뱃지 커스텀 화면(/challenge/new/badge)에 갔다가
+         * **저장하지 않고 뒤로 와도** 보상 단계로 돌아오게 하려고 둔다.
+         * 예전에는 customBadge가 있는지로 추측해서, 취소하면 1단계로 튕겼다
+         */
+        step: number
     }) => void
     resetChallengeDraft: () => void
 
@@ -95,29 +102,19 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     const [entriesLoading, setEntriesLoading] = useState(true)
     const [equippedBadge, setEquippedBadge] = useState<BadgeId>('silver-spoon')
     const [profilePhoto, setProfilePhoto] = useState('신')
-    const [onboardingSeen, setOnboardingSeen] = useState<boolean | null>(null)
-
-    // 진입 시 서버에서 온보딩 완료 여부 확인
-    // 미로그인/실패 시 온보딩 노출로 폴백
-    useEffect(() => {
-        fetchOnboardingStatus()
-            .then((status) => setOnboardingSeen(status.onboardingCompleted))
-            .catch(() => setOnboardingSeen(false))
-    }, [])
 
     const { me, loading: authLoading } = useAuth()
     const userId = me?.id
 
-    // 비로그인 → 전체 목록(/basic), 로그인 → 내가 실제로 등록(해금)한 항목만
-    // collected=true인 목록(/me/basic). 등록 직후처럼 서버 상태가 바뀐 뒤에도
-    // 다시 불러 최신화할 수 있도록 콜백으로 분리해 둔다.
+    // 도감은 로그인 사용자만 조회한다(/me/basic). 비로그인은 AuthGate가 /login으로
+    // 보내므로 여기서 요청 자체를 하지 않는다 — 공개 /basic 엔드포인트는 없다.
     const refreshEntries = useCallback(async () => {
-        const fetchEntries = userId ? fetchMyBasicDexEntries : fetchBasicDexEntries
+        if (!userId) return
         try {
-            const basicEntries = await fetchEntries()
+            const basicEntries = await fetchMyBasicDexEntries()
             if (basicEntries.length > 0) setEntries(basicEntries)
         } catch {
-            // 실패하면 이전 목록(초기 진입 시엔 로컬 목업)을 그대로 유지한다.
+            // 실패하면 이전 목록을 그대로 유지한다.
         }
     }, [userId])
 
@@ -137,7 +134,13 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         targets: ChallengeTarget[]
         periodType: 'PERMANENT' | 'LIMITED'
         endsAt: string
-    }>({ title: '', description: '', targets: [], periodType: 'PERMANENT', endsAt: '' })
+        /**
+         * 개설 마법사가 머물던 단계. 뱃지 커스텀 화면(/challenge/new/badge)에 갔다가
+         * **저장하지 않고 뒤로 와도** 보상 단계로 돌아오게 하려고 둔다.
+         * 예전에는 customBadge가 있는지로 추측해서, 취소하면 1단계로 튕겼다
+         */
+        step: number
+    }>({ title: '', description: '', targets: [], periodType: 'PERMANENT', endsAt: '', step: 0 })
     const resetChallengeDraft = useCallback(
         () =>
             setChallengeDraft({
@@ -146,6 +149,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
                 targets: [],
                 periodType: 'PERMANENT',
                 endsAt: '',
+                step: 0,
             }),
         [],
     )
@@ -279,15 +283,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
             setEquippedBadge,
             profilePhoto,
             setProfilePhoto,
-            onboardingSeen,
-            completeOnboarding: async () => {
-                setOnboardingSeen(true) // 낙관적 갱신 — UX를 막지 않음
-                try {
-                    await postOnboardingComplete()
-                } catch {
-                    // 미로그인/실패해도 화면은 진행 (서버 반영은 다음 로그인 때)
-                }
-            },
             challenges,
             createdThisMonth,
             findChallenge,
@@ -314,7 +309,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         [
             equippedBadge,
             profilePhoto,
-            onboardingSeen,
             challenges,
             createdThisMonth,
             findChallenge,

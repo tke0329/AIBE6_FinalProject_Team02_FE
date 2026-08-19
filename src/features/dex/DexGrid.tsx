@@ -1,19 +1,12 @@
+import { GuideTour } from '@/features/onboarding/GuideTour'
+import { useGuide } from '@/features/onboarding/useGuide'
 import { createReport } from '@/features/report/api'
 import { DexEntry } from '@/shared/data/dex'
 import { getLocalDexIllustrationUrl } from '@/shared/lib/dexIllustrations'
-import {
-    BottomNav,
-    DexHelpSheet,
-    FoodCard,
-    HelpIcon,
-    NavTab,
-    ProgressBar,
-    SearchBar,
-    StarRank,
-    TabBar,
-} from '@/shared/ui'
+import { BottomNav, FoodCard, HelpIcon, NavTab, ProgressBar, SearchBar, StarRank, TabBar } from '@/shared/ui'
 import { ArrowLeftIcon, ChevronDownIcon, PlusIcon } from 'lucide-react'
 import { useState } from 'react'
+import { DexLockedSheet } from './DexLockedSheet'
 import type { CategoryFilter } from './useDexFilter'
 import { useDexFilter } from './useDexFilter'
 interface DexGridProps {
@@ -22,23 +15,45 @@ interface DexGridProps {
     initialCategory?: CategoryFilter
     onBackToList: () => void
     onCategoryChange?: (category: CategoryFilter) => void
+    /** 해금된 칸을 눌렀을 때. 미해금은 시트로 뜨므로 여기 오지 않는다 */
     onOpenEntry: (id: number, category: CategoryFilter) => void
+    /**
+     * 미해금 시트를 열 칸. **URL이 들고 있다**(`?food=`) — 페이지가 정해서 내려준다.
+     * 시트를 여닫는 것이 히스토리 항목이라 뒤로가기로 닫힌다 (backNav.ts 주석)
+     */
+    lockedEntry: DexEntry | null
+    onOpenLocked: (id: number, category: CategoryFilter) => void
+    onCloseLocked: () => void
+    onRegisterFood: (entry: DexEntry) => void
     onRegister: () => void
     onTab: (tab: NavTab) => void
 }
 
 /**
- * 카드 우측 상단 스티커. New와 검토대기가 같은 자리를 쓰며 동시에 뜨지 않는다 —
- * 검토대기는 아직 안 열린 칸에만 붙기 때문이다.
+ * 카드 우측 상단 스티커 묶음.
+ *
+ * **`z-10`이 없으면 안 보인다.** FoodCard는 스티커를 사진 `div`보다 먼저 그리는데,
+ * 그 사진 `div`가 `position: relative`라 나중에 그려지는 쪽이 위로 온다 —
+ * 스티커가 사진 밑에 깔려 8px만 삐져나온 채 가려졌다.
+ *
+ * **New와 검토대기는 함께 뜰 수 있다.** 같은 칸을 두 번 등록했는데 한 번은 통과하고
+ * 한 번은 검토로 넘어간 경우다. 한 자리를 다투게 두면 New가 사라질 때 검토대기까지
+ * 같이 사라진다 — 검토는 운영진이 처리할 때까지 남아 있어야 한다. 그래서 세로로 쌓는다
  */
-function CornerSticker({ label, tone }: { label: string; tone: 'new' | 'review' }) {
+function CornerStickers({ isNew, awaitingReview }: { isNew: boolean; awaitingReview: boolean }) {
+    if (!isNew && !awaitingReview) return undefined
     return (
-        <span
-            className={`absolute -right-2 -top-2 rounded-full px-2 py-1 text-xs font-bold leading-none text-white ${
-                tone === 'new' ? 'bg-blue-500' : 'bg-content-secondary'
-            }`}
-        >
-            {label}
+        <span className="absolute -right-2 -top-2 z-10 flex flex-col items-end gap-1">
+            {isNew && (
+                <span className="rounded-full bg-blue-500 px-2 py-1 text-xs font-bold leading-none text-white">
+                    New
+                </span>
+            )}
+            {awaitingReview && (
+                <span className="rounded-full bg-content-secondary px-2 py-1 text-xs font-bold leading-none text-white">
+                    검토대기
+                </span>
+            )}
         </span>
     )
 }
@@ -54,10 +69,13 @@ export function DexGrid({
     onBackToList,
     onCategoryChange,
     onOpenEntry,
+    lockedEntry,
+    onOpenLocked,
+    onCloseLocked,
+    onRegisterFood,
     onRegister,
     onTab,
 }: DexGridProps) {
-    const [helpOpen, setHelpOpen] = useState(false)
     const [reporting, setReporting] = useState(false)
     const [reportedName, setReportedName] = useState<string | null>(null)
     const [unlockMenuOpen, setUnlockMenuOpen] = useState(false)
@@ -88,7 +106,6 @@ export function DexGrid({
         unlockTabs,
         collected,
         visibleEntries,
-        activeMeta,
         visibleCollected,
         sectionCollected,
         progress,
@@ -101,6 +118,8 @@ export function DexGrid({
     const displayPercentage = activeCategory === '전체' ? percentage : sectionPercentage
     const displayCollected = activeCategory === '전체' ? collectedIds.length : sectionCollected
     const displayTotal = activeCategory === '전체' ? entries.length : sectionTotal
+    // 카드가 그려진 뒤에 켠다 — 빈 격자면 짚을 요소가 없어 투어가 헛돈다
+    const guide = useGuide('basit-grid', visibleEntries.length > 0)
 
     return (
         <div className="relative flex h-full flex-col bg-surface-app">
@@ -115,8 +134,8 @@ export function DexGrid({
                         >
                             <ArrowLeftIcon size={19} aria-hidden />
                         </button>
-                        <h1 className="truncate font-display text-xl text-content-primary">나의 음식 도감</h1>
-                        <HelpIcon label="기본 도감" onClick={() => setHelpOpen(true)} />
+                        <h1 className="truncate font-display text-xl text-content-primary">베이짓</h1>
+                        <HelpIcon label="베이짓" onClick={guide.replay} />
                     </div>
                     <button
                         type="button"
@@ -134,17 +153,19 @@ export function DexGrid({
                             {displayCollected} / {displayTotal} · {displayPercentage}%
                         </span>
                     </div>
-                    <ProgressBar value={displayProgress} label="기본 도감 수집률" />
+                    <ProgressBar value={displayProgress} label="베이짓 수집률" />
                     <p className="mt-2 text-xs text-content-secondary">카테고리를 골라 원하는 음식만 찾아보세요</p>
                 </div>
 
-                <SearchBar
-                    label="음식 이름 검색"
-                    placeholder="음식 이름으로 검색해보세요"
-                    value={query}
-                    onChange={setQuery}
-                    className="mt-3"
-                />
+                <div data-tour="basit-search">
+                    <SearchBar
+                        label="음식 이름 검색"
+                        placeholder="음식 이름으로 검색해보세요"
+                        value={query}
+                        onChange={setQuery}
+                        className="mt-3"
+                    />
+                </div>
 
                 <TabBar
                     label="음식 카테고리"
@@ -161,6 +182,7 @@ export function DexGrid({
                 <div className="relative mt-3 flex justify-end">
                     <button
                         type="button"
+                        data-tour="basit-filter"
                         aria-haspopup="listbox"
                         aria-expanded={unlockMenuOpen}
                         onClick={() => setUnlockMenuOpen((open) => !open)}
@@ -206,10 +228,6 @@ export function DexGrid({
             <main className="no-scrollbar flex-1 overflow-y-auto px-4 pb-6 pt-4">
                 <section>
                     <div className="mb-3 flex items-center gap-2">
-                        <span
-                            aria-hidden
-                            className={`h-2 w-2 rounded-full ${activeMeta?.dotClass ?? 'bg-action-primary'}`}
-                        />
                         <h2 className="text-base font-bold text-content-primary">
                             {activeCategory === '전체' ? '전체 음식' : activeCategory}
                         </h2>
@@ -250,35 +268,43 @@ export function DexGrid({
                         </div>
                     ) : (
                         <div className="grid grid-cols-[repeat(auto-fill,minmax(104px,1fr))] gap-3">
-                            {visibleEntries.map((entry) => {
+                            {visibleEntries.map((entry, index) => {
                                 const unlocked = collected.has(entry.id)
                                 const isNew = unlocked && entry.recentlyUnlocked === true
-                                // 이미 열린 칸이면 검토대기를 알릴 이유가 없다 — 칸은 벌써 열려 있다
-                                const isAwaitingReview = !unlocked && entry.awaitingReview === true
+                                /*
+                                 * 칸이 열렸는지와 **무관하게** 붙인다.
+                                 *
+                                 * 예전에는 `!unlocked` 조건이 있었다. 같은 칸을 두 번 등록해 하나는 통과하고
+                                 * 하나는 검토로 넘어가면, 칸이 열려 있으니 검토대기가 아예 안 뜨고 New만 떴다.
+                                 * New가 24시간·또는 상세를 열어 사라지면 **검토가 진행 중이라는 사실이 통째로
+                                 * 사라진다.** 검토는 운영진이 처리할 때까지 사용자에게 남아 있어야 한다
+                                 */
+                                const isAwaitingReview = entry.awaitingReview === true
                                 return (
                                     <FoodCard
                                         key={entry.id}
+                                        // 첫 칸만 짚는다 — 격자가 다 같은 모양이라 하나면 충분
+                                        dataTour={index === 0 ? 'basit-card' : undefined}
                                         name={entry.name}
                                         emoji={entry.emoji}
                                         illustrationUrl={entry.illustrationUrl ?? getLocalDexIllustrationUrl(entry)}
                                         state={!unlocked ? 'locked' : isNew ? 'recent' : 'unlocked'}
-                                        accessibleName={
+                                        accessibleName={[
+                                            entry.name,
+                                            unlocked ? `해금됨, 별 ${entry.stars ?? 1}개` : '미해금 카드',
+                                            isNew ? '새로 해금' : null,
+                                            isAwaitingReview ? '운영진 검토 대기 중' : null,
+                                        ]
+                                            .filter(Boolean)
+                                            .join(', ')}
+                                        // 무엇이 열릴지는 **칸의 상태가 정한다** — 해금은 내 기록 상세,
+                                        // 미해금은 등록으로 이어지는 시트. 챌린짓 목표 격자와 같은 규칙이다
+                                        onClick={() =>
                                             unlocked
-                                                ? `${entry.name}, 해금됨, 별 ${entry.stars ?? 1}개${
-                                                      isNew ? ', 새로 해금' : ''
-                                                  }`
-                                                : isAwaitingReview
-                                                  ? `${entry.name}, 미해금 카드, 운영진 검토 대기 중`
-                                                  : `${entry.name}, 미해금 카드`
+                                                ? onOpenEntry(entry.id, activeCategory)
+                                                : onOpenLocked(entry.id, activeCategory)
                                         }
-                                        onClick={() => onOpenEntry(entry.id, activeCategory)}
-                                        corner={
-                                            isNew ? (
-                                                <CornerSticker label="New" tone="new" />
-                                            ) : isAwaitingReview ? (
-                                                <CornerSticker label="검토대기" tone="review" />
-                                            ) : undefined
-                                        }
+                                        corner={<CornerStickers isNew={isNew} awaitingReview={isAwaitingReview} />}
                                         footer={
                                             unlocked ? (
                                                 <div className="flex justify-center">
@@ -297,7 +323,14 @@ export function DexGrid({
             </main>
 
             <BottomNav active="기본" onTab={onTab} />
-            {helpOpen && <DexHelpSheet kind="basic" onClose={() => setHelpOpen(false)} />}
+            <GuideTour guide={guide} />
+            {lockedEntry && (
+                <DexLockedSheet
+                    entry={lockedEntry}
+                    onClose={onCloseLocked}
+                    onRegister={() => onRegisterFood(lockedEntry)}
+                />
+            )}
         </div>
     )
 }

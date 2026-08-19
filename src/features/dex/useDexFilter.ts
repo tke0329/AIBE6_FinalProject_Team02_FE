@@ -51,13 +51,12 @@ export function useDexFilter(entries: DexEntry[], collectedIds: number[], initia
             ...CATEGORY_META.map((meta) => ({
                 id: meta.category as CategoryFilter,
                 label: meta.shortLabel,
-                dotClass: meta.dotClass,
             })),
         ],
         [],
     )
 
-    const activeMeta = CATEGORY_META.find((meta) => meta.category === activeCategory)
+    // activeMeta는 색 점을 그리려고만 있었다. 점을 걷어내면서 함께 지웠다
     const visibleCollected = visibleEntries.filter((entry) => collected.has(entry.id)).length
     const sectionCollected = sectionEntries.filter((entry) => collected.has(entry.id)).length
     const sectionTotal = sectionEntries.length
@@ -75,7 +74,6 @@ export function useDexFilter(entries: DexEntry[], collectedIds: number[], initia
         unlockTabs: UNLOCK_TABS,
         collected,
         visibleEntries,
-        activeMeta,
         visibleCollected,
         sectionCollected,
         progress,

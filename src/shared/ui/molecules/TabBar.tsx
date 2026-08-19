@@ -14,8 +14,6 @@ export type TabBarVariant = 'segmented' | 'pill' | 'scroll'
 export interface TabItem<T extends string> {
     id: T
     label: string
-    /** scroll variant 전용 — 카테고리 색 점 */
-    dotClass?: string
 }
 
 interface TabBarProps<T extends string> {
@@ -75,12 +73,6 @@ export function TabBar<T extends string>({
                         onClick={() => onChange(item.id)}
                         className={tabClass(variant, active)}
                     >
-                        {item.dotClass && (
-                            <span
-                                aria-hidden
-                                className={`h-2 w-2 rounded-full ${active ? 'bg-white' : item.dotClass}`}
-                            />
-                        )}
                         {item.label}
                     </button>
                 )

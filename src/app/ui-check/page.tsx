@@ -18,6 +18,7 @@ import {
     Button,
     Card,
     Chip,
+    CoachTour,
     Dialog,
     EmptyState,
     EquippedBadge,
@@ -42,7 +43,7 @@ import {
 const TEXT_ROLES = [
     ['display', '해금! 삼겹살'],
     ['screenTitle', '나의 음식 도감'],
-    ['sectionTitle', '이번 주 챌린지'],
+    ['sectionTitle', '이번 주 챌린짓'],
     ['body', '오늘 먹은 음식을 기록하면 도감이 채워져요.'],
     ['bodyStrong', '본문 중 강조하고 싶은 문장'],
     ['secondary', '사진은 최대 5장까지 올릴 수 있어요'],
@@ -60,6 +61,7 @@ export default function UiCheckPage() {
     const [segment, setSegment] = useState<'mine' | 'explore'>('mine')
     const [picked, setPicked] = useState<string[]>(['한식'])
     const [sheetOpen, setSheetOpen] = useState(false)
+    const [tourOpen, setTourOpen] = useState(false)
 
     const toggleChip = (tag: string) =>
         setPicked((current) => (current.includes(tag) ? current.filter((t) => t !== tag) : [...current, tag]))
@@ -134,6 +136,18 @@ export default function UiCheckPage() {
                         <Avatar name="사아자" size="md" />
                         <Avatar name="차카타" size="lg" ring="ring-2 ring-edge-active" />
                     </div>
+                    <Text variant="caption" as="p">
+                        colorKey(=userId)를 주면 사람마다 색이 붙어요 (§1.6). 글자는 어느 색 위에서도 같은 색 하나로
+                        12.2:1 이상이에요
+                    </Text>
+                    <div className="flex flex-wrap items-end gap-2">
+                        {[1, 2, 3, 4, 5, 6, 7].map((userId) => (
+                            <Avatar key={userId} name={`${userId}번`} size="md" colorKey={userId} />
+                        ))}
+                    </div>
+                    <Text variant="caption" as="p">
+                        colorKey를 빼면 예전 회색이에요 — 사람이 아닌 자리에 써요
+                    </Text>
                 </section>
 
                 <section className="flex flex-col gap-3">
@@ -230,18 +244,20 @@ export default function UiCheckPage() {
                         <HelpIcon label="도움말 열기" onClick={() => setSheetOpen(true)} />
                     </div>
                     <ProgressBar value={0.4} label="수집률 40%" />
-                    <ProgressBar value={0.85} tone="lime" label="달성률 85%" />
+                    <ProgressBar value={0.85} tone="point" label="달성률 85%" />
                 </section>
 
                 <section className="flex flex-col gap-3">
                     <Text variant="sectionTitle">SearchBar · TabBar</Text>
-                    <SearchBar label="음식 검색" value={search} onChange={setSearch} placeholder="음식 이름" />
+                    <div data-tour="demo-search">
+                        <SearchBar label="음식 검색" value={search} onChange={setSearch} placeholder="음식 이름" />
+                    </div>
                     <TabBar
-                        label="챌린지 구분"
+                        label="챌린짓 구분"
                         value={segment}
                         onChange={setSegment}
                         items={[
-                            { id: 'mine', label: '내 챌린지' },
+                            { id: 'mine', label: '내 챌린짓' },
                             { id: 'explore', label: '탐색' },
                         ]}
                     />
@@ -250,7 +266,13 @@ export default function UiCheckPage() {
                 <section className="flex flex-col gap-3">
                     <Text variant="sectionTitle">FoodCard — 3열 그리드 (가장 좁은 레이아웃)</Text>
                     <div className="grid grid-cols-3 gap-3">
-                        <FoodCard name="삼겹살" emoji="🥓" state="unlocked" accessibleName="삼겹살 수집함" />
+                        <FoodCard
+                            name="삼겹살"
+                            emoji="🥓"
+                            state="unlocked"
+                            accessibleName="삼겹살 수집함"
+                            dataTour="demo-card"
+                        />
                         <FoodCard name="김치찌개" emoji="🍲" state="recent" accessibleName="김치찌개 최근 수집" />
                         <FoodCard name="???" state="locked" accessibleName="미수집 칸" />
                     </div>
@@ -270,6 +292,17 @@ export default function UiCheckPage() {
                 </section>
 
                 <section className="flex flex-col gap-2">
+                    <Text variant="sectionTitle">CoachTour — 도메인 온보딩</Text>
+                    <Button size="md" fullWidth onClick={() => setTourOpen(true)}>
+                        투어 열기
+                    </Button>
+                    <Text variant="caption" as="p">
+                        스포트라이트가 대상에 정확히 얹히는지 봐요. **데스크톱 폭에서 특히** — 오버레이 기준이 뷰포트가
+                        아니라 폰 컬럼이라 좌표를 환산하고 있어요
+                    </Text>
+                </section>
+
+                <section className="flex flex-col gap-2">
                     <Text variant="sectionTitle">Dialog</Text>
                     <Button size="md" fullWidth onClick={() => setDialog('alert')}>
                         알림
@@ -283,6 +316,19 @@ export default function UiCheckPage() {
                 </section>
             </div>
 
+            {tourOpen && (
+                <CoachTour
+                    label="갤러리 투어 예시"
+                    onClose={() => setTourOpen(false)}
+                    steps={[
+                        { title: '앵커 없는 단계', body: '가운데 카드로 떠요. 각 도감의 인트로가 이 모양이에요.' },
+                        { anchor: 'demo-card', title: '음식 칸', body: '스포트라이트가 대상에 정확히 얹혀야 해요.' },
+                        { anchor: 'demo-search', title: '검색', body: '스크롤이 필요한 대상도 화면 안으로 들어와요.' },
+                        { anchor: '없는-앵커', title: '이 단계는 안 보여요', body: 'DOM에 없는 앵커는 건너뛰어요.' },
+                    ]}
+                />
+            )}
+
             {sheetOpen && (
                 <BottomSheet title="이건 하단 시트예요" onClose={() => setSheetOpen(false)}>
                     <div className="px-5 pb-8 pt-2">
@@ -292,7 +338,7 @@ export default function UiCheckPage() {
             )}
 
             {dialog === 'alert' && (
-                <Dialog title="개설 실패" message="같은 이름의 챌린지가 이미 있어요." onClose={() => setDialog(null)} />
+                <Dialog title="개설 실패" message="같은 이름의 챌린짓이 이미 있어요." onClose={() => setDialog(null)} />
             )}
             {dialog === 'confirm' && (
                 <Dialog

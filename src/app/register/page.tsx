@@ -5,6 +5,7 @@ import { RegisterUpload } from '@/features/register/RegisterUpload'
 import { useRegisterFlow } from '@/features/register/RegisterFlowContext'
 import { useRegistrationExitHref } from '@/features/register/useRegistrationExit'
 import { useAppState, useDexState } from '@/shared/store/AppStateProvider'
+import { goBackOr, pushInApp } from '@/shared/lib/backNav'
 import { ROUTES } from '@/shared/lib/routes'
 import { Suspense, useEffect } from 'react'
 
@@ -31,8 +32,14 @@ function RegisterUploadContent() {
         <RegisterUpload
             entries={entries}
             canProceed={photosReady && selectedSlots.length > 0}
-            onBack={() => router.push(exitHref)}
-            onNext={() => router.push(ROUTES.registerAnalyze)}
+            /*
+             * ←는 **왔던 자리로 되돌아간다**(`back`). `push(exitHref)`였을 때
+             * 시작한 화면이 히스토리에 하나 더 쌓여, 뒤로가기가 등록 ↔ 그 화면을
+             * 오가는 고리가 됐다 — 앱을 벗어날 방법이 없어 보였다.
+             * 딥링크로 등록이 첫 항목일 때만 `exitHref`로 밀어 넣는다
+             */
+            onBack={() => goBackOr(router, exitHref)}
+            onNext={() => pushInApp(router, ROUTES.registerAnalyze)}
         />
     )
 }

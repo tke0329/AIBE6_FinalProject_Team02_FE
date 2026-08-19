@@ -50,8 +50,8 @@ export async function fetchBasicDexEntries(): Promise<DexEntry[]> {
                     }
                     return {
                         ...entry,
-                        illustrationUrl:
-                            item.illustrationUrl ?? local?.illustrationUrl ?? getLocalDexIllustrationUrl(entry),
+                        // 일러스트는 public에서만 — 서버가 주는 S3 URL(item.illustrationUrl)은 쓰지 않는다
+                        illustrationUrl: getLocalDexIllustrationUrl(entry),
                     }
                 }),
             )
@@ -112,7 +112,8 @@ export async function fetchMyBasicDexEntries(): Promise<DexEntry[]> {
         }
         return {
             ...entry,
-            illustrationUrl: item.illustrationUrl ?? local?.illustrationUrl ?? getLocalDexIllustrationUrl(entry),
+            // 일러스트는 public에서만 — 이유는 dexIllustrations.ts
+            illustrationUrl: getLocalDexIllustrationUrl(entry),
         }
     })
 }
@@ -149,6 +150,7 @@ export async function fetchMyBasicDexDetail(slotId: number): Promise<DexEntry> {
     }
     return {
         ...entry,
-        illustrationUrl: item.illustrationUrl ?? local?.illustrationUrl ?? getLocalDexIllustrationUrl(entry),
+        // 일러스트는 public에서만 — 이유는 dexIllustrations.ts
+        illustrationUrl: getLocalDexIllustrationUrl(entry),
     }
 }

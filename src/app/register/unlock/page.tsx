@@ -49,7 +49,13 @@ export default function RegisterUnlockPage() {
             awaitingReview={unlockResult.awaitingReview.map((slot) => slot.slotName)}
             collectedCount={unlockResult.collectedCount}
             totalSlots={unlockResult.totalSlots}
-            onGoDex={() => router.push(dexHref)}
+            /*
+             * replace — 해금 연출은 등록의 **마지막 장면**이다. push로 얹으면 도감에서
+             * 뒤로갈 때 이 화면으로 되돌아오는데, 그때는 플로우 상태가 이미 사라져
+             * (`RegisterFlowProvider`는 /register 밖으로 나가면 언마운트) 빈 등록
+             * 1단계로 튕긴다. 갈아 끼우면 도감 뒤가 등록 앞 단계로 이어진다
+             */
+            onGoDex={() => router.replace(dexHref)}
         />
     )
 }

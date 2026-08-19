@@ -7,6 +7,7 @@ export const MAX_SLOTS = 6
 export const RECORD_MIN_PHOTOS = 1
 export const RECORD_MAX_PHOTOS = 8
 export const CAPTION_MAX = 100
+export const COMMENT_MAX = 500
 
 export interface LogitSlot {
     slotId: number
@@ -176,6 +177,26 @@ export interface LogitRecordDetail {
     photos: LogitRecordPhoto[]
     /** 먹은 시각. 적지 않았으면 null */
     loggedAt: string | null
+    likeCount: number
+    likedByMe: boolean
+}
+
+export interface LogitComment {
+    commentId: number
+    author: {
+        userId: number
+        nickname: string | null
+        profileImageUrl: string | null
+        equippedBadge: {
+            name: string
+            code: string | null
+            imageUrl: string | null
+        } | null
+    } | null
+    content: string
+    likeCount: number
+    likedByMe: boolean
+    createdAt: string
 }
 
 /** 기록이 있어 지우지 못하고 숨긴 경우 hidden=true */

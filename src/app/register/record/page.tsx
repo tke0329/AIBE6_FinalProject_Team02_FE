@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { RegisterRecord } from '@/features/register/RegisterRecord'
 import { useRegisterFlow } from '@/features/register/RegisterFlowContext'
 import { CardInput, LocationInput, confirmRegistration } from '@/features/register/confirmApi'
+import { goBackOr } from '@/shared/lib/backNav'
 import { ROUTES } from '@/shared/lib/routes'
 import { useDexState } from '@/shared/store/AppStateProvider'
 
@@ -35,7 +36,8 @@ export default function RegisterRecordPage() {
                 setUnlockResult(result)
                 // 홈으로 돌아갔을 때 새로고침 없이 바로 해금 결과가 보이도록 도감을 다시 불러온다.
                 refreshEntries()
-                router.push(ROUTES.registerUnlock)
+                // replace — 이미 보낸 기록 화면으로 뒤로 돌아가 다시 제출할 수 있으면 안 된다
+                router.replace(ROUTES.registerUnlock)
             })
             .catch((cause: unknown) => {
                 setError(cause instanceof Error ? cause.message : '등록에 실패했어요')
@@ -47,7 +49,7 @@ export default function RegisterRecordPage() {
         <RegisterRecord
             submitting={submitting}
             error={error}
-            onBack={() => router.push(ROUTES.registerAnalyze)}
+            onBack={() => goBackOr(router, ROUTES.registerAnalyze)}
             onSubmit={submit}
         />
     )

@@ -28,7 +28,7 @@ interface Prepared {
 function noop(): void {}
 
 /** 끼니가 차례로 전개되는 필름을 준비·재생하고, 공유할 파일까지 만든다 */
-export function useDayCardFilm(dayCard: LogitDayCard | null, title: string) {
+export function useDayCardFilm(dayCard: LogitDayCard | null, title: string, emptyCaption: string) {
     const canvasRef = useRef<HTMLCanvasElement | null>(null)
     const preparedRef = useRef<Prepared | null>(null)
     const rafRef = useRef(0)
@@ -100,7 +100,7 @@ export function useDayCardFilm(dayCard: LogitDayCard | null, title: string) {
             await fontsReady()
 
             // 배치를 먼저 잡아야 어느 사진을 디코드할지 알 수 있다
-            const layout = buildFilmLayout(dayCard, title)
+            const layout = buildFilmLayout(dayCard, title, emptyCaption)
             const targets = filmDecodeTargets(layout)
             const bitmaps = await loadBitmaps(targets)
             if (!live) {
@@ -193,7 +193,8 @@ export function useDayCardFilm(dayCard: LogitDayCard | null, title: string) {
                 preparedRef.current = null
             }
         }
-    }, [dayCard, title, play])
+        // 빈 칸 문구가 바뀌면 프레임이 달라지므로 다시 굽는다
+    }, [dayCard, title, emptyCaption, play])
 
     return {
         canvasRef,

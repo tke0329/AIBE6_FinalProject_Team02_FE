@@ -15,6 +15,7 @@ import { MADE_DEX_MAX_MEMBERS, parseMadeDexId } from '@/features/made/types'
 import type { MadeDexInvite as Invite, MadeDexMember, MadeDexMembers } from '@/features/made/types'
 import { isNotOwner, madeErrorMessage } from '@/features/made/errors'
 import { copyToClipboard } from '@/shared/lib/clipboard'
+import { goBackOr } from '@/shared/lib/backNav'
 import { ROUTES } from '@/shared/lib/routes'
 
 function messageOf(failure: unknown): string {
@@ -159,7 +160,7 @@ export default function MadeDexParticipantsPage() {
 
     return (
         <MadeDexInvite
-            dexTitle={group?.name ?? '제작 도감'}
+            dexTitle={group?.name ?? '로그잇'}
             code={invite?.code ?? null}
             expiresAt={invite?.expiresAt ?? null}
             inviteLink={inviteLink}
@@ -175,7 +176,7 @@ export default function MadeDexParticipantsPage() {
             membersFailed={membersFailed}
             memberBusy={memberBusy}
             memberError={memberError}
-            onBack={() => router.push(ROUTES.madeInfo(dexId))}
+            onBack={() => goBackOr(router, ROUTES.madeInfo(dexId))}
             onIssue={() => void issue()}
             onRetry={() => void load(dexId)}
             onCopy={copyToClipboard}

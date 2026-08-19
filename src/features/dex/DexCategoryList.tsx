@@ -1,10 +1,17 @@
 'use client'
 
+import { GuideTour } from '@/features/onboarding/GuideTour'
+import { useGuide } from '@/features/onboarding/useGuide'
 import { CATEGORY_META, DexEntry } from '@/shared/data/dex'
-import { BottomNav, DexHelpSheet, NavTab, ProgressBar } from '@/shared/ui'
+import { BottomNav, HelpIcon, NavTab, ProgressBar } from '@/shared/ui'
 import { ChevronRightIcon, LayoutGridIcon, PlusIcon } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import type { CategoryFilter } from './useDexFilter'
+
+/** 위쪽 수집률 바가 먼저 차오르고, 그다음 카테고리들이 따라 온다 */
+const FILL_LEAD = 0.25
+/** 카테고리 사이 간격(초). 아홉 줄이라 0.06을 넘기면 마지막 줄이 눈에 띄게 늦는다 */
+const FILL_GAP = 0.06
 
 interface Props {
     entries: DexEntry[]
@@ -15,7 +22,8 @@ interface Props {
 }
 
 export function DexCategoryList({ entries, collectedIds, onOpenCategory, onRegister, onTab }: Props) {
-    const [helpOpen, setHelpOpen] = useState(false)
+    // 칸 데이터가 도착한 뒤에 켠다 — 비어 있으면 짚을 요소가 없어 투어가 헛돈다
+    const guide = useGuide('basit-category', entries.length > 0)
     const collected = useMemo(() => new Set(collectedIds), [collectedIds])
     const totalCount = entries.length
     const progress = totalCount > 0 ? collectedIds.length / totalCount : 0
@@ -34,23 +42,19 @@ export function DexCategoryList({ entries, collectedIds, onOpenCategory, onRegis
             <header className="px-5 pt-4">
                 <div className="flex items-center justify-between gap-3">
                     <div className="flex min-w-0 items-center gap-1.5">
-                        <h1 className="truncate font-display text-2xl text-neutral-900">기본 도감</h1>
-                        <button
-                            onClick={() => setHelpOpen(true)}
-                            aria-label="기본 도감 도움말"
-                            className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-[12px] font-bold text-neutral-400"
-                        >
-                            ?
-                        </button>
+                        <h1 className="font-display text-2xl text-neutral-900">베이짓</h1>
+                        {/* 직접 그린 20px 버튼이었다 — 44px 터치 타깃 위반이라 공용 아이콘으로 바꿈 */}
+                        <HelpIcon label="베이짓" onClick={guide.replay} />
                     </div>
                     <button
+                        data-tour="basit-register"
                         onClick={onRegister}
                         className="flex shrink-0 items-center gap-1 rounded-full bg-watermelon-500 px-3 py-2 text-sm font-bold text-white shadow-soft"
                     >
                         <PlusIcon size={16} strokeWidth={2.75} /> 등록하기
                     </button>
                 </div>
-                <div className="mt-3 rounded-2xl bg-white p-4 shadow-soft">
+                <div data-tour="basit-progress" className="mt-3 rounded-2xl bg-white p-4 shadow-soft">
                     <div className="mb-2 flex items-center justify-between">
                         <span className="text-sm font-medium text-neutral-800">수집률</span>
                         <span className="rounded-full bg-watermelon-50 px-2.5 py-1 text-xs font-bold text-watermelon-600">
@@ -79,19 +83,23 @@ export function DexCategoryList({ entries, collectedIds, onOpenCategory, onRegis
                 </button>
                 <h2 className="mb-2 mt-5 text-sm font-bold text-neutral-900">카테고리</h2>
                 <div className="space-y-2.5">
-                    {rows.map((row) => (
+                    {rows.map((row, index) => (
                         <button
                             key={row.category}
+                            // 첫 줄만 짚는다 — 아홉 줄이 다 같은 모양이라 하나면 충분
+                            data-tour={index === 0 ? 'basit-category-row' : undefined}
                             onClick={() => onOpenCategory(row.category)}
                             className="flex w-full items-center gap-3 rounded-2xl bg-white p-4 text-left shadow-soft active:scale-[0.99]"
                         >
-                            <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${row.dotClass}`} />
                             <span className="min-w-0 flex-1">
-                                <span className="block truncate font-display text-base text-neutral-900">
-                                    {row.category}
-                                </span>
+                                {/* 자르지 않는다 — '빵·버거·피자·브런치'처럼 긴 이름이 낱말 가운데서 사라진다 */}
+                                <span className="block font-display text-base text-neutral-900">{row.category}</span>
                                 <div className="mt-2">
-                                    <ProgressBar value={row.total > 0 ? row.mine / row.total : 0} animate={false} />
+                                    {/* 위에서부터 차례로 차오른다 — 목록이 한꺼번에 채워지면 움직임이 안 읽힌다 */}
+                                    <ProgressBar
+                                        value={row.total > 0 ? row.mine / row.total : 0}
+                                        delay={FILL_LEAD + index * FILL_GAP}
+                                    />
                                 </div>
                             </span>
                             <span className="shrink-0 text-right">
@@ -106,7 +114,7 @@ export function DexCategoryList({ entries, collectedIds, onOpenCategory, onRegis
                 </div>
             </main>
             <BottomNav active="기본" onTab={onTab} />
-            {helpOpen && <DexHelpSheet kind="basic" onClose={() => setHelpOpen(false)} />}
+            <GuideTour guide={guide} />
         </div>
     )
 }

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { MadeDexList } from '@/features/made/MadeDexList'
 import { fetchMyMadeDexes } from '@/features/made/api'
 import type { MadeDexSummary } from '@/features/made/types'
+import { pushInApp } from '@/shared/lib/backNav'
 import { getTabHref, ROUTES } from '@/shared/lib/routes'
 
 /** `/made` 제작 도감 목록 */
@@ -35,7 +36,7 @@ export default function MadeDexListPage() {
             loading={loading}
             error={error}
             onCreateNew={() => router.push(ROUTES.madeNew)}
-            onOpenDex={(dexId) => router.push(ROUTES.madeDex(dexId))}
+            onOpenDex={(dexId) => pushInApp(router, ROUTES.madeDex(dexId))}
             onEnterCode={(code) => router.push(ROUTES.madeJoinWithCode(code))}
             onTab={(tab) => router.push(getTabHref(tab))}
         />

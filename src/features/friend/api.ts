@@ -1,5 +1,7 @@
 import type { ChallengeSummary, MyChallengeRelation } from '@/features/challenge/api'
+import { normalizeCategory } from '@/shared/data/dex'
 import { apiFetch } from '@/shared/lib/api'
+import { getLocalDexIllustrationUrl } from '@/shared/lib/dexIllustrations'
 
 export type RelationStatus = 'SELF' | 'NONE' | 'REQUEST_SENT' | 'REQUEST_RECEIVED' | 'FRIEND'
 
@@ -79,9 +81,22 @@ export interface UserBasicDexItem {
 export function fetchPublicProfile(id: number | 'me') {
     return apiFetch<PublicProfile>(`/api/v1/users/${id}/profile`)
 }
-/** 다른사람의 기본도감 */
+/**
+ * 다른사람의 기본도감.
+ *
+ * 일러스트는 내 도감과 마찬가지로 `public`에서만 가져온다 — 서버가 준 S3 URL은 버린다.
+ * 여기를 빼먹으면 남의 프로필만 옛 그림이 뜨거나, S3를 정리한 뒤 그림이 사라진다.
+ */
 export function fetchUserBasicDex(id: number | 'me') {
-    return apiFetch<UserBasicDexItem[]>(`/api/v1/users/${id}/basic-dex`)
+    return apiFetch<UserBasicDexItem[]>(`/api/v1/users/${id}/basic-dex`).then((items) =>
+        items.map((item) => {
+            const category = normalizeCategory(item.category)
+            return {
+                ...item,
+                illustrationUrl: category ? (getLocalDexIllustrationUrl({ name: item.name, category }) ?? null) : null,
+            }
+        }),
+    )
 }
 /** 다른사람의 챌린지도감 */
 export function fetchUserChallenges(id: number | 'me', relation: MyChallengeRelation) {

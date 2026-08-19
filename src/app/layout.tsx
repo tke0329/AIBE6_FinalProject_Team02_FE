@@ -1,5 +1,7 @@
 import { AuthProvider } from '@/features/auth/AuthContext'
 import { AuthGate } from '@/features/auth/AuthGate'
+import { NotificationProvider } from '@/features/notification/NotificationContext'
+import { GuideProvider } from '@/features/onboarding/GuideProvider'
 import { ServiceWorkerRegister } from '@/shared/pwa/ServiceWorkerRegister'
 import { AppStateProvider } from '@/shared/store/AppStateProvider'
 import { ToastProvider } from '@/shared/ui'
@@ -71,21 +73,26 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 {/* 그리는 것은 없다. 프로덕션에서만 sw.js를 등록한다 */}
                 <ServiceWorkerRegister />
                 <AuthProvider>
-                    <AppStateProvider>
-                        <AuthGate>
-                            {/* 폰 폭 컬럼은 반드시 이 한 겹이어야 한다.
+                    {/* me의 seenGuides를 읽으므로 AuthProvider 안에 있어야 한다 */}
+                    <GuideProvider>
+                        <AppStateProvider>
+                            <AuthGate>
+                                {/* 폰 폭 컬럼은 반드시 이 한 겹이어야 한다.
                                 페이지가 Fragment를 반환하면 모달·시트가 화면과 형제가 되는데,
                                 컬럼 스타일을 자식 선택자로 걸면 오버레이까지 컬럼으로 취급된다 */}
-                            <div className="app-shell">
-                                {/* ToastProvider가 컬럼 **안**에 있어야 한다 — 토스트는 fixed로 뜨는데
-                                    컨테이닝 블록을 만드는 건 이 컬럼이라, 밖에 두면 데스크톱에서
-                                    브라우저 창 전체 폭으로 퍼진다 */}
-                                <div className="app-shell-content">
-                                    <ToastProvider>{children}</ToastProvider>
+                                <div className="app-shell">
+                                    {/* ToastProvider가 컬럼 **안**에 있어야 한다 — 토스트는 fixed로 뜨는데
+                                        컨테이닝 블록을 만드는 건 이 컬럼이라, 밖에 두면 데스크톱에서
+                                        브라우저 창 전체 폭으로 퍼진다 */}
+                                    <div className="app-shell-content">
+                                        <ToastProvider>
+                                            <NotificationProvider>{children}</NotificationProvider>
+                                        </ToastProvider>
+                                    </div>
                                 </div>
-                            </div>
-                        </AuthGate>
-                    </AppStateProvider>
+                            </AuthGate>
+                        </AppStateProvider>
+                    </GuideProvider>
                 </AuthProvider>
             </body>
         </html>

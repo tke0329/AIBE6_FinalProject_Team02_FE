@@ -1,3 +1,4 @@
+import { useNotifications } from '@/features/notification/NotificationContext'
 import React from 'react'
 
 /**
@@ -8,7 +9,7 @@ import React from 'react'
  * 바꾸면 라우팅·화면 16곳이 함께 움직이는데 사용자에게 달라지는 건 없다.
  * 보이는 이름은 아래 `TABS`의 `label`이 정한다.
  */
-export type NavTab = '기본' | '제작' | '챌린지' | '마이'
+export type NavTab = '기본' | '제작' | '챌린짓' | '마이'
 
 interface BottomNavProps {
     active: NavTab
@@ -23,7 +24,7 @@ interface BottomNavProps {
  */
 const TABS: Array<{ id: NavTab; label: string; icon: string }> = [
     { id: '제작', label: '로그잇', icon: '/images/bottom_nav/logit.png' },
-    { id: '챌린지', label: '챌린짓', icon: '/images/bottom_nav/challengit.png' },
+    { id: '챌린짓', label: '챌린짓', icon: '/images/bottom_nav/challengit.png' },
     { id: '기본', label: '베이짓', icon: '/images/bottom_nav/basit.png' },
     { id: '마이', label: '마이', icon: '/images/bottom_nav/my.png' },
 ]
@@ -48,11 +49,16 @@ const TABS: Array<{ id: NavTab; label: string; icon: string }> = [
  * 라벨 색은 그대로 바뀌므로 활성 표시가 두 겹(그림 + 글자)으로 남는다.
  */
 export function BottomNav({ active, onTab }: BottomNavProps) {
+    // 마이 탭 빨간 점 — 어느 화면에 있든(로그잇/챌린짓/베이짓) 안읽은 알림이 있으면 바로 보여야 해서
+    // prop으로 안 받고 여기서 직접 구독한다. NotificationProvider가 루트 레이아웃에 있어 항상 값이 있다
+    const { unreadCount } = useNotifications()
+
     return (
         <nav aria-label="주요 메뉴" className="shrink-0 border-t border-edge-default bg-surface-app pb-safe-b">
             <ul role="tablist" className="mx-auto flex w-full max-w-3xl">
                 {TABS.map(({ id, label, icon }) => {
                     const isActive = active === id
+                    const showUnreadDot = id === '마이' && unreadCount > 0
                     return (
                         <li key={id} className="flex-1">
                             <button
@@ -69,15 +75,26 @@ export function BottomNav({ active, onTab }: BottomNavProps) {
                                     얻을 게 없고, 모든 화면에 있는 네비라 이미지 최적화 경유를
                                     거치지 않는 편이 낫다
                                 */}
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img
-                                    src={icon}
-                                    alt=""
-                                    aria-hidden
-                                    // 높이만 고정. 폭은 그림 비율대로 (컴포넌트 주석 참고)
-                                    className={`h-7 w-auto transition ${isActive ? '' : 'opacity-40 grayscale'}`}
-                                />
-                                <span className="whitespace-nowrap text-xs font-medium">{label}</span>
+                                <span className="relative">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                        src={icon}
+                                        alt=""
+                                        aria-hidden
+                                        // 높이만 고정. 폭은 그림 비율대로 (컴포넌트 주석 참고)
+                                        className={`h-7 w-auto transition ${isActive ? '' : 'opacity-40 grayscale'}`}
+                                    />
+                                    {showUnreadDot && (
+                                        <span
+                                            aria-hidden
+                                            className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-feedback-error ring-2 ring-surface-app"
+                                        />
+                                    )}
+                                </span>
+                                <span className="whitespace-nowrap text-xs font-medium">
+                                    {label}
+                                    {showUnreadDot && <span className="sr-only"> (안 읽은 알림 있음)</span>}
+                                </span>
                             </button>
                         </li>
                     )

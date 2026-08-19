@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { RegisterAnalyze } from '@/features/register/RegisterAnalyze'
 import { useRegisterFlow } from '@/features/register/RegisterFlowContext'
+import { goBackOr, pushInApp } from '@/shared/lib/backNav'
 import { ROUTES } from '@/shared/lib/routes'
 
 /** `/register/analyze` 등록 2단계 — 사진이 고른 음식과 맞는지 AI가 확인 */
@@ -22,8 +23,9 @@ export default function RegisterAnalyzePage() {
 
     return (
         <RegisterAnalyze
-            onBack={() => router.push(ROUTES.register)}
-            onProceed={() => router.push(ROUTES.registerRecord)}
+            // 단계 되돌리기는 `back` — 앞 단계를 다시 push하면 항목이 계속 늘어난다
+            onBack={() => goBackOr(router, ROUTES.register)}
+            onProceed={() => pushInApp(router, ROUTES.registerRecord)}
         />
     )
 }

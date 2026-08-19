@@ -43,11 +43,12 @@ const config: Config = {
                     800: token('neutral-800'),
                     900: token('neutral-900'),
                 },
-                lime: {
-                    DEFAULT: token('lime-500'),
-                    500: token('lime-500'),
-                    soft: token('lime-soft'),
-                    text: token('lime-text'),
+                /* §1.1 포인트 초록 — "된 것"(진행·달성·수집·성공)에만 쓴다 */
+                rind: {
+                    DEFAULT: token('rind-500'),
+                    500: token('rind-500'),
+                    soft: token('rind-soft'),
+                    text: token('rind-text'),
                 },
                 mint: {
                     DEFAULT: token('mint-500'),
@@ -94,7 +95,25 @@ const config: Config = {
                 },
                 feedback: {
                     error: token('red-500'),
-                    success: token('lime-text'),
+                    success: token('rind-text'),
+                },
+                /* §1.7 메달 색 — 순위 단상의 1·2·3위에만 쓴다.
+                   글자는 text-content-primary 하나로 충분하다 (금 10.38 · 은 11.13 · 동 6.25) */
+                medal: {
+                    gold: token('medal-gold'),
+                    silver: token('medal-silver'),
+                    bronze: token('medal-bronze'),
+                },
+                /* §1.6 사람 색 — 사진 없는 아바타를 구분한다.
+                   글자는 항상 text-content-primary 하나로 충분하다 (7색 전부 12.2:1 이상) */
+                person: {
+                    1: token('person-1'),
+                    2: token('person-2'),
+                    3: token('person-3'),
+                    4: token('person-4'),
+                    5: token('person-5'),
+                    6: token('person-6'),
+                    7: token('person-7'),
                 },
             },
 

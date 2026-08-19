@@ -48,8 +48,8 @@ export interface ChallengeSummary {
     startsAt: string
     endsAt: string | null
     participantCount: number
-    totalSlots: number // 전체 목표 수 (내 챌린지 진행도용, 탐색은 0)
-    unlockedCount: number // 내가 해금한 수 (내 챌린지 진행도용, 탐색은 0)
+    totalSlots: number // 전체 목표 수 (내 챌린짓 진행도용, 탐색은 0)
+    unlockedCount: number // 내가 해금한 수 (내 챌린짓 진행도용, 탐색은 0)
     rankScore: number | null // 현재 정렬 지표값(최근 7일 조회/참여/해금). 최신순·완료면 null
     joined: boolean // 요청 유저의 참여 여부(탐색 목록 참여중 표시)
     imageUrl: string | null // 대표 이미지(프리사인 URL)
@@ -84,6 +84,16 @@ export function fetchChallenges(
     return apiFetch<PageResponse<ChallengeSummary>>(`/api/v1/challenges?${q.toString()}`)
 }
 
+/** 챌린지 이름 검색 (무한스크롤 — 탐색 목록과 동일한 페이지 구조) */
+export function searchChallenges(keyword: string, page = 0, size = 10) {
+    const q = new URLSearchParams({
+        keyword,
+        page: String(page),
+        size: String(size),
+    })
+    return apiFetch<PageResponse<ChallengeSummary>>(`/api/v1/challenges/search?${q.toString()}`)
+}
+
 export type MyChallengeRelation = 'CREATED' | 'JOINED' | 'COMPLETED'
 
 /** 내 챌린지 (개설한 / 참여 중 / 완료한) */
@@ -115,6 +125,7 @@ export interface ChallengeDetailData {
     participantCount: number
     joined: boolean
     completed: boolean
+    owner: boolean // 내가 개설자인지(삭제/종료 노출)
     imageUrl: string | null // 대표 이미지(프리사인 URL)
     slots: ChallengeSlotDetail[]
 }
@@ -122,6 +133,16 @@ export interface ChallengeDetailData {
 /** 챌린지 상세 */
 export function fetchChallengeDetail(id: string | number) {
     return apiFetch<ChallengeDetailData>(`/api/v1/challenges/${id}`)
+}
+
+/** 챌린지 삭제 (개설자) */
+export function deleteChallenge(id: string | number) {
+    return apiFetch<void>(`/api/v1/challenges/${id}`, { method: 'DELETE' })
+}
+
+/** 챌린지 수동 종료 (개설자) */
+export function closeChallenge(id: string | number) {
+    return apiFetch<void>(`/api/v1/challenges/${id}/close`, { method: 'POST' })
 }
 
 /** 챌린지 참여 */
@@ -149,7 +170,7 @@ export function unlockSlot(
     id: string | number,
     slotId: string | number,
     imageKey: string,
-    lat: number | null = null, // 위치 인증 챌린지면 현재 위치
+    lat: number | null = null, // 위치 인증 챌린짓면 현재 위치
     lng: number | null = null,
 ) {
     return apiFetch<UnlockResult>(`/api/v1/challenges/${id}/unlocks`, {
