@@ -145,7 +145,8 @@ function ChallengeHome() {
         [],
     )
 
-    useEffect(() => {
+    // 개설권·내 챌린지 로딩을 한 곳으로 묶어 재사용(개설 후 최신값 반영)
+    const loadMine = useCallback(() => {
         // 내 챌린지 베이스
         fetchChallenges('ONGOING')
             .then((res) => setChallenges(res.content.map(toChallengeData)))
@@ -164,6 +165,29 @@ function ChallengeHome() {
             .then((t) => setCreatedThisMonth(MONTHLY_LIMIT - t.remaining))
             .catch(() => {})
     }, [])
+
+    // 최초 로드
+    useEffect(() => {
+        loadMine()
+    }, [loadMine])
+
+    // 개설 화면 등에서 돌아와 홈이 다시 보이면 개설권·내 챌린지를 재조회(개설 후 stale 방지)
+    useEffect(() => {
+        const onFocus = () => {
+            if (document.visibilityState === 'visible') loadMine()
+        }
+        window.addEventListener('focus', onFocus)
+        document.addEventListener('visibilitychange', onFocus)
+        return () => {
+            window.removeEventListener('focus', onFocus)
+            document.removeEventListener('visibilitychange', onFocus)
+        }
+    }, [loadMine])
+
+    // "내 챌린지" 탭을 열 때마다 최신 개설권/목록 반영
+    useEffect(() => {
+        if (mainTab === 'mine') loadMine()
+    }, [mainTab, loadMine])
 
     // 검색어 디바운스: 입력이 멈추고 300ms 뒤에 실제 검색어로 확정
     useEffect(() => {

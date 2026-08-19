@@ -166,21 +166,20 @@ export function ChallengeDetail({
                 {joined && onLeave && (
                     <button
                         onClick={onLeave}
-                        className="ml-auto rounded-full border border-neutral-200 px-3 py-1 text-xs font-medium text-neutral-400"
+                        className="ml-auto rounded-full border border-watermelon-200 bg-watermelon-50 px-3 py-1 text-xs font-bold text-watermelon-600"
                     >
-                        나가기
+                        포기하기
                     </button>
                 )}
             </header>
             <main className="no-scrollbar flex-1 overflow-y-auto px-5">
-                {challenge.coverUrl && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                        src={challenge.coverUrl}
-                        alt=""
-                        className="mt-4 aspect-[16/9] w-full rounded-3xl object-cover shadow-soft"
-                    />
-                )}
+                {/* 대표 이미지가 없으면 기본 챌린지 이미지로 대체 */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                    src={challenge.coverUrl || '/images/default_challenge.png'}
+                    alt=""
+                    className="mt-4 aspect-[16/9] w-full rounded-3xl object-cover shadow-soft"
+                />
                 <section className="mt-4 rounded-3xl bg-white p-4 shadow-soft">
                     <div className="flex items-center gap-3">
                         <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-watermelon-50 text-watermelon-500">

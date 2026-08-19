@@ -2,7 +2,7 @@
 
 import { ImageCropper, ImageCropperHandle } from '@/shared/ui'
 import { ImageIcon } from 'lucide-react'
-import { useRef, useState } from 'react'
+import { forwardRef, useImperativeHandle, useRef, useState } from 'react'
 
 const V = 240 // 원형 크롭 뷰포트 한 변(px)
 
@@ -15,8 +15,16 @@ interface Props {
     onClear: () => void
 }
 
+export interface CoverPhotoStepHandle {
+    /** 크롭 대기 중인 사진이 있으면 확정(적용)한다. 없으면 아무 것도 안 함. */
+    commit: () => Promise<void>
+}
+
 /** 챌린지 대표 사진 — 원형으로 위치·확대 조절 후 등록 (공통 `ImageCropper`) */
-export function CoverPhotoStep({ preview, onApply, onClear }: Props) {
+export const CoverPhotoStep = forwardRef<CoverPhotoStepHandle, Props>(function CoverPhotoStep(
+    { preview, onApply, onClear },
+    ref,
+) {
     const [src, setSrc] = useState<string | null>(null)
     const cropper = useRef<ImageCropperHandle>(null)
     const fileRef = useRef<HTMLInputElement>(null)
@@ -34,6 +42,9 @@ export function CoverPhotoStep({ preview, onApply, onClear }: Props) {
         onApply(blob, URL.createObjectURL(blob))
         setSrc(null)
     }
+
+    // 부모(위저드)가 "다음"으로 넘어갈 때 크롭 대기 중인 사진을 자동 확정하도록 노출
+    useImperativeHandle(ref, () => ({ commit: apply }))
 
     return (
         <div>
@@ -110,4 +121,4 @@ export function CoverPhotoStep({ preview, onApply, onClear }: Props) {
             </div>
         </div>
     )
-}
+})

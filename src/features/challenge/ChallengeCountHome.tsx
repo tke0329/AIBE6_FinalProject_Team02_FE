@@ -4,7 +4,7 @@ import { GuideTour } from '@/features/onboarding/GuideTour'
 import { useGuide } from '@/features/onboarding/useGuide'
 import { Badge, BottomNav, HelpIcon, LoadingView, NavTab, ProgressBar, SearchBar, Skeleton, TabBar } from '@/shared/ui'
 import { motion, useReducedMotion } from 'framer-motion'
-import { CrownIcon, MedalIcon, PlusIcon, TrophyIcon } from 'lucide-react'
+import { CrownIcon, MedalIcon, PlusIcon } from 'lucide-react'
 import { useState } from 'react'
 import { ChallengeSort } from './api'
 import { ChallengeData } from './types'
@@ -152,7 +152,7 @@ export function ChallengeCountHome({
                                 className="ml-auto flex min-h-touch items-center gap-1 rounded-full bg-watermelon-500 px-4 text-xs font-bold text-content-on-action"
                             >
                                 <PlusIcon size={14} />
-                                개설 {createdThisMonth}/3
+                                개설권 {3 - createdThisMonth}/3
                             </button>
                         </div>
                         <div className="mt-4 space-y-3">
@@ -300,19 +300,15 @@ function ExploreRowsSkeleton() {
 
 /** 챌린지 대표 사진 썸네일(없으면 트로피 아이콘) */
 function CoverThumb({ url, size = 44 }: { url?: string | null; size?: number }) {
-    if (url) {
-        return (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={url} alt="" className="shrink-0 rounded-xl object-cover" style={{ width: size, height: size }} />
-        )
-    }
     return (
-        <span
-            className="flex shrink-0 items-center justify-center rounded-xl bg-watermelon-50 text-watermelon-500"
+        // 대표 이미지가 없으면 기본 챌린지 이미지로 대체
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+            src={url || '/images/default_challenge.png'}
+            alt=""
+            className="shrink-0 rounded-xl object-cover"
             style={{ width: size, height: size }}
-        >
-            <TrophyIcon size={Math.round(size / 2)} strokeWidth={1.75} aria-hidden />
-        </span>
+        />
     )
 }
 function MyChallengeCard({ challenge, onOpen }: { challenge: ChallengeData; onOpen: () => void }) {
@@ -424,16 +420,12 @@ function Podium({
                             {rank === 1 && (
                                 <CrownIcon size={21} aria-hidden className="absolute -top-5 text-medal-gold" />
                             )}
-                            {challenge.coverUrl ? (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img
-                                    src={challenge.coverUrl}
-                                    alt=""
-                                    className="h-full w-full rounded-2xl object-cover"
-                                />
-                            ) : (
-                                <TrophyIcon size={30} strokeWidth={1.5} aria-hidden className="text-watermelon-500" />
-                            )}
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src={challenge.coverUrl || '/images/default_challenge.png'}
+                                alt=""
+                                className="h-full w-full rounded-2xl object-cover"
+                            />
                         </span>
                         {/* 두 줄까지 편다 — 한 줄로 자르면 "부산 돼지국밥 정…"처럼 낱말 가운데가 사라진다 */}
                         <span className="mt-2 line-clamp-2 text-center text-xs font-bold text-neutral-900">
