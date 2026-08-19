@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { HeartIcon, LockIcon, MoreVerticalIcon, StarIcon } from 'lucide-react'
 import { Review, ReviewWritePayload, deleteReview, editReview, toggleReviewLike } from './api'
 import { useRouter } from 'next/navigation'
@@ -15,6 +15,7 @@ interface Props {
     // 미해금/미완료 미리보기: 좋아요순 2개만 노출하고 나머지는 블러 처리
     preview?: boolean
     previewMessage?: string
+    focusReviewId?: number | null
 }
 
 const PREVIEW_VISIBLE = 2
@@ -106,8 +107,10 @@ export function ReviewSection({
     reloadKey,
     preview = false,
     previewMessage,
+    focusReviewId = null,
 }: Props) {
     const router = useRouter()
+    const focusedRef = useRef<HTMLLIElement | null>(null)
 
     const [reviews, setReviews] = useState<Review[]>([])
     const [loading, setLoading] = useState(true)
@@ -139,6 +142,11 @@ export function ReviewSection({
         refresh()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [reloadKey])
+
+    useEffect(() => {
+        if (loading || !focusReviewId) return
+        focusedRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }, [focusReviewId, loading])
 
     const mineExists = reviews.some((r) => r.mine)
 
@@ -262,8 +270,10 @@ export function ReviewSection({
                         return (
                             <li
                                 key={r.id}
-                                className={`rounded-2xl bg-white p-3 shadow-card ${
-                                    blurred ? 'pointer-events-none select-none blur-sm' : ''
+                                ref={r.id === focusReviewId ? focusedRef : undefined}
+                                className={`rounded-2xl bg-white p-3 shadow-card transition ${
+                                    r.id === focusReviewId ? 'ring-2 ring-watermelon-400' : ''
+                                } ${blurred ? 'pointer-events-none select-none blur-sm' : ''
                                 }`}
                                 aria-hidden={blurred}
                             >

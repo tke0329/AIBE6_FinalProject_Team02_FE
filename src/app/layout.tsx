@@ -1,5 +1,6 @@
 import { AuthProvider } from '@/features/auth/AuthContext'
 import { AuthGate } from '@/features/auth/AuthGate'
+import { NotificationProvider } from '@/features/notification/NotificationContext'
 import { GuideProvider } from '@/features/onboarding/GuideProvider'
 import { ServiceWorkerRegister } from '@/shared/pwa/ServiceWorkerRegister'
 import { AppStateProvider } from '@/shared/store/AppStateProvider'
@@ -84,7 +85,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                                         컨테이닝 블록을 만드는 건 이 컬럼이라, 밖에 두면 데스크톱에서
                                         브라우저 창 전체 폭으로 퍼진다 */}
                                     <div className="app-shell-content">
-                                        <ToastProvider>{children}</ToastProvider>
+                                        <ToastProvider>
+                                            <NotificationProvider>{children}</NotificationProvider>
+                                        </ToastProvider>
                                     </div>
                                 </div>
                             </AuthGate>

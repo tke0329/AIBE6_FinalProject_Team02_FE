@@ -55,6 +55,8 @@ export function ChallengeDetail({
      * `locked`는 예전 링크를 위해 읽기만 한다
      */
     const foodParam = searchParams.get('food') ?? searchParams.get('locked')
+    const focusReviewId = Number(searchParams.get('reviewId'))
+    const validFocusReviewId = Number.isSafeInteger(focusReviewId) && focusReviewId > 0 ? focusReviewId : null
     // 탭 전환은 히스토리를 늘리지 않는다 — 뒤로가기가 탭 되돌리기로 소모되면 화면을 못 벗어난다
     const activeTab: DetailTab = searchParams.get('tab') === 'review' ? '리뷰' : '해금 목록'
 
@@ -296,6 +298,7 @@ export function ChallengeDetail({
                             lockedReason="챌린짓을 완료하면 리뷰를 쓸 수 있어요"
                             preview={!challenge.completed}
                             previewMessage="챌린짓을 달성하면 볼 수 있어요"
+                            focusReviewId={validFocusReviewId}
                         />
                     </section>
                 )}
@@ -359,6 +362,7 @@ export function ChallengeDetail({
                                 write={(payload) => writeFoodReview(challenge.id, record.id, payload)}
                                 canWrite
                                 lockedReason=""
+                                focusReviewId={validFocusReviewId}
                             />
                         </div>
                     </div>
@@ -405,6 +409,7 @@ export function ChallengeDetail({
                                 lockedReason="인증하면 리뷰를 남길 수 있어요"
                                 previewMessage="해금해야 볼 수 있어요"
                                 preview
+                                focusReviewId={validFocusReviewId}
                             />
                         </div>
                     </div>

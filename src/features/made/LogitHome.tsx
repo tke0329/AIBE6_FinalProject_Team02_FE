@@ -2,7 +2,8 @@ import { GuideTour } from '@/features/onboarding/GuideTour'
 import { useGuide } from '@/features/onboarding/useGuide'
 import { BottomNav, HelpIcon, NavTab } from '@/shared/ui'
 import { ArrowLeftIcon, MenuIcon, MessageSquareTextIcon, PencilIcon } from 'lucide-react'
-import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { useEffect, useRef, useState } from 'react'
 import { DateStrip } from './DateStrip'
 import { DayCardView } from './DayCardView'
 import { EmptyCaptionSheet } from './EmptyCaptionSheet'
@@ -13,6 +14,7 @@ import { SlotEditSheet } from './SlotEditSheet'
 import type { MadeDexId } from './types'
 import { useEmptyCaption } from './useEmptyCaption'
 import { useLogitFeed } from './useLogitFeed'
+import { fetchRecord } from './logitApi'
 
 interface Props {
     dexId: MadeDexId
@@ -28,6 +30,7 @@ interface Props {
 }
 
 export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRecord, onOpenProfile, onTab }: Props) {
+    const searchParams = useSearchParams()
     const feed = useLogitFeed(dexId)
     const emptyCaption = useEmptyCaption(dexId, feed.date)
     const [dayCardOpen, setDayCardOpen] = useState(false)
@@ -35,12 +38,28 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
     const [calendarOpen, setCalendarOpen] = useState(false)
     const [captionOpen, setCaptionOpen] = useState(false)
     const [openedRecordIds, setOpenedRecordIds] = useState<number[] | null>(null)
+    const openedRecordParam = useRef<number | null>(null)
 
     const slots = feed.feed?.slots ?? []
     // 로그잇은 오늘을 나누는 앱이다. 지난 날은 읽기만 한다
     const canRecord = feed.today !== '' && feed.date === feed.today
     // 끼니가 그려진 뒤에 켠다 — 로딩 중이면 짚을 요소가 없어 투어가 헛돈다
     const guide = useGuide('logit-home', !!feed.feed)
+
+    useEffect(() => {
+        const recordId = Number(searchParams.get('recordId'))
+        if (!Number.isSafeInteger(recordId) || recordId <= 0 || openedRecordParam.current === recordId) return
+
+        openedRecordParam.current = recordId
+        fetchRecord(dexId, recordId)
+            .then((record) => {
+                feed.select(record.loggedOn)
+                setOpenedRecordIds([recordId])
+            })
+            .catch(() => {
+                openedRecordParam.current = null
+            })
+    }, [dexId, feed, searchParams])
 
     return (
         <div className="relative flex h-full flex-col bg-surface-app">

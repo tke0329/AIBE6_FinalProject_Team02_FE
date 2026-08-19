@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
+import { ChevronLeftIcon, ChevronRightIcon, HeartIcon } from 'lucide-react'
 import { BottomSheet, Dialog } from '@/shared/ui'
 import { PhotoCarousel } from './PhotoCarousel'
 import { RecordSocial } from './RecordSocial'
-import { deleteRecord, fetchRecord } from './logitApi'
+import { deleteRecord, fetchRecord, toggleRecordLike } from './logitApi'
 import { madeErrorMessage } from './errors'
 import { timeLabel } from './logitTypes'
 import type { LogitRecordDetail } from './logitTypes'
@@ -57,6 +57,15 @@ export function RecordDetailSheet({ madeDexId, recordIds, onClose, onEdit, onDel
         }
     }
 
+    const like = async () => {
+        try {
+            const next = await toggleRecordLike(madeDexId, recordId)
+            setRecord((prev) => (prev ? { ...prev, likedByMe: next.isLike, likeCount: next.likeCount } : prev))
+        } catch {
+            /* 좋아요 실패는 조용히 둔다. 다음 조회에서 서버 상태로 맞춰진다. */
+        }
+    }
+
     return (
         // 댓글을 모두 펼치면 시트를 위로 더 올린다 — 접힌 상태에서는 사진이 주인공이어야 한다
         <BottomSheet
@@ -103,13 +112,32 @@ export function RecordDetailSheet({ madeDexId, recordIds, onClose, onEdit, onDel
                     <>
                         <PhotoCarousel photos={record.photos} />
 
-                        <p className="pt-3 text-xs text-content-muted">
-                            {record.loggedAt && `${timeLabel(record.loggedAt)} · `}
-                            {record.mine ? '내' : `${record.authorNickname ?? '이름 없는 참여자'}님의`} 기록
-                        </p>
+                        <div className="flex items-center justify-between gap-2 pt-3">
+                            <p className="text-xs text-content-muted">
+                                {record.loggedAt && `${timeLabel(record.loggedAt)} · `}
+                                {record.mine ? '내' : `${record.authorNickname ?? '이름 없는 참여자'}님의`} 기록
+                            </p>
+                            <button
+                                type="button"
+                                onClick={() => void like()}
+                                aria-pressed={record.likedByMe}
+                                aria-label={record.likedByMe ? '기록 좋아요 취소' : '기록 좋아요'}
+                                className="no-touch-expand flex min-h-touch shrink-0 items-center gap-1.5"
+                            >
+                                <HeartIcon
+                                    size={20}
+                                    aria-hidden
+                                    className={record.likedByMe ? 'fill-current text-content-link' : 'text-content-secondary'}
+                                />
+                                <span className="text-sm font-bold tabular-nums text-content-secondary">
+                                    {record.likeCount}
+                                </span>
+                            </button>
+                        </div>
 
                         {/* 내 기록에도 붙인다 — 남이 남긴 반응을 내가 보는 자리이기도 하다 */}
                         <RecordSocial
+                            madeDexId={madeDexId}
                             recordId={record.recordId}
                             expanded={expanded}
                             onExpand={() => setExpanded(true)}

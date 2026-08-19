@@ -26,6 +26,8 @@ interface Props {
     onEditNickname: () => void
     onOpenBadges: () => void
     onOpenFriends: () => void
+    onOpenNotifications: () => void
+    unreadNotificationCount?: number
     onLogout: () => void
     onWithdraw: () => void
     onTab: (tab: NavTab) => void
@@ -55,6 +57,8 @@ export function MyPage({
     onEditNickname,
     onOpenBadges,
     onOpenFriends,
+    onOpenNotifications,
+    unreadNotificationCount = 0,
     onLogout,
     onWithdraw,
     onTab,
@@ -135,7 +139,12 @@ export function MyPage({
 
                 <MenuGroup title="소셜">
                     <MenuItem icon={<UsersIcon size={18} aria-hidden />} label="친구" onClick={onOpenFriends} />
-                    <MenuItem icon={<BellIcon size={18} aria-hidden />} label="알림" comingSoon />
+                    <MenuItem
+                        icon={<BellIcon size={18} aria-hidden />}
+                        label="알림"
+                        count={unreadNotificationCount}
+                        onClick={onOpenNotifications}
+                    />
                 </MenuGroup>
 
                 <MenuGroup title="내 계정 관리">
@@ -173,6 +182,7 @@ function MenuItem({
     icon,
     label,
     hint,
+    count,
     onClick,
     danger = false,
     /**
@@ -185,6 +195,7 @@ function MenuItem({
     icon: React.ReactNode
     label: string
     hint?: string
+    count?: number
     onClick?: () => void
     danger?: boolean
     comingSoon?: boolean
@@ -207,6 +218,14 @@ function MenuItem({
                 </span>
             ) : (
                 <>
+                    {typeof count === 'number' && count > 0 && (
+                        <span
+                            aria-label={`안 읽은 알림 ${count > 99 ? '99개 이상' : `${count}개`}`}
+                            className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-watermelon-500 px-1.5 text-xs font-bold leading-none text-white"
+                        >
+                            {count > 99 ? '99+' : count}
+                        </span>
+                    )}
                     {hint && <span className="shrink-0 text-xs text-content-secondary">{hint}</span>}
                     <ChevronRightIcon size={16} aria-hidden className="shrink-0 text-content-muted" />
                 </>

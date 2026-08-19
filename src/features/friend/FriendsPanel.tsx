@@ -1,8 +1,9 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { ArrowLeftIcon, UserPlusIcon, CheckIcon, XIcon, Trash2Icon, SearchIcon } from 'lucide-react'
 import { ServerBadge, TabBar } from '@/shared/ui'
+import { useNotifications } from '@/features/notification/NotificationContext'
 import {
     UserBrief,
     ReceivedRequest,
@@ -21,10 +22,13 @@ const TABS = ['친구 목록', '받은 요청'] as const
 interface Props {
     onBack: () => void
     onOpenUser: (userId: number) => void
+    /** 알림 클릭 등으로 특정 탭을 펼친 채 들어올 때 쓴다. 기본은 '친구 목록' */
+    initialTab?: (typeof TABS)[number]
 }
 
-export function FriendsPanel({ onBack, onOpenUser }: Props) {
-    const [tab, setTab] = useState<(typeof TABS)[number]>('친구 목록')
+export function FriendsPanel({ onBack, onOpenUser, initialTab }: Props) {
+    const { unreadCount } = useNotifications()
+    const [tab, setTab] = useState<(typeof TABS)[number]>(initialTab ?? '친구 목록')
     const [friends, setFriends] = useState<UserBrief[]>([])
     const [requests, setRequests] = useState<ReceivedRequest[]>([])
     // 검색: searchResults가 null이면 탭 목록, 아니면 검색 결과 화면
@@ -32,19 +36,29 @@ export function FriendsPanel({ onBack, onOpenUser }: Props) {
     const [searchResults, setSearchResults] = useState<UserSearchResult[] | null>(null)
     const [sent, setSent] = useState<Set<number>>(new Set())
 
-    const loadFriends = () =>
-        fetchFriends()
-            .then(setFriends)
-            .catch(() => {})
-    const loadRequests = () =>
-        fetchFriendRequests('received')
-            .then(setRequests)
-            .catch(() => {})
+    const loadFriends = useCallback(
+        () =>
+            fetchFriends()
+                .then(setFriends)
+                .catch(() => {}),
+        [],
+    )
+    const loadRequests = useCallback(
+        () =>
+            fetchFriendRequests('received')
+                .then(setRequests)
+                .catch(() => {}),
+        [],
+    )
 
     useEffect(() => {
         loadFriends()
         loadRequests()
-    }, [])
+    }, [loadFriends, loadRequests])
+
+    useEffect(() => {
+        loadRequests()
+    }, [loadRequests, unreadCount])
 
     const runSearch = () => {
         if (!kw.trim()) {
