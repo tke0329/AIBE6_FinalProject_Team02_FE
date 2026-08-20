@@ -86,7 +86,9 @@ function ConfirmByNameSheet({
     return (
         <BottomSheet title={title} onClose={onCancel}>
             <div className="space-y-4 px-5 pb-8 pt-2">
-                <p className="whitespace-pre-line rounded-xl bg-watermelon-50 p-3 text-sm text-watermelon-700">{warning}</p>
+                <p className="whitespace-pre-line rounded-xl bg-watermelon-50 p-3 text-sm text-watermelon-700">
+                    {warning}
+                </p>
                 <div>
                     <p className="mb-2 text-xs text-neutral-500">계속하려면 아래 챌린짓 이름을 그대로 입력하세요.</p>
                     <p className="mb-2 rounded-lg bg-neutral-100 px-3 py-2 text-center text-sm font-bold text-neutral-800">
@@ -260,7 +262,9 @@ function ChallengeDetailPageInner() {
             {confirmClose && (
                 <ConfirmByNameSheet
                     title="챌린짓 종료"
-                    warning={'종료하면 새로운 참여를 받지 않고 되돌릴 수 없어요.\n그래도 종료하려면 아래에 챌린짓 이름을 입력하세요.'}
+                    warning={
+                        '종료하면 새로운 참여를 받지 않고 되돌릴 수 없어요.\n그래도 종료하려면 아래에 챌린짓 이름을 입력하세요.'
+                    }
                     confirmLabel="종료하기"
                     expectedName={challenge.title}
                     onCancel={() => setConfirmClose(false)}
@@ -278,7 +282,9 @@ function ChallengeDetailPageInner() {
             {confirmDelete && (
                 <ConfirmByNameSheet
                     title="챌린짓 삭제"
-                    warning={'삭제하면 참여자 기록·리뷰·사진까지 모두 사라지고 되돌릴 수 없어요.\n그래도 삭제하려면 아래에 챌린짓 이름을 입력하세요.'}
+                    warning={
+                        '삭제하면 참여자 기록·리뷰·사진까지 모두 사라지고 되돌릴 수 없어요.\n그래도 삭제하려면 아래에 챌린짓 이름을 입력하세요.'
+                    }
                     confirmLabel="삭제하기"
                     danger
                     expectedName={challenge.title}

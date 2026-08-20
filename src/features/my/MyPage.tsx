@@ -6,7 +6,6 @@ import {
     ChevronRightIcon,
     HeartIcon,
     LogOutIcon,
-    MessageSquareIcon,
     PencilIcon,
     StarIcon,
     UserMinusIcon,
@@ -26,6 +25,8 @@ interface Props {
     onChangePhoto: () => void
     onEditNickname: () => void
     onOpenBadges: () => void
+    onOpenWritten: () => void
+    onOpenLikes: () => void
     onOpenFriends: () => void
     onOpenNotifications: () => void
     unreadNotificationCount?: number
@@ -59,6 +60,8 @@ export function MyPage({
     onChangePhoto,
     onEditNickname,
     onOpenBadges,
+    onOpenWritten,
+    onOpenLikes,
     onOpenFriends,
     onOpenNotifications,
     unreadNotificationCount = 0,
@@ -137,9 +140,15 @@ export function MyPage({
                 </button>
 
                 <MenuGroup title="내 활동">
-                    <MenuItem icon={<StarIcon size={18} aria-hidden />} label="내가 쓴 리뷰" comingSoon />
-                    <MenuItem icon={<MessageSquareIcon size={18} aria-hidden />} label="내가 쓴 댓글" comingSoon />
-                    <MenuItem icon={<HeartIcon size={18} aria-hidden />} label="좋아요한 글" comingSoon />
+                    {/*
+                     * 두 항목 모두 안에서 「챌린짓 / 로그잇」 탭으로 갈린다. 그래서 이름을
+                     * 「…리뷰」가 아니라 「…글」로 넓게 잡았다 — 챌린짓 리뷰와 로그잇 댓글이
+                     * 함께 담기므로 좁은 이름은 한쪽을 빠뜨린 것처럼 보인다.
+                     * 별도로 있던 「내가 쓴 댓글」(comingSoon)은 「내가 쓴 글」의 로그잇 탭이 되었다.
+                     * 로그잇 댓글 좋아요는 아직 담지 않았다 — MyLikes 주석 참고
+                     */}
+                    <MenuItem icon={<StarIcon size={18} aria-hidden />} label="내가 쓴 글" onClick={onOpenWritten} />
+                    <MenuItem icon={<HeartIcon size={18} aria-hidden />} label="좋아요한 글" onClick={onOpenLikes} />
                 </MenuGroup>
 
                 <MenuGroup title="소셜">

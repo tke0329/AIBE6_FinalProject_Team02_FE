@@ -41,6 +41,12 @@ export const ROUTES = {
     challengeNew: '/challenge/new',
     challengeNewBadge: '/challenge/new/badge',
     challengeDetail: (id: string) => `/challenge/${id}`,
+    /**
+     * 리뷰가 달린 자리. 상세가 시트를 URL로 들고 있어서 그 자리를 바로 가리킬 수 있다 —
+     * 음식 리뷰는 그 음식 시트가, 챌린짓 리뷰는 리뷰 탭이 열린 채로 도착한다
+     */
+    challengeReviewTarget: (challengeId: number, slotId: number | null) =>
+        slotId === null ? `/challenge/${challengeId}?tab=review` : `/challenge/${challengeId}?food=${slotId}`,
     challengeReview: (id: string | number, reviewId: number) => `/challenge/${id}?tab=review&reviewId=${reviewId}`,
     challengeFoodReview: (id: string | number, slotId: string | number, reviewId: number) =>
         `/challenge/${id}?tab=unlocks&food=${slotId}&reviewId=${reviewId}`,
@@ -49,6 +55,10 @@ export const ROUTES = {
     myNickname: '/my/nickname',
     myBadges: '/my/badges',
     myPhoto: '/my/photo',
+    /** 내 활동 — 챌린짓 리뷰와 로그잇 댓글을 탭으로 담는다 */
+    myWritten: '/my/written',
+    /** 내 활동 — 챌린짓 리뷰 좋아요와 로그잇 기록 좋아요 */
+    myLikes: '/my/likes',
     myNotifications: '/my/notifications',
 
     friends: '/friends',

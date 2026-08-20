@@ -1,7 +1,11 @@
 'use client'
 
 import { useAuth } from '@/features/auth/AuthContext'
-import { fetchUnreadNotificationCount, markAllNotificationsAsRead, markNotificationAsRead } from '@/features/notification/api'
+import {
+    fetchUnreadNotificationCount,
+    markAllNotificationsAsRead,
+    markNotificationAsRead,
+} from '@/features/notification/api'
 import { connectNotificationStream } from '@/features/notification/realtime'
 import { useToast } from '@/shared/ui'
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'

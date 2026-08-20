@@ -51,6 +51,15 @@ export interface ChallengeData {
     targetRestaurants?: ChallengeTarget[]
     completedTargetIds?: string[]
     rewardBadge?: RewardBadge
+    /**
+     * 서버가 준 완주 보상 뱃지 (BE `RewardBadgeDTO` = api.ts `RewardBadgeInfo`와 같은 모양).
+     *
+     * 위 `rewardBadge`와 나눈 이유 — 그쪽은 개설 마법사가 **만드는 중**에 쓰는 형태로
+     * `emoji`·`tone` 같은 화면 전용 값을 들고 있어 서버 응답과 모양이 다르다.
+     * 목록·상세처럼 서버가 준 것을 그리는 자리는 `ServerBadge`에 그대로 넘길 수 있는
+     * 이 형태를 쓴다. 뱃지를 안 걸어 둔 챌린짓은 null
+     */
+    rewardBadgeInfo?: { id: number; name: string; code: string | null; imageUrl: string | null } | null
     /** 대표 이미지(프리사인 URL, 표시용) */
     coverUrl?: string | null
     /** 대표 이미지 업로드 파일(개설 마법사 → 개설 처리) */

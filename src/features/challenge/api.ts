@@ -53,6 +53,8 @@ export interface ChallengeSummary {
     rankScore: number | null // 현재 정렬 지표값(최근 7일 조회/참여/해금). 최신순·완료면 null
     joined: boolean // 요청 유저의 참여 여부(탐색 목록 참여중 표시)
     imageUrl: string | null // 대표 이미지(프리사인 URL)
+    /** 완주 보상 뱃지. 뱃지를 안 걸어 둔 챌린짓은 null */
+    rewardBadge: RewardBadgeInfo | null
 }
 
 // 탐색 정렬 기준. 랭킹 3종은 최근 7일 기준

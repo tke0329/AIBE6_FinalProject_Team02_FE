@@ -69,6 +69,8 @@ export default function MyPageRoute() {
                 onChangePhoto={() => pushInApp(router, ROUTES.myPhoto)}
                 onEditNickname={() => pushInApp(router, ROUTES.myNickname)}
                 onOpenBadges={() => pushInApp(router, ROUTES.myBadges)}
+                onOpenWritten={() => pushInApp(router, ROUTES.myWritten)}
+                onOpenLikes={() => pushInApp(router, ROUTES.myLikes)}
                 onOpenFriends={() => pushInApp(router, ROUTES.friends)}
                 onOpenNotifications={() => pushInApp(router, ROUTES.myNotifications)}
                 unreadNotificationCount={unreadCount}

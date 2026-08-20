@@ -1,6 +1,7 @@
 'use client'
 
 import { NICKNAME_HINT, NICKNAME_MAX, NICKNAME_RE } from '@/features/my/nickname'
+import { availabilityMessage, useNicknameAvailability } from '@/features/my/useNicknameAvailability'
 import { useState } from 'react'
 
 interface Props {
@@ -19,9 +20,23 @@ export function NicknameSetup({ onSubmit, submitting, error }: Props) {
     // 입력이 있는데 형식이 안 맞을 때만 안내 문구 노출
     const showHint = trimmed.length > 0 && !valid
 
+    // 입력 중 중복 판정. 못 물어본 경우(failed)는 막지 않는다 — 저장할 때 서버가 다시 판정한다
+    const availability = useNicknameAvailability(value)
+    const taken = availability.state === 'taken'
+    const canSubmit = valid && !taken && !submitting
+
     const submit = () => {
-        if (valid && !submitting) onSubmit(trimmed)
+        if (canSubmit) onSubmit(trimmed)
     }
+
+    /**
+     * 한 줄만 보여준다.
+     *
+     * 막는 말(강조색) 형식 → 중복 → 서버 에러
+     * 알리는 말(흐림)  확인 중 · 쓸 수 있음 · 확인 실패
+     */
+    const blocking = showHint ? NICKNAME_HINT : taken ? '이미 누가 쓰고 있어요.' : error
+    const notice = blocking ? null : availabilityMessage(availability)
 
     return (
         <div className="flex h-full flex-col bg-surface-app">
@@ -42,16 +57,21 @@ export function NicknameSetup({ onSubmit, submitting, error }: Props) {
                     className="mt-8 h-cta w-full rounded-2xl border-2 border-neutral-200 bg-white px-4 font-display text-lg text-neutral-900 outline-none focus:border-watermelon-400"
                 />
 
-                {/* 클라 형식 안내 → 서버 에러 순으로 노출 (한 줄만) */}
-                <p className="mt-2 min-h-[1.25rem] text-sm text-watermelon-600">
-                    {showHint ? NICKNAME_HINT : (error ?? '')}
+                {/* 자리를 늘 잡아 둔다 — 문구가 떴다 사라질 때 아래 버튼이 흔들리지 않게 */}
+                <p
+                    className={`mt-2 min-h-[1.25rem] text-sm ${
+                        blocking ? 'text-watermelon-600' : 'text-content-muted'
+                    }`}
+                    aria-live="polite"
+                >
+                    {blocking ?? notice ?? ''}
                 </p>
             </div>
 
             <div className="px-6 pb-10">
                 <button
                     onClick={submit}
-                    disabled={!valid || submitting}
+                    disabled={!canSubmit}
                     className="h-cta w-full rounded-full bg-watermelon-500 font-display text-lg text-white shadow-card transition active:scale-[0.98] disabled:bg-neutral-200 disabled:text-neutral-400 disabled:shadow-none"
                 >
                     {submitting ? '저장 중…' : '시작하기'}

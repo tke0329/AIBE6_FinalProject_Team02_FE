@@ -1,6 +1,7 @@
 'use client'
 
 import { NICKNAME_HINT, NICKNAME_MAX, NICKNAME_RE } from '@/features/my/nickname'
+import { availabilityMessage, useNicknameAvailability } from '@/features/my/useNicknameAvailability'
 import { AppScreen, Button, PageHeader, Text, TextField } from '@/shared/ui'
 import { useState } from 'react'
 
@@ -56,22 +57,39 @@ export function NicknameEdit({
     const unchanged = trimmed === currentNickname
     // 형식이 틀렸을 때만 형식 안내 노출 (변경 없음은 조용히 버튼만 비활성)
     const showFormatHint = trimmed.length > 0 && !formatOk
-    const canSubmit = changeable && formatOk && !unchanged && !submitting
+
+    /**
+     * 입력 중 중복 판정.
+     *
+     * 잠겼거나(1개월 제한) 지금 닉네임 그대로면 묻지 않는다 — 어차피 제출할 수 없고,
+     * 내 닉네임은 서버가 「사용 가능」으로 답해서 「쓸 수 있어요」가 뜨면 헷갈린다
+     */
+    const availability = useNicknameAvailability(value, { skip: !changeable || unchanged })
+    const taken = availability.state === 'taken'
+
+    // 못 물어본 경우(failed)는 막지 않는다 — 저장할 때 서버가 다시 판정한다
+    const canSubmit = changeable && formatOk && !unchanged && !taken && !submitting
 
     const submit = () => {
         if (canSubmit) onSubmit(trimmed)
     }
 
     /**
-     * 무엇을 보여줄지 하나로 정한다. 우선순위: 변경 불가 안내 → 형식 안내 → 서버 에러.
-     * `TextField`는 에러와 힌트를 동시에 띄우지 않으므로, 고를 책임이 화면에 있다.
+     * 무엇을 보여줄지 하나로 정한다. `TextField`는 `error`와 `hint`를 동시에 띄우지 않고
+     * `error`가 이기므로, 고를 책임이 화면에 있다.
+     *
+     * 막는 말(빨강)  변경 불가 → 형식 → 중복 → 서버 에러
+     * 알리는 말(회색) 확인 중 · 쓸 수 있음 · 확인 실패
      */
     const message =
         !changeable && changeableAt
             ? `${formatDate(changeableAt)}부터 바꿀 수 있어요.`
             : showFormatHint
               ? NICKNAME_HINT
-              : error
+              : taken
+                ? '이미 누가 쓰고 있어요.'
+                : error
+    const hint = message ? undefined : (availabilityMessage(availability) ?? undefined)
 
     return (
         <AppScreen
@@ -96,6 +114,7 @@ export function NicknameEdit({
                     maxLength={NICKNAME_MAX}
                     disabled={!changeable || submitting}
                     error={message}
+                    hint={hint}
                     count={{ current: trimmed.length, max: NICKNAME_MAX }}
                 />
             </div>

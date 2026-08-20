@@ -258,7 +258,9 @@ export function ChallengeCreate({ createdThisMonth, customBadge, onBack, onCreat
                                 {/* 홈과 동일하게 "남은 개설권" 기준으로 표시 */}
                                 <p
                                     className={`mt-4 rounded-2xl p-3 text-sm ${
-                                        canCreate ? 'bg-neutral-50 text-neutral-500' : 'bg-watermelon-50 text-watermelon-700'
+                                        canCreate
+                                            ? 'bg-neutral-50 text-neutral-500'
+                                            : 'bg-watermelon-50 text-watermelon-700'
                                     }`}
                                 >
                                     {canCreate

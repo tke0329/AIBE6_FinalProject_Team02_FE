@@ -273,8 +273,7 @@ export function ReviewSection({
                                 ref={r.id === focusReviewId ? focusedRef : undefined}
                                 className={`rounded-2xl bg-white p-3 shadow-card transition ${
                                     r.id === focusReviewId ? 'ring-2 ring-watermelon-400' : ''
-                                } ${blurred ? 'pointer-events-none select-none blur-sm' : ''
-                                }`}
+                                } ${blurred ? 'pointer-events-none select-none blur-sm' : ''}`}
                                 aria-hidden={blurred}
                             >
                                 <div className="flex items-center justify-between gap-2">

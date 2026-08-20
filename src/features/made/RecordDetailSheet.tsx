@@ -127,7 +127,9 @@ export function RecordDetailSheet({ madeDexId, recordIds, onClose, onEdit, onDel
                                 <HeartIcon
                                     size={20}
                                     aria-hidden
-                                    className={record.likedByMe ? 'fill-current text-content-link' : 'text-content-secondary'}
+                                    className={
+                                        record.likedByMe ? 'fill-current text-content-link' : 'text-content-secondary'
+                                    }
                                 />
                                 <span className="text-sm font-bold tabular-nums text-content-secondary">
                                     {record.likeCount}

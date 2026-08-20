@@ -2,7 +2,18 @@
 
 import { GuideTour } from '@/features/onboarding/GuideTour'
 import { useGuide } from '@/features/onboarding/useGuide'
-import { Badge, BottomNav, HelpIcon, LoadingView, NavTab, ProgressBar, SearchBar, Skeleton, TabBar } from '@/shared/ui'
+import {
+    Badge,
+    BottomNav,
+    HelpIcon,
+    LoadingView,
+    NavTab,
+    ProgressBar,
+    SearchBar,
+    ServerBadge,
+    Skeleton,
+    TabBar,
+} from '@/shared/ui'
 import { motion, useReducedMotion } from 'framer-motion'
 import { CrownIcon, MedalIcon, PlusIcon } from 'lucide-react'
 import { useState } from 'react'
@@ -193,9 +204,15 @@ export function ChallengeCountHome({
                             <>
                                 <div className="mt-3 flex items-center justify-between">
                                     <p className="text-sm font-bold text-neutral-900">전체 챌린짓</p>
+                                    {/*
+                                     * equalWidth — 「진행중」(3자)과 「종료」(2자)의 폭이 달라
+                                     * 고른 쪽에 배경이 깔릴 때 크기가 튀어 보였다. 두 개짜리
+                                     * 토글이라 최장 라벨에 맞춰도 줄을 넘길 일이 없다
+                                     */}
                                     <TabBar
                                         label="진행 상태"
                                         variant="pill"
+                                        equalWidth
                                         items={STATUS_TABS}
                                         value={exploreStatus}
                                         onChange={onExploreStatusChange}
@@ -498,6 +515,28 @@ function ExploreCard({
                     <span className={`flex rounded-xl ${medal ? `ring-2 ring-offset-1 ${medal.ring}` : ''}`}>
                         <CoverThumb url={challenge.coverUrl} size={44} />
                     </span>
+                    {/*
+                     * 완주 보상 뱃지 — 「뭘 주는 챌린짓인가」가 참여를 누를 이유가 된다.
+                     *
+                     * 커버 모서리에 겹쳐 두고 이름은 쓰지 않는다. 지표 줄에 이름까지 붙여 봤더니
+                     * 한 줄에 정보가 너무 많아 훑기가 어려웠다. 이름은 `title`·`alt`로 남아
+                     * 마우스를 올리면 뜨고 스크린리더도 읽으므로 잃는 정보는 없다.
+                     *
+                     * 26px — 20px는 모바일에서 안 보였다. 바깥으로 밀어 두어(-bottom/-right)
+                     * 커버 그림을 덜 가리고, 그림자로 커버 위에서도 윤곽이 남게 한다.
+                     * 왼쪽 순위 글자와 제목 사이 gap-3(12px)이 있어 밀려나도 겹치지 않는다.
+                     * 1위 왕관은 위쪽 가운데라 부딪히지 않는다
+                     */}
+                    {challenge.rewardBadgeInfo && (
+                        <span className="pointer-events-none absolute -bottom-1.5 -right-1.5 flex drop-shadow-[0_1px_2px_rgba(0,0,0,0.25)]">
+                            <ServerBadge
+                                code={challenge.rewardBadgeInfo.code}
+                                imageUrl={challenge.rewardBadgeInfo.imageUrl}
+                                name={challenge.rewardBadgeInfo.name}
+                                size={26}
+                            />
+                        </span>
+                    )}
                 </span>
                 <span className="min-w-0 flex-1">
                     {/* 낱말 가운데가 잘리지 않게 두 줄까지 편다 */}

@@ -48,9 +48,7 @@ export default function NotificationsPage() {
     }
 
     const handleDelete = (notification: NotificationItem) => {
-        setNotifications((prev) =>
-            prev ? prev.filter((n) => n.notificationId !== notification.notificationId) : prev,
-        )
+        setNotifications((prev) => (prev ? prev.filter((n) => n.notificationId !== notification.notificationId) : prev))
         deleteNotification(notification.notificationId)
             .then(() => {
                 if (!notification.read) void refreshUnreadCount()
