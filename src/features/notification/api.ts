@@ -45,6 +45,7 @@ interface RawNotificationItem extends NotificationItem {
         madeDexId?: number
         recordId?: number
         madeDexName?: string
+        message?: string
     } | null
 }
 
@@ -60,6 +61,7 @@ export function normalizeNotification(raw: RawNotificationItem): NotificationIte
         madeDexId: raw.madeDexId ?? payload.madeDexId ?? null,
         recordId: raw.recordId ?? payload.recordId ?? null,
         madeDexName: raw.madeDexName ?? payload.madeDexName ?? null,
+        message: raw.message ?? payload.message ?? null,
     }
 }
 

@@ -75,6 +75,8 @@ export default function MyPageRoute() {
                 onLogout={handleLogout}
                 onWithdraw={() => setConfirmOpen(true)}
                 onTab={(tab) => router.push(getTabHref(tab))}
+                isAdmin={me?.role === 'ADMIN'}
+                onOpenAdmin={() => pushInApp(router, ROUTES.admin)}
             />
             {confirmOpen && (
                 <WithdrawConfirmSheet

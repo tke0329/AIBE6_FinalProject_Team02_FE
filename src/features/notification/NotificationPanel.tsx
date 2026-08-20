@@ -59,11 +59,13 @@ const TYPE_ICON: Record<NotificationType, React.ReactNode> = {
 }
 
 function notificationLabel(notification: NotificationItem): string {
-    if (notification.message?.trim()) return notification.message
-
     const actor = notification.actorNickname?.trim()
     const target = notification.targetName?.trim()
     const madeDexName = notification.madeDexName?.trim()
+
+    // 제보 승인/반려는 서버가 음식이름·사유를 합쳐 message로 내려준다 → 아래 범용 message 폴백이 그대로 표시
+
+    if (notification.message?.trim()) return notification.message
 
     if (notification.type === 'MADE_DEX_JOINED' && actor && madeDexName) {
         return `${madeDexName}에 ${actor}님이 참여했어요`

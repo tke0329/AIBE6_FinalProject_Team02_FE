@@ -5,6 +5,7 @@ import { buildDexSearchIndex, searchDex } from '@/shared/lib/dexSearch'
 import { SearchBar } from '@/shared/ui'
 import { PlusIcon, SearchXIcon, XIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { createReport } from '@/features/report/api'
 import { MAX_FOOD_NAMES, useRegisterFlow } from './RegisterFlowContext'
 
 interface Props {
@@ -22,6 +23,22 @@ export function FoodNamePicker({ entries }: Props) {
     const { selectedSlots, addSlot, removeSlot, canAddMore, aliases } = useRegisterFlow()
     const [query, setQuery] = useState('')
     const [browseCategory, setBrowseCategory] = useState<FoodCategory | null>(null)
+    const [reporting, setReporting] = useState(false)
+    const [reportedName, setReportedName] = useState<string | null>(null)
+
+    async function handleReport() {
+        const name = query.trim()
+        if (!name || reporting) return
+        setReporting(true)
+        try {
+            await createReport(name)
+            setReportedName(name)
+        } catch (e) {
+            alert(e instanceof Error ? e.message : '제보에 실패했어요')
+        } finally {
+            setReporting(false)
+        }
+    }
 
     const index = useMemo(() => buildDexSearchIndex(entries, aliases), [entries, aliases])
     const results = useMemo(() => searchDex(index, query), [index, query])
@@ -115,6 +132,21 @@ export function FoodNamePicker({ entries }: Props) {
                             <SearchXIcon size={20} aria-hidden className="text-content-muted" />
                             <p className="text-sm font-medium text-content-primary">아직 도감에 없어요</p>
                             <p className="text-xs text-content-secondary">다른 이름으로 찾아보거나 둘러보세요</p>
+                            {query.trim() &&
+                                (reportedName === query.trim() ? (
+                                    <p className="mt-3 text-xs font-medium text-content-link">
+                                        제보 접수됐어요 · 검토 후 도감에 추가돼요
+                                    </p>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        disabled={reporting}
+                                        onClick={handleReport}
+                                        className="mt-3 min-h-touch rounded-full bg-action-primary px-4 text-xs font-bold text-content-on-action shadow-card disabled:opacity-60"
+                                    >
+                                        {reporting ? '제보 중…' : '이 음식 제보하기'}
+                                    </button>
+                                ))}
                         </div>
                     )}
                 </div>
