@@ -47,3 +47,23 @@ REPORT.md
 
 assets/fonts/*.ttf
 assets/fonts/*.otf
+
+# Android / TWA (Bubblewrap)
+/.gradle/
+*.keystore
+*.jks
+*.apk
+*.aab
+*.idsig
+/app/
+/gradle/
+/build.gradle
+/settings.gradle
+/gradle.properties
+/gradlew
+/gradlew.bat
+/manifest-checksum.txt
+/store_icon.png
+/twa-manifest.json
+/assetlinks.json
+
